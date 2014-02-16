@@ -24,6 +24,9 @@ function gace.CloseSession(id)
 	gace.Editor:RunJavascript([[
 		gaceSessions.close("]] .. id .. [[");
 	]])
+	if gace.OpenedSessionId == id then
+		gace.OpenedSessionId = nil
+	end
 end
 
 function gace.AskForInput(query, callback)
