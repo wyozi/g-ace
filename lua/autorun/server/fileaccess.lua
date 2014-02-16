@@ -1,10 +1,11 @@
 gace.VirtualFolders = gace.VirtualFolders or {}
 gace.ROOT = {} -- Empty table object indicates uniqueness
 
-function gace.SetupRawVFolder(id, filebrowser_func, save_func, access)
+function gace.SetupRawVFolder(id, filebrowser_func, save_func, delete_func, access)
 	gace.VirtualFolders[id] = {
 		ffunc=filebrowser_func,
 		svfunc=save_func,
+		delfunc=delete_func,
 		access=access
 	}
 end
@@ -27,6 +28,12 @@ function gace.SetupVFolder(id, root, path, access)
 			return false, "Path must end in .txt"
 		end
 		file.Write(root .. curpath, content)
+		return true
+	end, function(curpath, content)
+		if path ~= "DATA" then
+			return false, "Unable to save outside data folder"
+		end
+		file.Delete(root .. curpath)
 		return true
 	end, access)
 end
@@ -165,6 +172,24 @@ function gace.MakeSaveResponse(ply, path, content)
 	return {ret="Success"}
 end
 
+function gace.MakeRmResponse(ply, path, content)
+	local vpath, filepath = gace.ParsePath(path)
+	if not vpath then return {err=filepath} end
+
+	if vpath == gace.ROOT then
+		return {err="Is a folder"}
+	end
+
+	if not gace.TestAccess(vpath.access, ply, filepath, "rm") then
+		return {err="No access"}
+	end
+
+	local ret, err = vpath.delfunc(filepath)
+	if not ret then return {err=err} end
+
+	return {ret="Success"}
+end
+
 function gace.HandleNetworking(ply, reqid, op, payload)
 	if op == "ls" then
 		gace.Send(ply, reqid, op,
@@ -174,5 +199,7 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 		gace.Send(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
 	elseif op == "save" then
 		gace.Send(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
+	elseif op == "rm" then
+		gace.Send(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
 	end
 end

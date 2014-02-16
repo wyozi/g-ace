@@ -19,6 +19,10 @@ function gace.Save(path, content, callback)
 	gace.SendRequest("save", {path=path, content=content}, callback)
 end
 
+function gace.Delete(path, callback)
+	gace.SendRequest("rm", {path=path}, callback)
+end
+
 function gace.HandleNetworking(reqid, op, payload)
 
 end

@@ -150,6 +150,20 @@ concommand.Add("g-ace", function()
 				end)
 				menu:Open()
 			end
+			node:Receiver("gacefile", function(self, filepanels, dropped)
+				if not dropped then return end
+
+				local mypath = ConstructName(self)
+
+				for _,fp in pairs(filepanels) do
+					local path = ConstructName(fp)
+					gace.Fetch(path, function(_, _, payload)
+						if payload.err then return MsgN("Fail to fetch: ", payload.err) end
+						gace.Delete(path)
+						gace.Save(mypath .. "/" .. fp:GetText(), payload.content)
+					end)
+				end
+			end)
 		end
 
 		local function AddTreeNode(node, par)
@@ -170,6 +184,7 @@ concommand.Add("g-ace", function()
 							gace.OpenSession(id, payload.content)
 						end)
 					end
+					filnode:Droppable("gacefile")
 					filnode.Icon:SetImage("icon16/page.png")
 				end
 			end
