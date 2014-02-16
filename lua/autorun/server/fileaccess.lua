@@ -77,42 +77,39 @@ function gace.MakeRecursiveListResponse(ply, path)
 	local vpath, filepath = gace.ParsePath(path)
 	if not vpath then return {err=filepath} end
 
-	local tree = {}
+	local tree = {fol={}, fil={}}
+
+	local function AddRec(v, ipath, parent)
+		local type, files, folders = v.ffunc(ipath)
+		if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
+
+		for _,fol in pairs(folders) do
+			local t = {}
+			parent.fol = parent.fol or {}
+			parent.fol[fol] = t
+
+			local newpath = ""
+			if ipath ~= "" then newpath = ipath .. "/" end
+			newpath = newpath .. fol .. "/"
+
+			AddRec(v, newpath, t)
+		end
+		for _,fil in pairs(files) do
+			parent.fil = parent.fil or {}
+			table.insert(parent.fil, fil)
+		end
+	end
 
 	if vpath == gace.ROOT then
 		for k,v in pairs(gace.VirtualFolders) do
-			tree[k] = {}
-
-			local function AddRec(ipath, parent)
-				local type, files, folders = v.ffunc(ipath)
-				if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
-
-				for _,fol in pairs(folders) do
-					local t = {}
-					parent.fol = parent.fol or {}
-					parent.fol[fol] = t
-
-					local newpath = ""
-					if ipath ~= "" then newpath = ipath .. "/" end
-					newpath = newpath .. fol .. "/"
-
-					AddRec(newpath, t)
-				end
-				for _,fil in pairs(files) do
-					parent.fil = parent.fil or {}
-					table.insert(parent.fil, fil)
-				end
-			end
-
-			AddRec("", tree[k])
+			tree.fol[k] = {}
+			AddRec(v, "", tree.fol[k])
 		end
-
-		return {type="filetree", tree=tree}
+	else
+		AddRec(vpath, filepath, tree[k])
 	end
 
-	-- TODO make it possible to ls recursively in a path
-
-	return {err="Recursive path must be root"}
+	return {type="filetree", tree=tree}
 end
 
 function gace.MakeListResponse(ply, path)
