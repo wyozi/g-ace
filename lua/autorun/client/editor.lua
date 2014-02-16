@@ -126,6 +126,10 @@ concommand.Add("g-ace", function()
 
 	if IsValid(gace.Frame) then gace.Frame:Show() return end
 
+	-- Clear some session variables that might've gotten cached
+
+	gace.OpenedSessionId = nil
+
 	local frame = vgui.Create("DFrame")
 	frame:SetSize(900, 500)
 	frame:Center()
@@ -231,6 +235,13 @@ concommand.Add("g-ace", function()
 			if node.fil then
 				for _,fil in pairs(node.fil) do
 					local filnode = par:AddNode(fil)
+					filnode.Path = ConstructPath(filnode)
+					filnode.Paint = function(self, w, h)
+						if self.Path == gace.OpenedSessionId then
+							surface.SetDrawColor(127, 255, 127, 140)
+							surface.DrawRect(0, 0, w, h)
+						end
+					end
 					AddFileOptions(filnode)
 				end
 			end
