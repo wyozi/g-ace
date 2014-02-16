@@ -21,6 +21,15 @@ function gace.CloseSession(id)
 	]])
 end
 
+function gace.AskForInput(query, callback)
+	gace.InputPanel.QueryString = query
+	gace.InputPanel.InputCallback = callback
+
+	gace.InputPanel.Input:RequestFocus()
+
+	gace.InputPanel:Show()
+end
+
 surface.CreateFont("EditorTabFont", {
 	font = "Roboto",
 	size = 14
@@ -128,7 +137,7 @@ concommand.Add("g-ace", function()
 	filetree:Dock(LEFT)
 	filetree:SetWide(200)
 
-	local function ConstructName(node)
+	local function ConstructPath(node)
 		local t = {node:GetText()}
 		local p = node:GetParentNode()
 		while p do
@@ -145,18 +154,25 @@ concommand.Add("g-ace", function()
 			node.DoRightClick = function()
 				local menu = DermaMenu()
 				menu:AddOption("Create File", function()
-					local filname = ConstructName(node) .. "/newfile.txt"
-					gace.OpenSession(filname, "")
-				end)
+					gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+						local filname = ConstructPath(node) .. "/" .. nm
+						gace.OpenSession(filname, "")
+
+						-- TODO Fix
+						
+						--local t = gace.GetTabFor(filname)
+						--if t then t.EditedNotSaved = true end
+					end)
+				end):SetIcon("icon16/page.png")
 				menu:Open()
 			end
 			node:Receiver("gacefile", function(self, filepanels, dropped)
 				if not dropped then return end
 
-				local mypath = ConstructName(self)
+				local mypath = ConstructPath(self)
 
 				for _,fp in pairs(filepanels) do
-					local path = ConstructName(fp)
+					local path = ConstructPath(fp)
 					gace.Fetch(path, function(_, _, payload)
 						if payload.err then return MsgN("Fail to fetch: ", payload.err) end
 						gace.Delete(path)
@@ -164,6 +180,32 @@ concommand.Add("g-ace", function()
 					end)
 				end
 			end)
+		end
+		local function AddFileOptions(node)
+			node.DoClick = function()
+				local id = ConstructPath(node)
+				gace.Fetch(id, function(_, _, payload)
+					gace.OpenSession(id, payload.content)
+				end)
+			end
+			node.DoRightClick = function()
+				local menu = DermaMenu()
+
+				menu:AddOption("Duplicate", function()
+
+				end):SetIcon("icon16/page_copy.png")
+
+				local csubmenu, csmpnl = menu:AddSubMenu("Delete", function() end)
+				csmpnl:SetIcon( "icon16/cross.png" )
+
+				csubmenu:AddOption("Are you sure?", function()
+					gace.Delete(ConstructPath(node))
+				end):SetIcon("icon16/stop.png")
+
+				menu:Open()
+			end
+			node:Droppable("gacefile")
+			node.Icon:SetImage("icon16/page.png")
 		end
 
 		local function AddTreeNode(node, par)
@@ -178,14 +220,7 @@ concommand.Add("g-ace", function()
 			if node.fil then
 				for _,fil in pairs(node.fil) do
 					local filnode = par:AddNode(fil)
-					filnode.DoClick = function()
-						local id = ConstructName(filnode)
-						gace.Fetch(id, function(_, _, payload)
-							gace.OpenSession(id, payload.content)
-						end)
-					end
-					filnode:Droppable("gacefile")
-					filnode.Icon:SetImage("icon16/page.png")
+					AddFileOptions(filnode)
 				end
 			end
 		end
@@ -225,6 +260,30 @@ concommand.Add("g-ace", function()
 	end)
 
 	gace.Editor = html
+
+	local inputpanel = vgui.Create("DPanel", frame)
+	inputpanel:Dock(BOTTOM)
+	inputpanel:Hide()
+
+	gace.InputPanel = inputpanel
+
+	do
+		local input = vgui.Create("DTextEntry", inputpanel)
+		input:Dock(FILL)
+		inputpanel.Input = input
+
+		input.PaintOver = function(self, w, h)
+			if self:GetText() == "" then
+				draw.SimpleText(inputpanel.QueryString or "bla bla bla", "DermaDefault", 4, h/2, Color(0, 0, 0, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			end
+		end
+
+		input.OnEnter = function(self)
+			inputpanel.InputCallback(self:GetText())
+			inputpanel:Hide()
+			gace.Frame:InvalidateLayout()
+		end
+	end
 
 	frame:MakePopup()
 end)
