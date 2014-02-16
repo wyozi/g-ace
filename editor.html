@@ -29,6 +29,10 @@
     editor.setTheme("ace/theme/monokai");
     editor.getSession().setMode("ace/mode/lua");
 
+    editor.on("change", function(e) {
+        gace.SetEditedNotSaved(true);
+    });
+
     editor.commands.addCommand({
         name: 'Save',
         bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
@@ -65,11 +69,21 @@
                     content = data.content;
 
                 sessions[id] = ace.createEditSession(content, "ace/mode/lua");
+                
                 this.reopen(id);
+                gace.SetEditedNotSaved(false);
             },
             refresh: function(id, data) {
                 this.open(id, data);
-                sessions[id].setValue(data.content);
+
+                var content;
+                if ("contentb" in data)
+                    content = Base64.decode(data.contentb);
+                else
+                    content = data.content;
+
+                sessions[id].setValue(content);
+                gace.SetEditedNotSaved(false)
             },
             close: function(id) {
                 // If closed session is current session, lets clear it by making new empty session
