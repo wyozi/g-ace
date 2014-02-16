@@ -55,6 +55,19 @@ local VGUI_EDITOR_TAB = {
 		surface.DrawRect(0, 0, w, h)
 
 		draw.SimpleText(self.SessionId, "EditorTabFont", w-22, h/2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+	
+		if self.EditedNotSaved then
+			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
+			local lx, ly
+			for x=0,w,5 do
+				local y = h-2-math.sin(CurTime()*2+x)*2
+				if lx then
+					surface.DrawLine(lx, ly, x, y)
+				end
+				lx, ly = x, y
+			end
+		end
+
 	end,
 	Setup = function(self, id)
 		self:SetText("")
@@ -77,14 +90,16 @@ local VGUI_EDITOR_TAB = {
 }
 VGUI_EDITOR_TAB = vgui.RegisterTable(VGUI_EDITOR_TAB, "DButton") 
 
-function gace.CreateTab(id)
-
+function gace.GetTabFor(id)
 	local thepanel
 	for _,pnl in pairs(gace.Tabs.Panels) do
 		if pnl.SessionId == id then thepanel = pnl end
 	end
+	return thepanel
+end
 
-	if thepanel then return end
+function gace.CreateTab(id)
+	if gace.GetTabFor(id) then return end
 
 	local btn = vgui.CreateFromTable(VGUI_EDITOR_TAB, gace.Tabs)
 	btn:Setup(id)
@@ -184,7 +199,14 @@ concommand.Add("g-ace", function()
 		gace.CreateTab(id)
 	end)
 	html:AddFunction("gace", "SaveSession", function(content)
-		gace.Save(gace.OpenedSessionId, content)
+		gace.Save(gace.OpenedSessionId, content, function()
+			local t = gace.GetTabFor(gace.OpenedSessionId)
+			if t then t.EditedNotSaved = false end
+		end)
+	end)
+	html:AddFunction("gace", "SetEditedNotSaved", function(b)
+		local t = gace.GetTabFor(gace.OpenedSessionId)
+		if t then t.EditedNotSaved = b end
 	end)
 
 	gace.Editor = html
