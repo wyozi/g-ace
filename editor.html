@@ -10,6 +10,12 @@
         bottom: 0;
         left: 0;
     }
+    #quickcmd {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 25px;
+    }
 </style>
 </head>
 <body>
@@ -24,6 +30,41 @@
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
     editor.getSession().setMode("ace/mode/lua");
+
+    var gaceSessions = (function() {
+        var sessions = {};
+
+        return {
+            exists: function(id) {
+                return id in sessions;
+            },
+            reopen: function(id) {
+                if (this.exists(id)) {
+                    editor.setSession(sessions[id]);
+                    gace.SetOpenedSession(id);
+                    return true;
+                }
+                return false;
+            },
+            open: function(id, data) {
+                if (this.reopen(id))
+                    return;
+                sessions[id] = ace.createEditSession(data.content, "ace/mode/lua");
+                this.reopen(id);
+            },
+            refresh: function(id, data) {
+                this.open(id, data);
+                sessions[id].setValue(data.content);
+            },
+            close: function(id) {
+                // If closed session is current session, lets clear it by making new empty session
+                if (editor.getSession() == sessions[id]) {
+                    editor.setSession(ace.createEditSession("", "ace/mode/lua"));
+                }
+                delete sessions[id];
+            }
+        }
+    })();
 </script>
 </body>
 </html>
