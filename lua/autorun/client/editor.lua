@@ -1,4 +1,12 @@
 
+function gace.OpenSession(content)
+	content = content:Replace("\"", "\\\"")
+	gace.Editor:RunJavascript([[
+		var session = ace.createEditSession("]] .. content .. [[", "ace/mode/lua")
+		editor.setSession(session);
+	]])
+end
+
 local VGUI_EDITOR_TAB = {
 	Paint = function(self, w, h)
 		if self.Hovered then
@@ -16,6 +24,8 @@ concommand.Add("g-ace", function()
 	frame:SetSize(900, 500)
 	frame:Center()
 
+	gace.Frame = frame
+
 	local tabs = vgui.Create("DHorizontalScroller", frame)
 	tabs:Dock(TOP)
 
@@ -29,6 +39,18 @@ concommand.Add("g-ace", function()
 	filetree:Dock(LEFT)
 	filetree:SetWide(200)
 
+	local function ConstructName(node)
+		local t = {node:GetText()}
+		local p = node:GetParentNode()
+		while p do
+			if p:GetText() == "" then break end
+
+			table.insert(t, p:GetText())
+			p = p.GetParentNode and p:GetParentNode()
+		end
+		return table.concat(table.Reverse(t), "/")
+	end
+
 	gace.List("", function(_, _, payload)
 		local function AddTreeNode(node, par)
 			par = par or filetree
@@ -41,6 +63,11 @@ concommand.Add("g-ace", function()
 			if node.fil then
 				for _,fil in pairs(node.fil) do
 					local filnode = par:AddNode(fil)
+					filnode.DoClick = function()
+						gace.Fetch(ConstructName(filnode), function(_, _, payload)
+							gace.OpenSession(payload.content)
+						end)
+					end
 					filnode.Icon:SetImage("icon16/page.png")
 				end
 			end
@@ -55,6 +82,8 @@ concommand.Add("g-ace", function()
 	local html = vgui.Create("DHTML", frame)
 	html:Dock(FILL)
 	html:OpenURL("http://wyozi.github.io/g-ace/editor.html")
+
+	gace.Editor = html
 
 	frame:MakePopup()
 end)
