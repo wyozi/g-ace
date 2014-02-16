@@ -6,9 +6,14 @@ function gace.OpenSession(id, content, data)
 		content = util.Base64Encode(content):Replace("\n", "")
 	end
 
+	local defens = false
+	if data then
+		defens = data.defens or defens
+	end
+
 	gace.Editor:RunJavascript([[gaceSessions.open("]] .. id ..
 		[[", {contentb: "]] .. content ..
-		[[", defens: ]] .. tostring(data.defens or false) .. [[});]])
+		[[", defens: ]] .. tostring(defens) .. [[});]])
 end
 function gace.ReOpenSession(id)
 	gace.Editor:RunJavascript([[
