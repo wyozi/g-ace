@@ -13,7 +13,7 @@ VGUI_EDITOR_TAB = vgui.RegisterTable(VGUI_EDITOR_TAB, "DButton")
 
 concommand.Add("g-ace", function()
 	local frame = vgui.Create("DFrame")
-	frame:SetSize(600, 400)
+	frame:SetSize(900, 500)
 	frame:Center()
 
 	local tabs = vgui.Create("DHorizontalScroller", frame)
@@ -27,6 +27,30 @@ concommand.Add("g-ace", function()
 
 	local filetree = vgui.Create("DTree", frame)
 	filetree:Dock(LEFT)
+	filetree:SetWide(200)
+
+	gace.List("", function(_, _, payload)
+		local function AddTreeNode(node, par)
+			par = par or filetree
+			if node.fol then
+				for foldnm,fold in pairs(node.fol) do
+					local node = par:AddNode(foldnm)
+					AddTreeNode(fold, node)
+				end
+			end
+			if node.fil then
+				for _,fil in pairs(node.fil) do
+					local filnode = par:AddNode(fil)
+					filnode.Icon:SetImage("icon16/page.png")
+				end
+			end
+		end
+
+		for vfolder,vnode in pairs(payload.tree) do
+			local vfolnode = filetree:AddNode(vfolder)
+			AddTreeNode(vnode, vfolnode)
+		end
+	end, true)
 
 	local html = vgui.Create("DHTML", frame)
 	html:Dock(FILL)

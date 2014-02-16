@@ -7,8 +7,8 @@ function gace.SendRequest(op, payload, cb)
 	gace.Send(nil, reqid, op, payload)
 end
 
-function gace.List(path, callback)
-	gace.SendRequest("ls", {path=path}, callback)
+function gace.List(path, callback, recursive)
+	gace.SendRequest("ls", {path=path, recursive=recursive}, callback)
 end
 
 function gace.Fetch(path, callback)
