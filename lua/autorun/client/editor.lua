@@ -132,6 +132,7 @@ concommand.Add("g-ace", function()
 	-- Clear some session variables that might've gotten cached
 
 	gace.OpenedSessionId = nil
+	gace.FileNodeTree = nil
 
 	local frame = vgui.Create("DFrame")
 	frame:SetSize(900, 500)
@@ -166,11 +167,26 @@ concommand.Add("g-ace", function()
 		return table.concat(table.Reverse(t), "/")
 	end
 
+	-- Returns table that is same to large except has no values in sub
+	-- Instead of an indexes list, this returns a table with same key-value pairs as the "large" table
+	local function SubtractTable(large, sub)
+		local ret = {}
+		for k,v in pairs(large) do
+			if not table.HasValue(sub, v) then
+				ret[k] = v
+			end
+		end
+		return ret
+	end
+
 	local function ListPath(path, tree)
 		local root = gace.FileNodeTree
+		local replace_everything = false
+
 		if path == "" then
 			root = {node=filetree, fol={}, fil={}}
 			gace.FileNodeTree = root
+			replace_everything = true
 		else
 			local pathcomps = path:Split("/")
 			for _,pc in ipairs(pathcomps) do
@@ -247,6 +263,8 @@ concommand.Add("g-ace", function()
 
 		local function AddTreeNode(node, par)
 			local parnode = par.node
+			if parnode.ChildNodes then parnode.ChildNodes:Remove() parnode.ChildNodes=nil end
+
 			if node.fol then
 				for foldnm,fold in pairs(node.fol) do
 					local node = parnode:AddNode(foldnm)
@@ -277,7 +295,6 @@ concommand.Add("g-ace", function()
 		end
 
 		AddTreeNode(tree, root)
-		PrintTable(root)
 	end
 
 	gace.List("", function(_, _, payload)
