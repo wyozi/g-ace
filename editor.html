@@ -71,7 +71,7 @@
                 sessions[id] = ace.createEditSession(content, "ace/mode/lua");
                 
                 this.reopen(id);
-                gace.SetEditedNotSaved(false);
+                gace.SetEditedNotSaved(data.defens || false);
             },
             refresh: function(id, data) {
                 this.open(id, data);
@@ -83,7 +83,7 @@
                     content = data.content;
 
                 sessions[id].setValue(content);
-                gace.SetEditedNotSaved(false)
+                gace.SetEditedNotSaved(data.defens || false)
             },
             close: function(id) {
                 // If closed session is current session, lets clear it by making new empty session
