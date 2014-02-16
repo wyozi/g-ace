@@ -194,14 +194,18 @@ concommand.Add("g-ace", function()
 			end
 		end
 
+		local function RefreshFolder(path)
+			gace.List(path, function(_, _, payload)
+				ListPath(path, payload.tree)
+			end, true)
+		end
+
 		local function AddFolderOptions(node)
 			node.DoRightClick = function()
 				local menu = DermaMenu()
 
 				menu:AddOption("Refresh", function()
-					gace.List(ConstructPath(node), function(_, _, payload)
-						ListPath(ConstructPath(node), payload.tree)
-					end, true)
+					RefreshFolder(ConstructPath(node))
 				end):SetIcon("icon16/arrow_refresh.png")
 
 				menu:AddOption("Create File", function()
@@ -224,6 +228,8 @@ concommand.Add("g-ace", function()
 						if payload.err then return MsgN("Fail to fetch: ", payload.err) end
 						gace.Delete(path)
 						gace.Save(mypath .. "/" .. fp:GetText(), payload.content)
+						RefreshFolder(mypath)
+						RefreshFolder(ConstructPath(fp, true))
 					end)
 				end
 			end)
@@ -253,6 +259,7 @@ concommand.Add("g-ace", function()
 
 				csubmenu:AddOption("Are you sure?", function()
 					gace.Delete(ConstructPath(node))
+					RefreshFolder(ConstructPath(node, true))
 				end):SetIcon("icon16/stop.png")
 
 				menu:Open()
@@ -319,6 +326,13 @@ concommand.Add("g-ace", function()
 		gace.Save(gace.OpenedSessionId, content, function()
 			local t = gace.GetTabFor(gace.OpenedSessionId)
 			if t then t.EditedNotSaved = false end
+
+			local tb = gace.OpenedSessionId:Split("/")
+			local par = table.concat(tb, "/", 1, #tb-1)
+
+			gace.List(par, function(_, _, payload)
+				ListPath(par, payload.tree)
+			end, true)
 		end)
 	end)
 	html:AddFunction("gace", "SetEditedNotSaved", function(b)

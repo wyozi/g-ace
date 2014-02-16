@@ -106,7 +106,9 @@ function gace.MakeRecursiveListResponse(ply, path)
 			AddRec(v, "", tree.fol[k])
 		end
 	else
-		AddRec(vpath, filepath .. "/", tree)
+		local nfilepath = filepath
+		if nfilepath ~= "" then nfilepath = nfilepath .. "/" end
+		AddRec(vpath,  nfilepath, tree)
 	end
 
 	return {type="filetree", tree=tree}
