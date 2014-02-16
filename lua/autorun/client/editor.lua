@@ -166,16 +166,33 @@ concommand.Add("g-ace", function()
 		return table.concat(table.Reverse(t), "/")
 	end
 
-	gace.List("", function(_, _, payload)
+	local function ListPath(path, tree)
+		local root = gace.FileNodeTree
+		if path == "" then
+			root = {}
+			gace.FileNodeTree = root
+		else
+			local pathcomps = path:Split("/")
+			for _,pc in ipairs(pathcomps) do
+				root = root[pc]
+			end
+		end
+
 		local function AddFolderOptions(node)
 			node.DoRightClick = function()
 				local menu = DermaMenu()
+
+				menu:AddOption("Refresh", function()
+					
+				end):SetIcon("icon16/arrow_refresh.png")
+
 				menu:AddOption("Create File", function()
 					gace.AskForInput("Filename? Needs to end in .txt", function(nm)
 						local filname = ConstructPath(node) .. "/" .. nm
 						gace.OpenSession(filname, "", {defens = true})
 					end)
 				end):SetIcon("icon16/page.png")
+
 				menu:Open()
 			end
 			node:Receiver("gacefile", function(self, filepanels, dropped)
@@ -227,17 +244,20 @@ concommand.Add("g-ace", function()
 		end
 
 		local function AddTreeNode(node, par)
-			par = par or filetree
+			local parnode = par and par.node or filetree
 			if node.fol then
 				for foldnm,fold in pairs(node.fol) do
-					local node = par:AddNode(foldnm)
+					local node = parnode:AddNode(foldnm)
 					AddFolderOptions(node)
-					AddTreeNode(fold, node)
+
+					local mytbl = {fol={}, fil={}, node=node}
+					if par then par.fol[foldnm] = mytbl end
+					AddTreeNode(fold, mytbl)
 				end
 			end
 			if node.fil then
 				for _,fil in pairs(node.fil) do
-					local filnode = par:AddNode(fil)
+					local filnode = parnode:AddNode(fil)
 					filnode.Path = ConstructPath(filnode)
 					filnode.Paint = function(self, w, h)
 						if self.Path == gace.OpenedSessionId then
@@ -245,18 +265,17 @@ concommand.Add("g-ace", function()
 							surface.DrawRect(0, 0, w, h)
 						end
 					end
+					if par then par.fil[fil] = filnode end
 					AddFileOptions(filnode)
 				end
 			end
 		end
 
-		for vfolder,vnode in pairs(payload.tree) do
-			local vfolnode = filetree:AddNode(vfolder)
-			AddFolderOptions(vfolnode)
-			AddTreeNode(vnode, vfolnode)
-			vfolnode:SetExpanded(true)
-		end
+		AddTreeNode(tree)
+	end
 
+	gace.List("", function(_, _, payload)
+		ListPath("", payload.tree)
 	end, true)
 
 	local html = vgui.Create("DHTML", frame)
