@@ -21,6 +21,11 @@ function gace.CloseSession(id)
 	]])
 end
 
+surface.CreateFont("EditorTabFont", {
+	font = "Roboto",
+	size = 14
+})
+
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
 		self.CloseButton = vgui.Create("DImageButton", self)
@@ -49,15 +54,17 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(self.SessionId, "Trebuchet18", 10, h/2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.SessionId, "EditorTabFont", w-22, h/2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 	end,
 	Setup = function(self, id)
 		self:SetText("")
 		self.SessionId = id
+		self:SetToolTip(id)
 
-		surface.SetFont("Trebuchet18")
+		surface.SetFont("EditorTabFont")
 		local w = surface.GetTextSize(self.SessionId)
-		self:SetWide(w+30)
+
+		self:SetWide(140)--math.min(w+34, 160))
 	end,
 	DoClick = function(self)
 		gace.ReOpenSession(self.SessionId)
