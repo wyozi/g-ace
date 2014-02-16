@@ -1,8 +1,12 @@
 gace.VirtualFolders = gace.VirtualFolders or {}
 gace.ROOT = {} -- Empty table object indicates uniqueness
 
-function gace.SetupRawVFolder(id, filebrowser_func, access)
-	gace.VirtualFolders[id] = {ffunc=filebrowser_func, access=access}
+function gace.SetupRawVFolder(id, filebrowser_func, save_func, access)
+	gace.VirtualFolders[id] = {
+		ffunc=filebrowser_func,
+		svfunc=save_func,
+		access=access
+	}
 end
 
 function gace.SetupVFolder(id, root, path, access)
@@ -15,6 +19,15 @@ function gace.SetupVFolder(id, root, path, access)
 			return "folder", files, folders
 		end
 		return "file", file.Read(curpath, path), file.Size(curpath, path), file.Time(curpath, path)
+	end, function(curpath, content)
+		if path ~= "DATA" then
+			return false, "Unable to save outside data folder"
+		end
+		if not curpath:EndsWith(".txt") then
+			return false, "Path must end in .txt"
+		end
+		file.Write(root .. curpath, content)
+		return true
 	end, access)
 end
 
@@ -65,6 +78,8 @@ function gace.MakeRecursiveListResponse(ply, path)
 
 			local function AddRec(ipath, parent)
 				local type, files, folders = v.ffunc(ipath)
+				if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
+
 				for _,fol in pairs(folders) do
 					local t = {}
 					parent.fol = parent.fol or {}
@@ -101,7 +116,7 @@ function gace.MakeListResponse(ply, path)
 		return {type="folder", files={}, folders=gace.TableKeysToList(gace.VirtualFolders)}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, path) then
+	if not gace.TestAccess(vpath.access, ply, filepath, "ls") then
 		return {err="No access"}
 	end
 
@@ -120,7 +135,7 @@ function gace.MakeFetchResponse(ply, path)
 		return {err="Is a folder"}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, path) then
+	if not gace.TestAccess(vpath.access, ply, filepath, "fetch") then
 		return {err="No access"}
 	end
 
@@ -132,6 +147,24 @@ function gace.MakeFetchResponse(ply, path)
 	return {err="Is a folder"}
 end
 
+function gace.MakeSaveResponse(ply, path, content)
+	local vpath, filepath = gace.ParsePath(path)
+	if not vpath then return {err=filepath} end
+
+	if vpath == gace.ROOT then
+		return {err="Is a folder"}
+	end
+
+	if not gace.TestAccess(vpath.access, ply, filepath, "save") then
+		return {err="No access"}
+	end
+
+	local ret, err = vpath.svfunc(filepath, content)
+	if not ret then return {err=err} end
+
+	return {ret="Success"}
+end
+
 function gace.HandleNetworking(ply, reqid, op, payload)
 	if op == "ls" then
 		gace.Send(ply, reqid, op,
@@ -139,5 +172,7 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 							  or  gace.MakeListResponse(ply, payload.path))
 	elseif op == "fetch" then
 		gace.Send(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
+	elseif op == "save" then
+		gace.Send(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
 	end
 end

@@ -1,9 +1,8 @@
 
 function gace.OpenSession(id, content)
-	content = content:Replace("\"", "\\\"")
-	gace.Editor:RunJavascript([[
-		gaceSessions.open("]] .. id .. [[", {content: "]] .. content .. [["});
-	]])
+	gace.Editor:RunJavascript([[gaceSessions.open("]] .. id ..
+		[[", {contentb: "]] .. util.Base64Encode(content):Replace("\n", "") ..
+		[["});]])
 end
 function gace.ReOpenSession(id)
 	gace.Editor:RunJavascript([[
@@ -139,9 +138,9 @@ concommand.Add("g-ace", function()
 		for vfolder,vnode in pairs(payload.tree) do
 			local vfolnode = filetree:AddNode(vfolder)
 			AddTreeNode(vnode, vfolnode)
+			vfolnode:SetExpanded(true)
 		end
 
-		filetree:SetExpanded(true)
 	end, true)
 
 	local html = vgui.Create("DHTML", frame)
@@ -156,8 +155,10 @@ concommand.Add("g-ace", function()
 
 	html:AddFunction("gace", "SetOpenedSession", function(id)
 		gace.OpenedSessionId = id
-
 		gace.CreateTab(id)
+	end)
+	html:AddFunction("gace", "SaveSession", function(content)
+		gace.Save(gace.OpenedSessionId, content)
 	end)
 
 	gace.Editor = html
