@@ -1,5 +1,5 @@
 
-function gace.OpenSession(id, content)
+function gace.OpenSession(id, content, data)
 	if content == "" then -- Using base64encode on empty string returns nil, thus this
 		content = ""
 	else
@@ -8,7 +8,7 @@ function gace.OpenSession(id, content)
 
 	gace.Editor:RunJavascript([[gaceSessions.open("]] .. id ..
 		[[", {contentb: "]] .. content ..
-		[["});]])
+		[[", defens: ]] .. tostring(data.defens or false) .. [[});]])
 end
 function gace.ReOpenSession(id)
 	gace.Editor:RunJavascript([[
@@ -137,8 +137,13 @@ concommand.Add("g-ace", function()
 	filetree:Dock(LEFT)
 	filetree:SetWide(200)
 
-	local function ConstructPath(node)
-		local t = {node:GetText()}
+	local function ConstructPath(node, skip_first_node)
+		local t = {}
+
+		if not skip_first_node then
+			t[1] = node:GetText()
+		end
+
 		local p = node:GetParentNode()
 		while p do
 			if p:GetText() == "" then break end
@@ -156,12 +161,7 @@ concommand.Add("g-ace", function()
 				menu:AddOption("Create File", function()
 					gace.AskForInput("Filename? Needs to end in .txt", function(nm)
 						local filname = ConstructPath(node) .. "/" .. nm
-						gace.OpenSession(filname, "")
-
-						-- TODO Fix
-						
-						--local t = gace.GetTabFor(filname)
-						--if t then t.EditedNotSaved = true end
+						gace.OpenSession(filname, "", {defens = true})
 					end)
 				end):SetIcon("icon16/page.png")
 				menu:Open()
@@ -192,7 +192,13 @@ concommand.Add("g-ace", function()
 				local menu = DermaMenu()
 
 				menu:AddOption("Duplicate", function()
-
+					gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+						local filname = ConstructPath(node, true) .. "/" .. nm
+						gace.Fetch(ConstructPath(node), function(_, _, payload)
+							if payload.err then return MsgN("Failed to fetch: ", payload.err) end
+							gace.OpenSession(filname, payload.content, {defens=true})
+						end)
+					end)
 				end):SetIcon("icon16/page_copy.png")
 
 				local csubmenu, csmpnl = menu:AddSubMenu("Delete", function() end)
