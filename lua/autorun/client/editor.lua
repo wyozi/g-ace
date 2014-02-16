@@ -1,7 +1,13 @@
 
 function gace.OpenSession(id, content)
+	if content == "" then -- Using base64encode on empty string returns nil, thus this
+		content = ""
+	else
+		content = util.Base64Encode(content):Replace("\n", "")
+	end
+
 	gace.Editor:RunJavascript([[gaceSessions.open("]] .. id ..
-		[[", {contentb: "]] .. util.Base64Encode(content):Replace("\n", "") ..
+		[[", {contentb: "]] .. content ..
 		[["});]])
 end
 function gace.ReOpenSession(id)
@@ -113,11 +119,23 @@ concommand.Add("g-ace", function()
 	end
 
 	gace.List("", function(_, _, payload)
+		local function AddFolderOptions(node)
+			node.DoRightClick = function()
+				local menu = DermaMenu()
+				menu:AddOption("Create File", function()
+					local filname = ConstructName(node) .. "/newfile.txt"
+					gace.OpenSession(filname, "")
+				end)
+				menu:Open()
+			end
+		end
+
 		local function AddTreeNode(node, par)
 			par = par or filetree
 			if node.fol then
 				for foldnm,fold in pairs(node.fol) do
 					local node = par:AddNode(foldnm)
+					AddFolderOptions(node)
 					AddTreeNode(fold, node)
 				end
 			end
@@ -137,6 +155,7 @@ concommand.Add("g-ace", function()
 
 		for vfolder,vnode in pairs(payload.tree) do
 			local vfolnode = filetree:AddNode(vfolder)
+			AddFolderOptions(vfolnode)
 			AddTreeNode(vnode, vfolnode)
 			vfolnode:SetExpanded(true)
 		end
