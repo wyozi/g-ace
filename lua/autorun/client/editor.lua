@@ -169,12 +169,12 @@ concommand.Add("g-ace", function()
 	local function ListPath(path, tree)
 		local root = gace.FileNodeTree
 		if path == "" then
-			root = {}
+			root = {node=filetree, fol={}, fil={}}
 			gace.FileNodeTree = root
 		else
 			local pathcomps = path:Split("/")
 			for _,pc in ipairs(pathcomps) do
-				root = root[pc]
+				root = root.fol[pc]
 			end
 		end
 
@@ -183,7 +183,9 @@ concommand.Add("g-ace", function()
 				local menu = DermaMenu()
 
 				menu:AddOption("Refresh", function()
-					
+					gace.List(ConstructPath(node), function(_, _, payload)
+						ListPath(ConstructPath(node), payload.tree)
+					end, true)
 				end):SetIcon("icon16/arrow_refresh.png")
 
 				menu:AddOption("Create File", function()
@@ -244,15 +246,18 @@ concommand.Add("g-ace", function()
 		end
 
 		local function AddTreeNode(node, par)
-			local parnode = par and par.node or filetree
+			local parnode = par.node
 			if node.fol then
 				for foldnm,fold in pairs(node.fol) do
 					local node = parnode:AddNode(foldnm)
 					AddFolderOptions(node)
 
 					local mytbl = {fol={}, fil={}, node=node}
-					if par then par.fol[foldnm] = mytbl end
+					par.fol[foldnm] = mytbl
 					AddTreeNode(fold, mytbl)
+
+					-- We're top level
+					if par == gace.FileNodeTree then node:SetExpanded(true) end
 				end
 			end
 			if node.fil then
@@ -265,13 +270,14 @@ concommand.Add("g-ace", function()
 							surface.DrawRect(0, 0, w, h)
 						end
 					end
-					if par then par.fil[fil] = filnode end
+					par.fil[fil] = filnode
 					AddFileOptions(filnode)
 				end
 			end
 		end
 
-		AddTreeNode(tree)
+		AddTreeNode(tree, root)
+		PrintTable(root)
 	end
 
 	gace.List("", function(_, _, payload)
