@@ -2491,6 +2491,10 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
         if (61 === next) return scanPunctuator('~=');
         return raise({}, errors.expected, '=', '~');
 
+      case 33:
+        if (61 === next) return scanPunctuator('!=');
+        return scanPunctuator('!');
+
       case 58: // :
         if (58 === next) return scanPunctuator('::');
         return scanPunctuator(':');
@@ -3329,7 +3333,7 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
     } else if (2 === length) {
       switch (charCode) {
         case 46: return 5; // ..
-        case 60: case 62: case 61: case 126: return 3; // <= >= == ~=
+        case 60: case 62: case 61: case 126: case 33: return 3; // <= >= == ~= !=
         case 111: return 1; // or
       }
     } else if (97 === charCode && 'and' === operator) return 2;
