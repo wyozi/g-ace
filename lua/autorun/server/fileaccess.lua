@@ -188,17 +188,3 @@ function gace.MakeRmResponse(ply, path, content)
 
 	return {ret="Success"}
 end
-
-function gace.HandleNetworking(ply, reqid, op, payload)
-	if op == "ls" then
-		gace.Send(ply, reqid, op,
-			payload.recursive and gace.MakeRecursiveListResponse(ply, payload.path)
-							  or  gace.MakeListResponse(ply, payload.path))
-	elseif op == "fetch" then
-		gace.Send(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
-	elseif op == "save" then
-		gace.Send(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
-	elseif op == "rm" then
-		gace.Send(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
-	end
-end
