@@ -31,7 +31,7 @@
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
-    editor.getSession().setMode("ace/mode/lua");
+    editor.getSession().setMode("ace/mode/glua");
 
     // Enable autocomplete etc
     editor.setOptions({
@@ -40,8 +40,10 @@
     });
 
     editor.on("change", function(e) {
-        gace.SetEditedNotSaved(true);
-        gace.ReportLatestContent(editor.getSession().getValue());
+        if ("gace" in window) {
+            gace.SetEditedNotSaved(true);
+            gace.ReportLatestContent(editor.getSession().getValue());
+        }
     });
 
     editor.commands.addCommand({
@@ -100,7 +102,7 @@
                 else
                     content = data.content;
 
-                sessions[id] = ace.createEditSession(content, "ace/mode/lua");
+                sessions[id] = ace.createEditSession(content, "ace/mode/glua");
                 
                 this.reopen(id);
                 gace.SetEditedNotSaved(data.defens || false);
