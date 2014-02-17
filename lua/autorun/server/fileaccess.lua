@@ -56,6 +56,7 @@ function gace.TestAccess(access, ply, ...)
 end
 
 function gace.ParsePath(path)
+	if not path then return false, "Provided path is nil" end
 	if path == "" then
 		return gace.ROOT, ""
 	end

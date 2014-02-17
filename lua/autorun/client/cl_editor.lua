@@ -147,6 +147,7 @@ concommand.Add("g-ace", function()
 	frame:Center()
 	frame:SetDeleteOnClose(false)
 	frame:SetSizable(true)
+	frame:SetTitle("")
 
 	gace.Frame = frame
 
@@ -347,6 +348,9 @@ concommand.Add("g-ace", function()
 		gace.OpenedSessionId = id
 		gace.CreateTab(id)
 	end)
+	html:AddFunction("gace", "ReportLatestContent", function(content)
+		gace.OpenedSessionContent = content
+	end)
 	html:AddFunction("gace", "SaveSession", function(content)
 		gace.Save(gace.OpenedSessionId, content, function()
 			local t = gace.GetTabFor(gace.OpenedSessionId)
@@ -364,8 +368,13 @@ concommand.Add("g-ace", function()
 		local t = gace.GetTabFor(gace.OpenedSessionId)
 		if t then t.EditedNotSaved = b end
 	end)
+	html:AddFunction("gace", "CallLDFunc", function(ldf, content)
+		luadev[ldf](content)
+	end)
 
 	gace.Editor = html
+
+	-- Input panel that can ask for input
 
 	local inputpanel = vgui.Create("DPanel", frame)
 	inputpanel:Dock(BOTTOM)
@@ -388,6 +397,47 @@ concommand.Add("g-ace", function()
 			inputpanel.InputCallback(self:GetText())
 			inputpanel:Hide()
 			gace.Frame:InvalidateLayout()
+		end
+	end
+
+	-- Action buttons that are in the title bar
+
+	do
+		local btns = {
+			{ text = "Run on" },
+			{	text = "Self",
+				fn = function()
+					luadev.RunOnSelf(gace.OpenedSessionContent)
+				end,
+				tt = "Hotkey in editor: F5"},
+			{	text = "Server",
+				fn = function()
+					luadev.RunOnServer(gace.OpenedSessionContent)
+				end,
+				tt = "Hotkey in editor: F6"},
+			{	text = "Shared",
+				fn = function()
+					luadev.RunOnShared(gace.OpenedSessionContent)
+				end,
+				tt = "Hotkey in editor: F7"},
+		}
+
+		local x = 5
+		for _,v in pairs(btns) do
+			local btn = vgui.Create(v.fn and "DButton" or "DLabel", frame)
+			btn:SetPos(x, 2)
+			btn:SetSize(60, 20)
+			x = x + 62
+			btn:SetText(v.text)
+
+			if v.fn then
+				if luadev == nil then
+					btn:SetEnabled(false)
+					btn:SetToolTip("LuaDev needed to run code!")
+				else
+					btn.DoClick = v.fn
+				end
+			end
 		end
 	end
 
