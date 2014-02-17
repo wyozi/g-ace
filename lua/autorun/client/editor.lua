@@ -218,6 +218,14 @@ concommand.Add("g-ace", function()
 
 				menu:Open()
 			end
+
+			local oldthink = node.Think
+			node.Think = function(self)
+				-- Used to retain expanded status if the node is recreated
+				self.treetable.expanded = self.m_bExpanded
+				oldthink(self)
+			end
+
 			node:Receiver("gacefile", function(self, filepanels, dropped)
 				if not dropped then return end
 
@@ -278,12 +286,20 @@ concommand.Add("g-ace", function()
 					local node = parnode:AddNode(foldnm)
 					AddFolderOptions(node)
 
+					local oldnodetable = par.fol[foldnm]
+					if oldnodetable then -- Old node table entry was expanded
+						node:SetExpanded(oldnodetable.expanded or false)
+					elseif par == gace.FileNodeTree then -- We're top level
+						node:SetExpanded(true)
+					end
+
 					local mytbl = {fol={}, fil={}, node=node}
+					node.treetable = mytbl
 					par.fol[foldnm] = mytbl
+
 					AddTreeNode(fold, mytbl)
 
 					-- We're top level
-					if par == gace.FileNodeTree then node:SetExpanded(true) end
 				end
 			end
 			if node.fil then
