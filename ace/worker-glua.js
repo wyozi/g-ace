@@ -2436,8 +2436,14 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
 
   function lex() {
     skipWhiteSpace();
-    while (45 === input.charCodeAt(index) &&
-           45 === input.charCodeAt(index + 1)) {
+    while (
+        // Normal Lua comment (two dashes)
+        (45 === input.charCodeAt(index) &&
+           45 === input.charCodeAt(index + 1)) ||
+        // C++ style comment (two fwd slashes)
+        (47 === input.charCodeAt(index) &&
+           47 === input.charCodeAt(index + 1))
+        ) {
       scanComment();
       skipWhiteSpace();
     }
@@ -2494,7 +2500,7 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
         return scanPunctuator('[');
       case 42: case 47: case 94: case 37: case 44: case 123: case 125:
       case 93: case 40: case 41: case 59: case 35: case 45: case 43:
-      case 49: // exclamation mark
+      case 49: /* exclamation mark */
         return scanPunctuator(input.charAt(index));
     }
 
@@ -2703,7 +2709,7 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
 
   function scanComment() {
     tokenStart = index;
-    index += 2; // --
+    index += 2; // -- or //
 
     var character = input.charAt(index)
       , content = ''

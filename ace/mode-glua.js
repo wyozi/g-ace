@@ -28,14 +28,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-define('ace/mode/glua', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/mode/text', 'ace/tokenizer', 'ace/mode/glua_highlight_rules', 'ace/mode/folding/lua', 'ace/range', 'ace/worker/worker_client'], function(require, exports, module) {
+define('ace/mode/glua', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/mode/text', 'ace/tokenizer', 'ace/mode/glua_highlight_rules', 'ace/mode/folding/glua', 'ace/range', 'ace/worker/worker_client'], function(require, exports, module) {
 
 
 var oop = require("../lib/oop");
 var TextMode = require("./text").Mode;
 var Tokenizer = require("../tokenizer").Tokenizer;
 var LuaHighlightRules = require("./glua_highlight_rules").LuaHighlightRules;
-var LuaFoldMode = require("./folding/lua").FoldMode;
+var LuaFoldMode = require("./folding/glua").FoldMode;
 var Range = require("../range").Range;
 var WorkerClient = require("../worker/worker_client").WorkerClient;
 
@@ -154,7 +154,7 @@ oop.inherits(Mode, TextMode);
         return worker;
     };
 
-    this.$id = "ace/mode/lua";
+    this.$id = "ace/mode/glua";
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
@@ -170,7 +170,7 @@ var LuaHighlightRules = function() {
 
     var keywords = (
         "break|continue|do|else|elseif|end|for|function|if|in|local|repeat|"+
-         "return|then|until|while|or|and|not|&&|\\|\\|"
+         "return|then|until|while|or|and|not|"
     );
 
     var builtinConstants = ("true|false|nil|_G|_VERSION");
@@ -195,7 +195,7 @@ var LuaHighlightRules = function() {
         "gethook|setmetatable|setlocal|traceback|setfenv|getinfo|"+
         "setupvalue|getlocal|getregistry|getfenv|setn|insert|getn|"+
         "foreachi|maxn|foreach|concat|sort|remove|resume|yield|"+
-        "status|wrap|create|running|"+
+        "status|wrap|create|running|math.abs|"+
         "__add|__sub|__mod|__unm|__concat|__lt|__index|__call|__gc|__metatable|"+
          "__mul|__div|__pow|__len|__eq|__le|__newindex|__tostring|__mode|__tonumber"
     );
@@ -226,7 +226,8 @@ var LuaHighlightRules = function() {
     var floatNumber = "(?:" + pointFloat + ")";
 
     this.$rules = {
-        "start" : [{
+        "start" : [
+     	{
             stateName: "bracketedComment",
             onMatch : function(value, currentState, stack){
                 stack.unshift(this.next, value.length - 2, currentState);
@@ -255,7 +256,7 @@ var LuaHighlightRules = function() {
 
         {
             token : "comment",
-            regex : "\\-\\-.*$"
+            regex : "\\-\\-.*$|\\/\\/.*$" // Latter is C++ style comment which glua supports
         },
         {
             stateName: "bracketedString",
@@ -298,7 +299,7 @@ var LuaHighlightRules = function() {
             regex : integer + "\\b"
         }, {
             token : keywordMapper,
-            regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+            regex : "\\|\\||&&|[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
         }, {
             token : "keyword.operator",
             regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
@@ -322,7 +323,7 @@ oop.inherits(LuaHighlightRules, TextHighlightRules);
 exports.LuaHighlightRules = LuaHighlightRules;
 });
 
-define('ace/mode/folding/lua', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/mode/folding/fold_mode', 'ace/range', 'ace/token_iterator'], function(require, exports, module) {
+define('ace/mode/folding/glua', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/mode/folding/fold_mode', 'ace/range', 'ace/token_iterator'], function(require, exports, module) {
 
 
 var oop = require("../../lib/oop");
