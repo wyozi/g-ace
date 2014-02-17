@@ -210,7 +210,7 @@ var LuaHighlightRules = function() {
         "keyword": keywords,
         "support.function": functions,
         "invalid.deprecated": deprecatedIn5152,
-        "constant.library": stdLibaries,
+        "support.function": stdLibaries,
         "constant.language": builtinConstants,
         "invalid.illegal": futureReserved,
         "variable.language": "this"
