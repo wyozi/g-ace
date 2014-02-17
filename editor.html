@@ -56,6 +56,16 @@
         },
         readOnly: true // false if this command should not apply in readOnly mode
     });
+
+    var newfilecount = 0;
+    editor.commands.addCommand({
+        name: 'New file',
+        bindKey: {win: 'Ctrl-N',  mac: 'Command-N'},
+        exec: function(editor) {
+            gace.NewSession("newfile" + ++newfilecount + ".txt");
+        },
+        readOnly: true // false if this command should not apply in readOnly mode
+    });
     editor.commands.addCommand({
         name: 'Add next instance of word to selection',
         bindKey: {win: 'Ctrl-Alt-D',  mac: 'Command-Alt-D'},
