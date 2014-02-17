@@ -195,7 +195,7 @@ var LuaHighlightRules = function() {
         "gethook|setmetatable|setlocal|traceback|setfenv|getinfo|"+
         "setupvalue|getlocal|getregistry|getfenv|setn|insert|getn|"+
         "foreachi|maxn|foreach|concat|sort|remove|resume|yield|"+
-        "status|wrap|create|running|math.abs|"+
+        "status|wrap|create|running|"+
         "__add|__sub|__mod|__unm|__concat|__lt|__index|__call|__gc|__metatable|"+
          "__mul|__div|__pow|__len|__eq|__le|__newindex|__tostring|__mode|__tonumber"
     );
