@@ -63,7 +63,7 @@
             var selectedText = editor.getSession().getTextRange(editor.getSelectionRange());
             var range = editor.find({
                 needle: selectedText,
-                start: editor.getCursorPosition(),
+                start: editor.getSelectionRange(),
                 preventScroll: true
             });
             editor.getSession().getSelection().addRange(range);
