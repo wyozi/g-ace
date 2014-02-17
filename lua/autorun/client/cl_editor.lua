@@ -149,14 +149,53 @@ concommand.Add("g-ace", function()
 	gace.FileNodeTree = nil
 
 	local frame = vgui.Create("DFrame")
-	frame:SetSize(900, 500)
-	frame:Center()
 	frame:SetDeleteOnClose(false)
 	frame:SetSizable(true)
 	frame:SetTitle("")
 	frame.OnClose = function()
 		gace.SendRequest("colsetfile", {path=""})
 	end
+
+	local oldthink = frame.Think
+	function frame:Think()
+		if input.IsKeyDown(KEY_ESCAPE) then
+			self:SetVisible(false)
+
+			if gui.IsGameUIVisible () then
+				gui.HideGameUI ()
+			else
+				gui.ActivateGameUI ()
+			end
+		end
+		oldthink(self)
+	end
+
+	local c_x, c_y, c_w, c_h = cookie.GetNumber("gace-frame-x"),
+							   cookie.GetNumber("gace-frame-y"),
+							   cookie.GetNumber("gace-frame-w"),
+							   cookie.GetNumber("gace-frame-h")
+	
+	if c_w == 0 then c_w = 900 end
+	if c_h == 0 then c_h = 600 end
+
+	frame:SetSize(c_w, c_h)
+	if c_x == 0 and c_y == 0 then
+		frame:Center()
+	else
+		frame:SetPos(c_x, c_y)
+	end
+
+	timer.Create("gace-frame-cookies", 1, 0, function()
+		if not IsValid(frame) then return end
+
+		local x, y = frame:GetPos()
+		local w, h = frame:GetSize()
+
+		cookie.Set("gace-frame-x", x)
+		cookie.Set("gace-frame-y", y)
+		cookie.Set("gace-frame-w", w)
+		cookie.Set("gace-frame-h", h)
+	end)
 
 	gace.Frame = frame
 
@@ -476,4 +515,8 @@ end)
 
 concommand.Add("g-ace-refresh", function()
 	if IsValid(gace.Frame) then gace.Frame:Remove() end
+	cookie.Set("gace-frame-x", "0")
+	cookie.Set("gace-frame-y", "0")
+	cookie.Set("gace-frame-w", "900")
+	cookie.Set("gace-frame-h", "600")
 end)
