@@ -20,7 +20,11 @@
 </head>
 <body>
 
-<div id="editor"></div>
+<div id="editor">
+    asdfsadfasfdasf
+    asdfasdfsafdsafds
+    asdfasfasddfasfsda
+</div>
     
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
@@ -28,6 +32,8 @@
 <script>
     // Load autocomplete extension
     ace.require("ace/ext/language_tools");
+
+    var Search = ace.require("ace/search").Search;
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/tomorrow_night");
@@ -54,6 +60,21 @@
         },
         readOnly: true // false if this command should not apply in readOnly mode
     });
+    editor.commands.addCommand({
+        name: 'Add next instance of word to selection',
+        bindKey: {win: 'Ctrl-Alt-D',  mac: 'Command-Alt-D'},
+        exec: function(editor) {
+            var selectedText = editor.getSession().getTextRange(editor.getSelectionRange());
+            var range = editor.find({
+                needle: selectedText,
+                start: editor.getCursorPosition(),
+                preventScroll: true
+            });
+            editor.getSession().getSelection().addRange(range);
+        },
+        readOnly: true // false if this command should not apply in readOnly mode
+    });
+
     editor.commands.addCommand({
         name: 'Run on Self',
         bindKey: {win: 'F5',  mac: 'F5'},
