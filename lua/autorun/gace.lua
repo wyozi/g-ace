@@ -10,7 +10,7 @@ function gace.GenReqId(id)
 end
 
 function gace.Debug(...)
-	MsgN("GACE DEBUG: ", ...)
+	--MsgN("GACE DEBUG: ", ...)
 end
 
 if SERVER then util.AddNetworkString("gace_fileacc") end

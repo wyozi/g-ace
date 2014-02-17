@@ -26,6 +26,7 @@ function gace.CloseSession(id)
 	]])
 	if gace.OpenedSessionId == id then
 		gace.OpenedSessionId = nil
+		gace.SendRequest("colsetfile", {path=""})
 	end
 end
 
@@ -135,7 +136,12 @@ local gacedevurl = CreateConVar("g-ace-devurl", "", FCVAR_ARCHIVE)
 
 concommand.Add("g-ace", function()
 
-	if IsValid(gace.Frame) then gace.Frame:Show() return end
+	if IsValid(gace.Frame) then
+		if gace.Frame:IsVisible() then return end
+		gace.Frame:Show()
+		gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
+		return
+	end
 
 	-- Clear some session variables that might've gotten cached
 
@@ -148,6 +154,9 @@ concommand.Add("g-ace", function()
 	frame:SetDeleteOnClose(false)
 	frame:SetSizable(true)
 	frame:SetTitle("")
+	frame.OnClose = function()
+		gace.SendRequest("colsetfile", {path=""})
+	end
 
 	gace.Frame = frame
 
@@ -320,6 +329,26 @@ concommand.Add("g-ace", function()
 							surface.SetDrawColor(127, 255, 127, 140)
 							surface.DrawRect(0, 0, w, h)
 						end
+
+						-- Collaborators in this file
+						local collabs = {}
+						for k,v in pairs(gace.CollabPositions) do
+							if v == self.Path then
+								table.insert(collabs, k)
+							end
+						end
+
+						for idx,c in pairs(collabs) do
+							if not IsValid(c.CollabAvatar) then
+								c.CollabAvatar = vgui.Create("AvatarImage")
+								c.CollabAvatar:SetPlayer(c, 16)
+								c.CollabAvatar:SetToolTip(c:Nick())
+							end
+							c.CollabAvatar:SetParent(self)
+							c.CollabAvatar:SetPos(w-idx*16, 0)
+							c.CollabAvatar:SetSize(16, 16)
+							--draw.SimpleText(c:Nick():sub(1,1), "DermaDefaultBold", w-idx*10, 2, Color(0, 0, 0))
+						end
 					end
 					par.fil[fil] = filnode
 					AddFileOptions(filnode)
@@ -347,6 +376,7 @@ concommand.Add("g-ace", function()
 	html:AddFunction("gace", "SetOpenedSession", function(id)
 		gace.OpenedSessionId = id
 		gace.CreateTab(id)
+		gace.SendRequest("colsetfile", {path=id})
 	end)
 	html:AddFunction("gace", "ReportLatestContent", function(content)
 		gace.OpenedSessionContent = content

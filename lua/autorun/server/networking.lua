@@ -21,4 +21,8 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 	end
 
 	-- Collab edit
+	if op == "colsetfile" then
+		local targs = gace.FindCollabTargets(payload.path, ply)
+		gace.Send(targs, "", "colsetfile", {ply=ply, path=payload.path})
+	end
 end

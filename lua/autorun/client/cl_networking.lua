@@ -8,4 +8,7 @@ function gace.SendRequest(op, payload, cb)
 end
 
 function gace.HandleNetworking(reqid, op, payload)
+	if op == "colsetfile" then
+		gace.SetCollabFile(payload)
+	end
 end
