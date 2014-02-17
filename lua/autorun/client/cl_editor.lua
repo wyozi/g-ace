@@ -481,39 +481,42 @@ concommand.Add("g-ace", function()
 
 	do
 		local btns = {
-			{ text = "Run on" },
+			{ text = "Run on", width = 40 },
 			{	text = "Self",
 				fn = function()
 					luadev.RunOnSelf(gace.OpenedSessionContent)
 				end,
+				enabled = function() return luadev ~= nil end,
 				tt = "Hotkey in editor: F5"},
 			{	text = "Server",
 				fn = function()
 					luadev.RunOnServer(gace.OpenedSessionContent)
 				end,
+				enabled = function() return luadev ~= nil end,
 				tt = "Hotkey in editor: F6"},
 			{	text = "Shared",
 				fn = function()
 					luadev.RunOnShared(gace.OpenedSessionContent)
 				end,
+				enabled = function() return luadev ~= nil end,
 				tt = "Hotkey in editor: F7"},
+			{ text = "", width = 10},
 		}
 
-		local x = 5
+		local x = 10
 		for _,v in pairs(btns) do
 			local btn = vgui.Create(v.fn and "DButton" or "DLabel", frame)
 			btn:SetPos(x, 2)
-			btn:SetSize(60, 20)
-			x = x + 62
+			btn:SetSize(v.width or 60, 20)
+			x = x + (v.width or 62)
 			btn:SetText(v.text)
 
-			if v.fn then
-				if luadev == nil then
-					btn:SetEnabled(false)
-					btn:SetToolTip("LuaDev needed to run code!")
-				else
-					btn.DoClick = v.fn
-				end
+			if v.tt then btn:SetToolTip(v.tt) end
+
+			if v.enabled and not v.enabled() then
+				btn:SetEnabled(false)
+			elseif v.fn then
+				btn.DoClick = v.fn
 			end
 		end
 	end
