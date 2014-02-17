@@ -2500,7 +2500,7 @@ define('ace/mode/glua/gluaparse', ['require', 'exports', 'module' ], function(re
         return scanPunctuator('[');
       case 42: case 47: case 94: case 37: case 44: case 123: case 125:
       case 93: case 40: case 41: case 59: case 35: case 45: case 43:
-      case 49: /* exclamation mark */
+      case 33: /* exclamation mark */
         return scanPunctuator(input.charAt(index));
     }
 
