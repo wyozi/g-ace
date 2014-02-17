@@ -133,6 +133,7 @@ function gace.CreateTab(id)
 end
 
 local gacedevurl = CreateConVar("g-ace-devurl", "", FCVAR_ARCHIVE)
+local gaceclosewithesc = CreateConVar("g-ace-closewithesc", "1", FCVAR_ARCHIVE)
 
 concommand.Add("g-ace", function()
 
@@ -158,7 +159,7 @@ concommand.Add("g-ace", function()
 
 	local oldthink = frame.Think
 	function frame:Think()
-		if input.IsKeyDown(KEY_ESCAPE) then
+		if input.IsKeyDown(KEY_ESCAPE) and gaceclosewithesc:GetBool() then
 			self:SetVisible(false)
 
 			if gui.IsGameUIVisible () then
@@ -372,7 +373,7 @@ concommand.Add("g-ace", function()
 						-- Collaborators in this file
 						local collabs = {}
 						for k,v in pairs(gace.CollabPositions) do
-							if v == self.Path then
+							if IsValid(k) and v == self.Path then
 								table.insert(collabs, k)
 							end
 						end
@@ -382,7 +383,14 @@ concommand.Add("g-ace", function()
 								c.CollabAvatar = vgui.Create("AvatarImage")
 								c.CollabAvatar:SetPlayer(c, 16)
 								c.CollabAvatar:SetToolTip(c:Nick())
+								c.CollabAvatar.Think = function(self)
+									if not IsValid(c) or self:GetParent().Path ~= gace.CollabPositions[c] then
+										self:SetParent(nil)
+										self:SetVisible(false)
+									end
+								end
 							end
+							c.CollabAvatar:SetVisible(true)
 							c.CollabAvatar:SetParent(self)
 							c.CollabAvatar:SetPos(w-idx*16, 0)
 							c.CollabAvatar:SetSize(16, 16)
