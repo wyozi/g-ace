@@ -156,6 +156,10 @@ concommand.Add("g-ace", function()
 	frame.OnClose = function()
 		gace.SendRequest("colsetfile", {path=""})
 	end
+	frame.Paint = function(self, w, h)
+		surface.SetDrawColor(22, 31, 50)
+		surface.DrawRect(0, 0, w, h)
+	end
 
 	local oldthink = frame.Think
 	function frame:Think()
