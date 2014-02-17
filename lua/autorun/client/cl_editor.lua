@@ -449,6 +449,20 @@ concommand.Add("g-ace", function()
 		luadev[ldf](content)
 	end)
 
+	local oldpaint = html.Paint
+	html.Paint = function(self, w, h)
+		if self:IsLoading() then
+			surface.SetDrawColor(0, 0, 0)
+			surface.DrawRect(0, 0, w, h)
+			draw.SimpleText("Loading", "Trebuchet24", 10, 10)
+
+			filetree:SetEnabled(false)
+		else
+			filetree:SetEnabled(true)
+			html.Paint = oldpaint
+		end
+	end
+
 	gace.Editor = html
 
 	-- Input panel that can ask for input
