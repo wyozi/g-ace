@@ -41,15 +41,37 @@
 
     editor.on("change", function(e) {
         gace.SetEditedNotSaved(true);
+        gace.ReportLatestContent(editor.getSession().getValue());
     });
 
     editor.commands.addCommand({
         name: 'Save',
         bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
         exec: function(editor) {
-            gace.SaveSession(editor.getSession().getValue())
+            gace.SaveSession(editor.getSession().getValue());
         },
         readOnly: true // false if this command should not apply in readOnly mode
+    });
+    editor.commands.addCommand({
+        name: 'Run on Self',
+        bindKey: {win: 'F5',  mac: 'F5'},
+        exec: function(editor) {
+            gace.CallLDFunc("RunOnSelf", editor.getSession().getValue());
+        },
+    }); 
+    editor.commands.addCommand({
+        name: 'Run on Server',
+        bindKey: {win: 'F6',  mac: 'F6'},
+        exec: function(editor) {
+            gace.CallLDFunc("RunOnServer", editor.getSession().getValue());
+        },
+    }); 
+    editor.commands.addCommand({
+        name: 'Run on Shared',
+        bindKey: {win: 'F7',  mac: 'F7'},
+        exec: function(editor) {
+            gace.CallLDFunc("RunOnShared", editor.getSession().getValue());
+        },
     }); 
 
     var gaceSessions = (function() {
