@@ -249,6 +249,9 @@ concommand.Add("g-ace", function()
 		if path == "" then
 			root = {node=filetree, fol={}, fil={}}
 			gace.FileNodeTree = root
+
+			local rootnode = filetree:Root()
+			if rootnode.ChildNodes then rootnode.ChildNodes:Remove() rootnode.ChildNodes=nil end
 			replace_everything = true
 		else
 			local pathcomps = path:Split("/")
@@ -451,6 +454,9 @@ concommand.Add("g-ace", function()
 	end)
 	html:AddFunction("gace", "CallLDFunc", function(ldf, content)
 		luadev[ldf](content)
+	end)
+	html:AddFunction("gace", "NewSession", function(name)
+		gace.OpenSession(name, "")
 	end)
 
 	local oldpaint = html.Paint
