@@ -138,6 +138,7 @@ concommand.Add("g-ace", function()
 	frame:SetSize(900, 500)
 	frame:Center()
 	frame:SetDeleteOnClose(false)
+	frame:SetSizable(true)
 
 	gace.Frame = frame
 
