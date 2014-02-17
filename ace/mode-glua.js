@@ -196,11 +196,61 @@ var LuaHighlightRules = function() {
         "setupvalue|getlocal|getregistry|getfenv|setn|insert|getn|"+
         "foreachi|maxn|foreach|concat|sort|remove|resume|yield|"+
         "status|wrap|create|running|"+
+
         "__add|__sub|__mod|__unm|__concat|__lt|__index|__call|__gc|__metatable|"+
-         "__mul|__div|__pow|__len|__eq|__le|__newindex|__tostring|__mode|__tonumber"
+        "__mul|__div|__pow|__len|__eq|__le|__newindex|__tostring|__mode|__tonumber|"+
+
+        // Gmod functions
+        "rawget|RestoreCursorPosition|TimedCos|istable|SetGlobalVector|setfenv|"+
+        "DeriveGamemode|ColorToHSV|assert|AddonMaterial|GetConVarNumber|next|"+
+        "LocalToWorld|MsgAll|JS_Language|print|STNDRD|GetGlobalFloat|"+
+        "rawset|IncludeCS|EyeVector|MsgN|RunConsoleCommand|LerpVector|"+
+        "ChangeTooltip|RealTime|pcall|CreateConVar|module|DynamicLight|"+
+        "GetGlobalEntity|GetGlobalBool|WorldToLocal|InjectCommandAutocomplete|gcinfo|GetConVar|"+
+        "ScrH|Vector|error|getmetatable|GetGlobalAngle|ScrW|"+
+        "GetRenderTarget|CreateClientConVar|AccessorFunc|tobool|OrderVectors|Model|"+
+        "SoundDuration|FindMetaTable|Format|EyePos|NumModelSkins|ClientsideRagdoll|"+
+        "isangle|tonumber|Lerp|WorkshopFileBase|RandomPairs|CreateSound|"+
+        "AddConsoleCommand|TypeID|Angle|unpack|rawequal|GetHostName|"+
+        "EndTooltip|UTIL_IsUselessModel|CreateMaterial|JS_Utility|ProtectedCall|SetClipboardText|"+
+        "getfenv|FrameTime|LerpAngle|IsFriendEntityName|GetRenderTargetEx|collectgarbage|"+
+        "ClientsideModel|SScale|AccessorFuncNW|Localize|ValidPanel|ScreenScale|"+
+        "SortedPairsByMemberValue|SysTime|SortedPairsByValue|PositionSpawnIcon|RealFrameTime|FindTooltip|"+
+        "RemoveTooltip|VisualizeLayout|BroadcastLua|InjectConsoleCommand|SQLStr|Add_NPC_Class|"+
+        "Either|IsMounted|IsEnemyEntityName|TimedSin|RememberCursorPosition|SafeRemoveEntityDelayed|"+
+        "IsValid|Sound|AngleRand|VectorRand|SortedPairs|NamedColor|"+
+        "ParticleEmitter|Mesh|RenderAngles|EyeAngles|SavePresets|LoadPresets|"+
+        "EmitSound|EmitSentence|BuildNetworkedVarsTable|GetGlobalString|GetGlobalVector|GetGlobalInt|"+
+        "GetGlobalVar|SetGlobalEntity|SetGlobalAngle|SetGlobalFloat|SetGlobalInt|SetGlobalString|"+
+        "SetGlobalVar|SetGlobalBool|newproxy|GetViewEntity|SetPhysConstraintSystem|VGUIFrameTime|"+
+        "DOFModeHack|IsEntity|AddCSLuaFile|LocalPlayer|HTTP|ParticleEffectAttach|"+
+        "ParticleEffect|CompileFile|CurTime|UnPredictedCurTime|ispanel|isfunction|"+
+        "isbool|isvector|isnumber|CompileString|RunStringEx|RunString|"+
+        "ConVarExists|GetConVarString|include|ErrorNoHalt|DebugInfo|DisableClipping|"+
+        "SendUserMessage|PrintTable|OnModelLoaded|FrameNumber|Player|IsFirstTimePredicted|"+
+        "Msg|DamageInfo|select|Material|Entity|xpcall|"+
+        "ColorAlpha|pairs|GetHUDPanel|ipairs|Matrix|ClientsideScene|"+
+        "SafeRemoveEntity|HSVToColor|isentity|setmetatable|require|Error|"+
+        "tostring|PrecacheParticleSystem|Color|EffectData|isstring|IsTableOfEntitiesValid|"+
+        "MsgC|type|"
     );
 
-    var stdLibaries = ("string|package|os|io|math|debug|table|coroutine");
+    var stdLibaries = (
+        "string|package|os|io|math|debug|table|coroutine|"+
+
+        // GMod libraries
+        "achievements|ai_schedule|ai_task|ai|baseclass|bit|cam|"+
+        "chat|cleanup|concommand|constraint|construct|controlpanel|"+
+        "cookie|coroutine|cvars|debug|debugoverlay|derma|dragndrop|"+
+        "draw|drive|duplicator|effects|engine|ents|file|frame_blend|"+
+        "game|gameevent|gamemode|gmod|gmsave|gui|GWEN|halo|"+
+        "hammer|hook|http|input|jit|killicon|language|list|markup|"+
+        "math|matproxy|menu|menubar|mesh|motionsensor|navmesh|net|"+
+        "notification|numpad|os|package|physenv|player_manager|player|"+
+        "presets|properties|render|resource|saverestore|scripted_ents|"+
+        "search|sound|spawnmenu|sql|steamworks|string|surface|system|"+
+        "table|team|timer|umsg|undo|usermessage|util|vgui|video|weapons|widgets"
+    );
 
     var futureReserved = "";
 
@@ -210,7 +260,7 @@ var LuaHighlightRules = function() {
         "keyword": keywords,
         "support.function": functions,
         "invalid.deprecated": deprecatedIn5152,
-        "support.function": stdLibaries,
+        "support.class": stdLibaries,
         "constant.language": builtinConstants,
         "invalid.illegal": futureReserved,
         "variable.language": "this"
