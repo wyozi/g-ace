@@ -51,7 +51,15 @@ local VGUI_EDITOR_TAB = {
 			self:CloseTab()
 		end
 	end,
-	CloseTab = function(self)
+	CloseTab = function(self, force)
+		if not force and self.EditedNotSaved then
+			local menu = DermaMenu()
+			menu:AddOption("Unsaved changes. Are you sure you want to close the tab?", function()
+				self:CloseTab(true)
+			end):SetIcon("icon16/stop.png")
+			menu:Open()
+			return
+		end
 		gace.CloseSession(self.SessionId)
 		self:Remove()
 		table.RemoveByValue(gace.Tabs.Panels, self) -- uhh
