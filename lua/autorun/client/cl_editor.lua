@@ -19,6 +19,13 @@ function gace.OpenSession(id, content, data)
 		[[", {contentb: "]] .. content ..
 		[[", defens: ]] .. tostring(defens) .. [[});]])
 end
+function gace.OpenPath(id, callback)
+	-- TODO check if path is opened as a tab and go to file instantly if it is
+	gace.Fetch(id, function(_, _, payload)
+		gace.OpenSession(id, payload.content)
+		if callback then callback() end
+	end)
+end
 function gace.ReOpenSession(id)
 	gace.RunEditorJS([[
 		gaceSessions.reopen("]] .. id .. [[");
@@ -204,6 +211,11 @@ function gace.CreateHTMLPanel()
 	end)
 	html:AddFunction("gace", "NewSession", function(name)
 		gace.OpenSession(name, "")
+	end)
+	html:AddFunction("gace", "GotoPath", function(path, row)
+		gace.OpenPath(path, function()
+			gace.RunEditorJS("editor.moveCursorTo(" .. row .. ", 0);")
+		end)
 	end)
 
 	local function RGBStringToColor(str)

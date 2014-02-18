@@ -94,9 +94,7 @@ end
 function ft.AddFileNodeOptions(node, filetree)
 	node.DoClick = function()
 		local id = ft.NodeToPath(node)
-		gace.Fetch(id, function(_, _, payload)
-			gace.OpenSession(id, payload.content)
-		end)
+		gace.OpenPath(id)
 	end
 	node.DoRightClick = function()
 		local menu = DermaMenu()
