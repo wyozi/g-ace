@@ -24,6 +24,11 @@ local path_meta = {
 		end
 		return self.Parts[idx]
 	end,
+
+	IsRoot = function(self)
+		return #self.Parts == 0
+	end,
+
 	GetVFolder = function(self)
 		return self:GetPart(1)
 	end,
@@ -37,6 +42,11 @@ local path_meta = {
 		end
 		-- Assume a string
 		return self:Add(gace.NewPath(f))
+	end,
+
+	-- Adds together and converts into a string
+	Concat = function(self, f)
+		return self:Add(f):ToString()
 	end,
 
 	-- Strips first part
@@ -56,6 +66,7 @@ local path_meta = {
 path_meta.__index = path_meta
 path_meta.__tostring = path_meta.ToString
 path_meta.__add = path_meta.Add
+path_meta.__concat = path_meta.Concat
 
 function gace.NewPath(s)
 	local tbl = {Parts={}}
@@ -82,6 +93,7 @@ end)
 
 gat("Paths: Operator overloading", function()
 	assert((gace.Path("foo") + gace.Path("bar")):ToString() == "foo/bar", "invalid result from Add")
+	assert((gace.Path("foo") .. gace.Path("bar")) == "foo/bar", "invalid result from Concat")
 end)
 
 gat("Paths: Invalid paths", function()

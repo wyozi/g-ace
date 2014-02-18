@@ -13,6 +13,39 @@ function gace.Debug(...)
 	--MsgN("GACE DEBUG: ", ...)
 end
 
+-- Small utility functions
+
+function gace.Map(tbl, fn)
+	local t = {}
+	for k,v in pairs(tbl) do
+		t[k] = fn(v, k)
+	end
+	return t
+end
+
+function gace.ShallowEquals(f, s)
+	-- Two fors because one of them might have less/different indices than the other
+	for k,v in pairs(f) do
+		if f[k] ~= s[k] then return false end
+	end
+	for k,v in pairs(s) do
+		if f[k] ~= s[k] then return false end
+	end
+	return true
+end
+
+local gat = gace.AddTest
+gat("Utils", function()
+	assert(gace.ShallowEquals({1,2,3}, {1,2,3}))
+	assert(not gace.ShallowEquals({1,2,3}, {1,2,3,4}))
+	assert(not gace.ShallowEquals({a=1}, {a=2}))
+	assert(gace.ShallowEquals({a=1}, {a=1}))
+
+	assert(gace.ShallowEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}), "Map giving wrong result")
+end)
+
+-- Testing
+
 gace.Tests = gace.Tests or {}
 function gace.AddTest(nm, fn)
 	gace.Tests[nm] = fn

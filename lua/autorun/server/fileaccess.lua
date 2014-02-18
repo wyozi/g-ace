@@ -11,25 +11,42 @@ function gace.SetupRawVFolder(id, filebrowser_func, save_func, delete_func, acce
 end
 
 function gace.SetupVFolder(id, root, path, access)
-	gace.SetupRawVFolder(id, function(curpath)
-		curpath = root .. curpath
-		local is_dir = curpath == "" or file.IsDir(curpath, path)
-		if is_dir then
-			local files, folders = file.Find(curpath .. "*", path)
-			gace.Debug("Crawling ", curpath .. "*", " results to ", #files, " files and ", #folders, " folders")
-			return "folder", files, folders
+
+	local vfolderpath = gace.Path(id)
+
+	-- Returns a function that maps source files (e.g. foo.txt) to full paths (e.g. VFolder/root/foo.txt)
+	local function PathAdder(tpath)
+		return function(src)
+			return vfolderpath + tpath + src
 		end
-		return "file", file.Read(curpath, path), file.Size(curpath, path), file.Time(curpath, path)
+	end
+
+	gace.SetupRawVFolder(id, function(curpath)
+		curpath = curpath:WithoutVFolder()
+		curpath = root:Add(curpath)
+
+		local is_dir = curpath:IsRoot() or file.IsDir(curpath:ToString(), path)
+		if is_dir then
+			local files, folders = file.Find(curpath:ToString() .. "/*", path)
+			gace.Debug("Crawling ", curpath:ToString() .. "/*", " results to ", #files, " files and ", #folders, " folders")
+			
+			return "folder", gace.Map(files, PathAdder(curpath)), gace.Map(folders, PathAdder(curpath))
+		end
+		return "file", file.Read(curpath:ToString(), path), file.Size(curpath:ToString(), path), file.Time(curpath:ToString(), path)
 	end, function(curpath, content)
+		curpath = curpath:WithoutVFolder()
+
 		if path ~= "DATA" then
 			return false, "Unable to save outside data folder"
 		end
-		if not curpath:EndsWith(".txt") then
+		if not curpath:GetFile():EndsWith(".txt") then
 			return false, "Path must end in .txt"
 		end
 		file.Write(root .. curpath, content)
 		return true
 	end, function(curpath, content)
+		curpath = curpath:WithoutVFolder()
+
 		if path ~= "DATA" then
 			return false, "Unable to save outside data folder"
 		end
@@ -39,7 +56,7 @@ function gace.SetupVFolder(id, root, path, access)
 end
 
 --gace.SetupVFolder("Data", "", "DATA", "superadmin")
-gace.SetupVFolder("EpicJB", "epicjb/", "DATA", "superadmin")
+gace.SetupVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
 function gace.TestAccess(access, ply, ...)
 	if access == "admin" then return ply:IsAdmin() end
@@ -57,15 +74,15 @@ end
 
 function gace.ParsePath(path)
 	if not path then return false, "Provided path is nil" end
-	if path == "" then
-		return gace.ROOT, "", ""
-	end
-	local separators = path:Split("/")
 
-	local vfolder = gace.VirtualFolders[separators[1]]
+	local pathobj = gace.Path(path)
+
+	if pathobj:IsRoot() then return pathobj end
+
+	local vfolder = gace.VirtualFolders[pathobj:GetVFolder()]
 	if not vfolder then return false, "Inexistent virtual folder" end
 
-	return vfolder, table.concat(separators, "/", 2), separators[1]
+	return pathobj, vfolder
 end
 
 function gace.TableKeysToList(tbl)
@@ -75,78 +92,73 @@ function gace.TableKeysToList(tbl)
 end
 
 function gace.MakeRecursiveListResponse(ply, path)
-	local vpath, filepath = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
 	local tree = {fol={}, fil={}}
 
 	local function AddRec(v, ipath, parent)
 		local type, files, folders = v.ffunc(ipath)
 		if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
+		if type ~= "folder" then return end
 
 		for _,fol in pairs(folders) do
 			local t = {}
 			parent.fol = parent.fol or {}
-			parent.fol[fol] = t
+			parent.fol[fol:GetFile()] = t
 
-			local newpath = ""
-			if ipath ~= "" then newpath = ipath .. "/" end
-			newpath = newpath .. fol .. "/"
-
-			AddRec(v, newpath, t)
+			AddRec(v, ipath + fol:GetFile(), t)
 		end
 		for _,fil in pairs(files) do
 			parent.fil = parent.fil or {}
-			table.insert(parent.fil, fil)
+			table.insert(parent.fil, fil:GetFile())
 		end
 	end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		for k,v in pairs(gace.VirtualFolders) do
 			tree.fol[k] = {}
-			AddRec(v, "", tree.fol[k])
+			AddRec(v, pathobj + k, tree.fol[k])
 		end
 	else
-		local nfilepath = filepath
-		if nfilepath ~= "" then nfilepath = nfilepath .. "/" end
-		AddRec(vpath,  nfilepath, tree)
+		AddRec(vfolder, pathobj, tree)
 	end
 
 	return {ret="Success", type="filetree", tree=tree}
 end
 
 function gace.MakeListResponse(ply, path)
-	local vpath, filepath = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		return {type="folder", files={}, folders=gace.TableKeysToList(gace.VirtualFolders)}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, "ls") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "ls") then
 		return {err="No access"}
 	end
 
-	local type, files, folders = vpath.ffunc(filepath)
+	local type, files, folders = vfolder.ffunc(pathobj)
 	if type == "folder" then
-		return {ret="Success", type="folder", files=files, folders=folders}
+		return {ret="Success", type="folder", files=gace.Map(files, function(x)return x:GetFile() end), folders=gace.Map(folders, function(x)return x:GetFile() end)}
 	end
 	return {err="Not a folder"}
 end
 
 function gace.MakeFetchResponse(ply, path)
-	local vpath, filepath = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		return {err="Not a file"}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, "fetch") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "fetch") then
 		return {err="No access"}
 	end
 
-	local type, content = vpath.ffunc(filepath)
+	local type, content = vfolder.ffunc(pathobj)
 	if type == "file" then
 		return {ret="Success", type="file", content=content}
 	end
@@ -154,54 +166,54 @@ function gace.MakeFetchResponse(ply, path)
 end
 
 function gace.MakeSaveResponse(ply, path, content)
-	local vpath, filepath = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		return {err="Not a file"}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, "save") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "save") then
 		return {err="No access"}
 	end
 
-	local ret, err = vpath.svfunc(filepath, content)
+	local ret, err = vfolder.svfunc(pathobj, content)
 	if not ret then return {err=err} end
 
 	return {ret="Success"}
 end
 
 function gace.MakeRmResponse(ply, path, content)
-	local vpath, filepath = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		return {err="Not a file"}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, "rm") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "rm") then
 		return {err="No access"}
 	end
 
-	local ret, err = vpath.delfunc(filepath)
+	local ret, err = vfolder.delfunc(pathobj)
 	if not ret then return {err=err} end
 
 	return {ret="Success"}
 end
 
 function gace.MakeFindResponse(ply, path, phrase)
-	local vpath, filepath, vfname = gace.ParsePath(path)
-	if not vpath then return {err=filepath} end
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
 
-	if vpath == gace.ROOT then
+	if pathobj:IsRoot() then
 		return {err="Is a folder"}
 	end
 
-	if not gace.TestAccess(vpath.access, ply, filepath, "find") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "find") then
 		return {err="No access"}
 	end
 
-	local type, files, folders = vpath.ffunc(filepath)
+	local type, files, folders = vfolder.ffunc(pathobj)
 	if type ~= "folder" then
 		return {err="Not a folder"}
 	end
@@ -209,9 +221,9 @@ function gace.MakeFindResponse(ply, path, phrase)
 	local matches = {}
 
 	for _,file in pairs(files) do
-		local fpath = filepath .. "/" .. file
-		if gace.TestAccess(vpath.access, ply, fpath, "find") then
-			local type, content = vpath.ffunc(fpath)
+		local fpath = pathobj + file:GetFile()
+		if gace.TestAccess(vfolder.access, ply, fpath, "find") then
+			local type, content = vfolder.ffunc(fpath)
 
 			local curindex = 1
 
@@ -229,7 +241,7 @@ function gace.MakeFindResponse(ply, path, phrase)
 				-- Extremely hacky and expensive, but assuming there aren't a million files it's sufficient
 
 				table.insert(matches, {
-					path = vfname .. fpath,
+					path = fpath:ToString(),
 					row = count
 				})
 
