@@ -56,7 +56,7 @@ Select a file from the filetree to start editing!
     });
 
     var gaceText = editor.getSession().getValue();
-    var emptySession = ace.createEditSession(gaceText, "ace/mode/text");
+    var emptySession = ace.createEditSession(gaceText, "ace/mode/rust");
 
     editor.setSession(emptySession);
     editor.setReadOnly(true);
