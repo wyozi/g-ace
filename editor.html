@@ -113,7 +113,7 @@
             reopen: function(id) {
                 if (this.exists(id)) {
                     editor.setSession(sessions[id]);
-                    gace.SetOpenedSession(id);
+                    gace.SetOpenedSession(id, editor.getSession().getValue());
                     editor.setReadOnly(false);
                     return true;
                 }
