@@ -152,7 +152,6 @@ end
 
 function gace.CreateHTMLPanel()
 	local html = vgui.Create("DHTML")
-	html:Dock(FILL)
 
 	local url = "http://wyozi.github.io/g-ace/editor.html"
 	if gacedevurl:GetString() ~= "" then
@@ -270,21 +269,25 @@ concommand.Add("g-ace", function()
 
 		gace.Tabs = tabs
 
-	local filetree = vgui.Create("DTree", frame)
-		filetree.Paint = function(self, w, h)
-			surface.SetDrawColor(gace.UIColors.frame_bg)
-			surface.DrawRect(0, 0, w, h)
-		end
-		filetree:Dock(LEFT)
-		filetree:SetWide(200)
+	local splitter = vgui.Create("GAceSplitter", frame)
+	splitter:Dock(FILL)
 
-		-- Requests the server to update the whole filetree
-		gace.filetree.RefreshPath(filetree, "")
+		local filetree = vgui.Create("DTree")
+			splitter:SetPanel(1, filetree)
+			filetree.Paint = function(self, w, h)
+				surface.SetDrawColor(gace.UIColors.frame_bg)
+				surface.DrawRect(0, 0, w, h)
+			end
+			--filetree:Dock(LEFT)
+			filetree:SetWide(200)
 
-	local html = gace.CreateHTMLPanel()
-		html:SetParent(frame)
+			-- Requests the server to update the whole filetree
+			gace.filetree.RefreshPath(filetree, "")
 
-		gace.Editor = html
+		local html = gace.CreateHTMLPanel()
+			splitter:SetPanel(2, html, 4)
+
+			gace.Editor = html
 
 	-- Input panel that can ask for input
 
