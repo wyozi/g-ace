@@ -246,6 +246,8 @@ function gace.MakeFindResponse(ply, path, phrase)
 				})
 
 				curindex = findindex+1
+				
+				return true
 			end
 
 			while search() do end
