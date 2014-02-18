@@ -113,15 +113,30 @@ function gace.CreateFrame()
 		surface.DrawRect(0, 0, w, h)
 	end
 
+	local was_esc_down = false
+
 	local oldthink = frame.Think
 	function frame:Think()
-		if input.IsKeyDown(KEY_ESCAPE) and gaceclosewithesc:GetBool() then
-			self:SetVisible(false)
+		local is_esc_down = input.IsKeyDown(KEY_ESCAPE)
+		local esc_pressed = is_esc_down ~= was_esc_down and is_esc_down
+		was_esc_down = is_esc_down
 
-			if gui.IsGameUIVisible () then
-				gui.HideGameUI ()
-			else
-				gui.ActivateGameUI ()
+		if esc_pressed then
+			local function CancelGUIOpen()
+				if gui.IsGameUIVisible () then
+					gui.HideGameUI ()
+				else
+					gui.ActivateGameUI ()
+				end
+			end
+
+			if gace.InputPanel:IsVisible() then
+				gace.InputPanel:Hide()
+				gace.Frame:InvalidateLayout()
+				CancelGUIOpen()
+			elseif gaceclosewithesc:GetBool() then
+				self:SetVisible(false)
+				CancelGUIOpen()
 			end
 		end
 		oldthink(self)
