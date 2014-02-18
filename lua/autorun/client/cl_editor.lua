@@ -27,6 +27,10 @@ function gace.CloseSession(id)
 	if gace.OpenedSessionId == id then
 		gace.OpenedSessionId = nil
 		gace.OpenedSessionContent = nil
+	end
+
+	local my_collab = gace.CollabPositions[LocalPlayer()]
+	if my_collab == id then
 		gace.SendRequest("colsetfile", {path=""})
 	end
 end
@@ -149,10 +153,17 @@ function gace.CreateHTMLPanel()
 		gace.OpenedSessionContent = content
 
 		gace.CreateTab(id)
-		gace.SendRequest("colsetfile", {path=id})
 	end)
 	html:AddFunction("gace", "ReportLatestContent", function(content)
 		gace.OpenedSessionContent = content
+
+		local my_collab = gace.CollabPositions[LocalPlayer()]
+		if my_collab ~= gace.OpenedSessionId then
+			-- This might get called multiple times if player types a lot before new collab file
+			-- is broadcasted, but sending packets isn't that expensive.
+			--  TODO this might get spammed if user is not allowed to receive their own collab packets
+			gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
+		end
 	end)
 	html:AddFunction("gace", "SaveSession", function(content)
 		gace.Save(gace.OpenedSessionId, content, function()
@@ -181,7 +192,7 @@ function gace.CreateHTMLPanel()
 	local oldpaint = html.Paint
 	html.Paint = function(self, w, h)
 		if self:IsLoading() then
-			surface.SetDrawColor(0, 0, 0)
+			surface.SetDrawColor(gace.UIColors.frame_bg)
 			surface.DrawRect(0, 0, w, h)
 			draw.SimpleText("Loading", "Trebuchet24", 10, 10)
 		else
