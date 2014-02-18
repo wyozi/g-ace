@@ -93,6 +93,62 @@ gace.AvailableThemes = {
 	"vibrant_ink", "xcode",
 }
 
+-- Components (DLabel or GAceButton) to be added to title bar
+-- If table has "fn", it is a button, otherwise a label.
+-- tt = tooltip
+gace.TitleBarComponents = {
+	{ text = "Run on", width = 40 },
+	{
+		text = "Self",
+		fn = function()
+			luadev.RunOnSelf(gace.OpenedSessionContent)
+		end,
+		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		tt = "Hotkey in editor: F5"
+	},
+	{
+		text = "Server",
+		fn = function()
+			luadev.RunOnServer(gace.OpenedSessionContent)
+		end,
+		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		tt = "Hotkey in editor: F6"
+	},
+	{
+		text = "Shared",
+		fn = function()
+			luadev.RunOnShared(gace.OpenedSessionContent)
+		end,
+		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		tt = "Hotkey in editor: F7"
+	},
+	{ text = "", width = 20 },
+	{ text = "Editor", width = 35 },
+	{
+		text = "Settings",
+		fn = function()
+			gace.RunEditorJS("editor.showSettingsMenu();")
+		end
+	},
+	{
+		text = "Shortcuts",
+		fn = function()
+			gace.RunEditorJS("editor.showKeyboardShortcuts();")
+		end,
+		width = 75
+	},
+	{
+		text = "Theme",
+		fn = function()
+			local menu = DermaMenu()
+			for _,theme in pairs(gace.AvailableThemes) do
+				menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
+			end
+			menu:Open()
+		end
+	},
+}
+
 surface.CreateFont("EditorTabFont", {
 	font = "Roboto",
 	size = 14
@@ -382,61 +438,8 @@ concommand.Add("g-ace", function()
 		-- Action buttons that are in the title bar
 
 		do
-			local btns = {
-				{ text = "Run on", width = 40 },
-				{
-					text = "Self",
-					fn = function()
-						luadev.RunOnSelf(gace.OpenedSessionContent)
-					end,
-					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-					tt = "Hotkey in editor: F5"
-				},
-				{
-					text = "Server",
-					fn = function()
-						luadev.RunOnServer(gace.OpenedSessionContent)
-					end,
-					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-					tt = "Hotkey in editor: F6"
-				},
-				{
-					text = "Shared",
-					fn = function()
-						luadev.RunOnShared(gace.OpenedSessionContent)
-					end,
-					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-					tt = "Hotkey in editor: F7"
-				},
-				{ text = "", width = 20 },
-				{ text = "Editor", width = 35 },
-				{
-					text = "Settings",
-					fn = function()
-						gace.RunEditorJS("editor.showSettingsMenu();")
-					end
-				},
-				{
-					text = "Shortcuts",
-					fn = function()
-						gace.RunEditorJS("editor.showKeyboardShortcuts();")
-					end,
-					width = 75
-				},
-				{
-					text = "Theme",
-					fn = function()
-						local menu = DermaMenu()
-						for _,theme in pairs(gace.AvailableThemes) do
-							menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
-						end
-						menu:Open()
-					end
-				},
-			}
-
 			local x = 10
-			for _,v in pairs(btns) do
+			for _,v in pairs(gace.TitleBarComponents) do
 				local is_label = not v.fn
 
 				local comp = vgui.Create(is_label and "DLabel" or "GAceButton", frame)
