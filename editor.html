@@ -20,7 +20,19 @@
 </head>
 <body>
 
-<div id="editor"></div>
+<div id="editor">
+  ______          ______                    
+ /      \        /      \                   
+|  $$$$$$\      |  $$$$$$\ _______  ______  
+| $$ __\$$______| $$__| $$/       \/      \ 
+| $$|    |      | $$    $|  $$$$$$|  $$$$$$\
+| $$ \$$$$\$$$$$| $$$$$$$| $$     | $$    $$
+| $$__| $$      | $$  | $| $$_____| $$$$$$$$
+ \$$    $$      | $$  | $$\$$     \\$$     \
+  \$$$$$$        \$$   \$$ \$$$$$$$ \$$$$$$$
+
+Select a file from the filetree to start editing!
+</div>
     
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
@@ -33,7 +45,12 @@
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/tomorrow_night");
-    editor.getSession().setMode("ace/mode/glua");
+
+    var gaceText = editor.getSession().getValue();
+    var emptySession = ace.createEditSession(gaceText, "ace/mode/text");
+
+    editor.setSession(emptySession);
+    editor.setReadOnly(true);
 
     // Enable autocomplete etc
     editor.setOptions({
@@ -149,7 +166,7 @@
             close: function(id) {
                 // If closed session is current session, lets clear it by making new empty session
                 if (editor.getSession() == sessions[id]) {
-                    editor.setSession(ace.createEditSession("", "ace/mode/lua"));
+                    editor.setSession(emptySession);
                     editor.setReadOnly(true);
                 }
                 delete sessions[id];
