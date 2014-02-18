@@ -46,7 +46,8 @@ gace.UIColors = {
 	tab_bg_hover = Color(148,186,101),
 	tab_bg_active = Color(39,144,176),
 
-	filetree_bg = Color(29,31,33)
+	filetree_bg = Color(29,31,33),
+	filetree_labelclr = Color(255, 255, 255)
 }
 
 surface.CreateFont("EditorTabFont", {

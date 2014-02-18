@@ -159,6 +159,11 @@ local function PaintFileNode(self, w, h)
 	end
 end
 
+-- Options for both file and folder tree nodes
+function ft.AddTreeNodeOptions(node, filetree)
+	node.Label:SetColor(gace.UIColors.filetree_labelclr)
+end
+
 -- Refreshes path in filetree using given tree table
 function ft.RefreshPathUsingTree(filetree, path, tree)
 	local root = gace.FileNodeTree
@@ -186,6 +191,7 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 			for foldnm,fold in pairs(node.fol) do
 				local node = parnode:AddNode(foldnm)
 				ft.AddFolderNodeOptions(node, filetree)
+				ft.AddTreeNodeOptions(node, filetree)
 
 				local oldnodetable = par.fol[foldnm]
 				if oldnodetable then -- Old node table entry was expanded
@@ -211,7 +217,9 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 				filnode.Paint = PaintFileNode
 
 				par.fil[fil] = filnode
+
 				ft.AddFileNodeOptions(filnode, filetree)
+				ft.AddTreeNodeOptions(filnode, filetree)
 			end
 		end
 	end
