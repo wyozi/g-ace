@@ -166,7 +166,14 @@ function gace.CreateHTMLPanel()
 		end
 	end)
 	html:AddFunction("gace", "SaveSession", function(content)
-		gace.Save(gace.OpenedSessionId, content, function()
+		gace.Save(gace.OpenedSessionId, content, function(_, _, pl)
+			if pl.err then
+				local better_err = pl.err
+				if better_err == "Inexistent virtual folder" then
+					better_err = "Trying to save to root. Try to save inside a folder instead."
+				end
+				return MsgN("Unable to save: ", better_err)
+			end
 			local t = gace.GetTabFor(gace.OpenedSessionId)
 			if t then t.EditedNotSaved = false end
 
