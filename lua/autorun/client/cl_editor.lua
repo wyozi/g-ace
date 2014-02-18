@@ -40,6 +40,23 @@ function gace.CloseSession(id)
 		gace.OpenedSessionContent = nil
 	end
 
+	local tab = gace.GetTabFor(id)
+	if tab then
+		local prev_tab = table.FindPrev(gace.Tabs.Panels, tab)
+		local set_session
+		if prev_tab and prev_tab.SessionId then
+			set_session = prev_tab.SessionId
+		end
+
+		tab:Remove()
+		table.RemoveByValue(gace.Tabs.Panels, tab) -- uhh, a hack
+		gace.Tabs:InvalidateLayout()
+
+		if set_session then
+			gace.ReOpenSession(set_session)
+		end
+	end
+
 	local my_collab = gace.CollabPositions[LocalPlayer()]
 	if my_collab == id then
 		gace.SendRequest("colsetfile", {path=""})
@@ -200,22 +217,39 @@ function gace.CreateHTMLPanel()
 		end
 	end)
 	html:AddFunction("gace", "SaveSession", function(content)
-		gace.Save(gace.OpenedSessionId, content, function(_, _, pl)
-			if pl.err then
-				local better_err = pl.err
-				if better_err == "Inexistent virtual folder" then
-					better_err = "Trying to save to root. Try to save inside a folder instead."
+		-- If we're trying to save under root folder
+
+		local initial_osi = gace.OpenedSessionId
+
+		local function SaveTo(path)
+			gace.Save(path, content, function(_, _, pl)
+				if pl.err then
+					local better_err = pl.err
+					if better_err == "Inexistent virtual folder" then
+						better_err = "Trying to save to root. Try to save inside a folder instead."
+					end
+					return MsgN("Unable to save: ", better_err)
 				end
-				return MsgN("Unable to save: ", better_err)
-			end
-			local t = gace.GetTabFor(gace.OpenedSessionId)
-			if t then t.EditedNotSaved = false end
 
-			local tb = gace.OpenedSessionId:Split("/")
-			local par = table.concat(tb, "/", 1, #tb-1)
+				if path ~= initial_osi then
+					gace.CloseSession(initial_osi)
+					gace.OpenSession(path, content)
+				end
 
-			gace.filetree.RefreshPath(filetree, par)
-		end)
+				local t = gace.GetTabFor(path)
+				if t then t.EditedNotSaved = false end
+
+				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
+			end)
+		end
+
+		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
+			gace.AskForInput("Where to save? Must be absolute path (e.g. EpicJB/folder/file.txt) and must end in .txt", function(txt)
+				SaveTo(txt)
+			end)
+			return
+		end
+		SaveTo(initial_osi)
 	end)
 	html:AddFunction("gace", "SetEditedNotSaved", function(b)
 		local t = gace.GetTabFor(gace.OpenedSessionId)
