@@ -73,10 +73,21 @@ local VGUI_EDITOR_TAB = {
 			menu:Open()
 			return
 		end
+
+		local prev_tab = table.FindPrev(gace.Tabs.Panels, self)
+		local set_session
+		if prev_tab then
+			set_session = prev_tab.SessionId
+		end
+
 		gace.CloseSession(self.SessionId)
 		self:Remove()
 		table.RemoveByValue(gace.Tabs.Panels, self) -- uhh
 		gace.Tabs:InvalidateLayout()
+
+		if set_session then
+			gace.ReOpenSession(set_session)
+		end
 	end,
 	PerformLayout = function(self)
 		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
