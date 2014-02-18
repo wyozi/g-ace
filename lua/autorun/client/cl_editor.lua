@@ -56,89 +56,6 @@ surface.CreateFont("EditorTabFont", {
 	size = 14
 })
 
-local VGUI_EDITOR_TAB = {
-	Init = function(self)
-		self.CloseButton = vgui.Create("DImageButton", self)
-		self.CloseButton:SetIcon("icon16/cancel.png")
-		self.CloseButton.DoClick = function()
-			self:CloseTab()
-		end
-	end,
-	CloseTab = function(self, force)
-		if not force and self.EditedNotSaved then
-			local menu = DermaMenu()
-			menu:AddOption("Unsaved changes. Are you sure you want to close the tab?", function()
-				self:CloseTab(true)
-			end):SetIcon("icon16/stop.png")
-			menu:Open()
-			return
-		end
-
-		local prev_tab = table.FindPrev(gace.Tabs.Panels, self)
-		local set_session
-		if prev_tab then
-			set_session = prev_tab.SessionId
-		end
-
-		gace.CloseSession(self.SessionId)
-		self:Remove()
-		table.RemoveByValue(gace.Tabs.Panels, self) -- uhh
-		gace.Tabs:InvalidateLayout()
-
-		if set_session then
-			gace.ReOpenSession(set_session)
-		end
-	end,
-	PerformLayout = function(self)
-		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
-		self.CloseButton:SetSize(16, 16)
-	end,
-	Paint = function(self, w, h)
-		if self.Hovered then
-			surface.SetDrawColor(gace.UIColors.tab_bg_hover)--52, 152, 219)
-		elseif self.SessionId == gace.OpenedSessionId then
-			surface.SetDrawColor(gace.UIColors.tab_bg_active)--44, 62, 80)
-		else
-			surface.SetDrawColor(gace.UIColors.tab_bg)--127, 140, 141)
-		end
-		surface.DrawRect(0, 0, w, h)
-
-		draw.SimpleText(self.SessionId, "EditorTabFont", w-22, h/2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-	
-		if self.EditedNotSaved then
-			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
-			local lx, ly
-			for x=0,w,5 do
-				local y = h-2-math.sin(CurTime()*2+x)*2
-				if lx then
-					surface.DrawLine(lx, ly, x, y)
-				end
-				lx, ly = x, y
-			end
-		end
-
-	end,
-	Setup = function(self, id)
-		self:SetText("")
-		self.SessionId = id
-		self:SetToolTip(id)
-
-		surface.SetFont("EditorTabFont")
-		local w = surface.GetTextSize(self.SessionId)
-
-		self:SetWide(140)--math.min(w+34, 160))
-	end,
-	DoClick = function(self)
-		gace.ReOpenSession(self.SessionId)
-	end,
-	DoRightClick = function(self)
-		local menu = DermaMenu()
-		menu:AddOption("Close", function() self:CloseTab() end)
-		menu:Open()
-	end,
-}
-VGUI_EDITOR_TAB = vgui.RegisterTable(VGUI_EDITOR_TAB, "DButton") 
-
 function gace.GetTabFor(id)
 	local thepanel
 	for _,pnl in pairs(gace.Tabs.Panels) do
@@ -150,7 +67,7 @@ end
 function gace.CreateTab(id)
 	if gace.GetTabFor(id) then return end
 
-	local btn = vgui.CreateFromTable(VGUI_EDITOR_TAB, gace.Tabs)
+	local btn = vgui.Create("GAceTab", gace.Tabs)
 	btn:Setup(id)
 	gace.Tabs:AddPanel(btn)
 end
@@ -284,120 +201,123 @@ concommand.Add("g-ace", function()
 	end
 
 	-- Clear some session variables that might've gotten cached
-
 	gace.OpenedSessionId = nil
 	gace.FileNodeTree = nil
 
 	local frame = gace.CreateFrame()
 
-	gace.Frame = frame
+		gace.Frame = frame
 
 	local tabs = vgui.Create("DHorizontalScroller", frame)
-	tabs:Dock(TOP)
+		tabs:Dock(TOP)
+		tabs:SetOverlap(-1)
 
-	gace.Tabs = tabs
+		local tabsel = vgui.Create("GAceTabSelector", tabs)
+		tabs:AddPanel(tabsel)
+
+		gace.Tabs = tabs
 
 	local filetree = vgui.Create("DTree", frame)
-	filetree.Paint = function(self, w, h)
-		surface.SetDrawColor(gace.UIColors.filetree_bg)
-		surface.DrawRect(0, 0, w, h)
-	end
-	filetree:Dock(LEFT)
-	filetree:SetWide(200)
+		filetree.Paint = function(self, w, h)
+			surface.SetDrawColor(gace.UIColors.filetree_bg)
+			surface.DrawRect(0, 0, w, h)
+		end
+		filetree:Dock(LEFT)
+		filetree:SetWide(200)
 
-	-- Requests the server to update the whole filetree
-	gace.filetree.RefreshPath(filetree, "")
+		-- Requests the server to update the whole filetree
+		gace.filetree.RefreshPath(filetree, "")
 
 	local html = gace.CreateHTMLPanel()
-	html:SetParent(frame)
+		html:SetParent(frame)
 
-	gace.Editor = html
+		gace.Editor = html
 
 	-- Input panel that can ask for input
 
 	local inputpanel = vgui.Create("DPanel", frame)
-	inputpanel:Dock(BOTTOM)
-	inputpanel:Hide()
+		inputpanel:Dock(BOTTOM)
+		inputpanel:Hide()
 
-	gace.InputPanel = inputpanel
+		gace.InputPanel = inputpanel
 
-	do
-		local input = vgui.Create("DTextEntry", inputpanel)
-		input:Dock(FILL)
-		inputpanel.Input = input
+		do
+			local input = vgui.Create("DTextEntry", inputpanel)
+			input:Dock(FILL)
+			inputpanel.Input = input
 
-		input.PaintOver = function(self, w, h)
-			if self:GetText() == "" then
-				draw.SimpleText(inputpanel.QueryString or "bla bla bla", "DermaDefault", 4, h/2, Color(0, 0, 0, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			end
-		end
-
-		input.OnEnter = function(self)
-			inputpanel.InputCallback(self:GetText())
-			inputpanel:Hide()
-			gace.Frame:InvalidateLayout()
-		end
-	end
-
-	-- Action buttons that are in the title bar
-
-	do
-		local btns = {
-			{ text = "Run on", width = 40 },
-			{
-				text = "Self",
-				fn = function()
-					luadev.RunOnSelf(gace.OpenedSessionContent)
-				end,
-				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-				tt = "Hotkey in editor: F5"
-			},
-			{
-				text = "Server",
-				fn = function()
-					luadev.RunOnServer(gace.OpenedSessionContent)
-				end,
-				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-				tt = "Hotkey in editor: F6"
-			},
-			{
-				text = "Shared",
-				fn = function()
-					luadev.RunOnShared(gace.OpenedSessionContent)
-				end,
-				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
-				tt = "Hotkey in editor: F7"
-			},
-			{ text = "", width = 10 },
-		}
-
-		local x = 10
-		for _,v in pairs(btns) do
-			local btn = vgui.Create(v.fn and "DButton" or "DLabel", frame)
-			btn:SetPos(x, 2)
-			btn:SetSize(v.width or 60, 20)
-			x = x + (v.width or 62)
-			btn:SetText(v.text)
-
-			if v.tt then btn:SetToolTip(v.tt) end
-
-			if v.enabled and not v.enabled() then
-				btn.Think = function(self)
-					local b = v.enabled()
-					-- Yes, this inverses enabled to disabled, blame Garry for weird naming
-					self:SetDisabled(not b)
+			input.PaintOver = function(self, w, h)
+				if self:GetText() == "" then
+					draw.SimpleText(inputpanel.QueryString or "bla bla bla", "DermaDefault", 4, h/2, Color(0, 0, 0, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 				end
 			end
 
-			if v.fn then
-				btn.DoClick = function(self, ...)
-					if not self:GetDisabled() then
-						v.fn(self, ...)
+			input.OnEnter = function(self)
+				inputpanel.InputCallback(self:GetText())
+				inputpanel:Hide()
+				gace.Frame:InvalidateLayout()
+			end
+		end
+
+		-- Action buttons that are in the title bar
+
+		do
+			local btns = {
+				{ text = "Run on", width = 40 },
+				{
+					text = "Self",
+					fn = function()
+						luadev.RunOnSelf(gace.OpenedSessionContent)
+					end,
+					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+					tt = "Hotkey in editor: F5"
+				},
+				{
+					text = "Server",
+					fn = function()
+						luadev.RunOnServer(gace.OpenedSessionContent)
+					end,
+					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+					tt = "Hotkey in editor: F6"
+				},
+				{
+					text = "Shared",
+					fn = function()
+						luadev.RunOnShared(gace.OpenedSessionContent)
+					end,
+					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+					tt = "Hotkey in editor: F7"
+				},
+				{ text = "", width = 10 },
+			}
+
+			local x = 10
+			for _,v in pairs(btns) do
+				local btn = vgui.Create(v.fn and "DButton" or "DLabel", frame)
+				btn:SetPos(x, 2)
+				btn:SetSize(v.width or 60, 20)
+				x = x + (v.width or 62)
+				btn:SetText(v.text)
+
+				if v.tt then btn:SetToolTip(v.tt) end
+
+				if v.enabled and not v.enabled() then
+					btn.Think = function(self)
+						local b = v.enabled()
+						-- Yes, this inverses enabled to disabled, blame Garry for weird naming
+						self:SetDisabled(not b)
+					end
+				end
+
+				if v.fn then
+					btn.DoClick = function(self, ...)
+						if not self:GetDisabled() then
+							v.fn(self, ...)
+						end
 					end
 				end
 			end
 		end
-	end
 
 	frame:MakePopup()
 end)
