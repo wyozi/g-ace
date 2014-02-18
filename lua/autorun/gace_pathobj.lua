@@ -5,13 +5,13 @@ local path_meta = {
 		local spl = str:Split("/")
 
 		for i,s in pairs(spl) do
-			if s == "" then
-				-- If not last part of the path there's something wrong
-				if i ~= #spl then error("Path contains empty part") end
-				break
+			-- Skip empty parts
+			if s ~= "" then
+				table.insert(self.Parts, s)
 			end
-			table.insert(self.Parts, s)
 		end
+
+		return self
 	end,
 	GetPart = function(self, idx)
 		if idx < 0 then
@@ -39,3 +39,29 @@ function gace.NewPath(s)
 	if s then tbl:Set(s) end
 	return tbl
 end
+
+local gat = gace.AddTest
+gat("Paths: Set paths", function()
+	local path = gace.NewPath()
+	assert(path:ToString() == "", "new path's tostring not empty")
+
+	path:Set("home/test/foo")
+	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
+
+	path:Set("/home/test/foo")
+	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
+
+	path:Set("/home/test/foo/")
+	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
+
+	path:Set("/home/test/foo/")
+	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
+end)
+
+gat("Paths: Invalid paths", function()
+	local path = gace.NewPath()
+
+	path:Set("/home//foo")
+	assert(path:ToString() == "home/foo", "path didn't skip empty part")
+
+end)

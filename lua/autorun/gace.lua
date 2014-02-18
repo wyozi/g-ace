@@ -31,7 +31,8 @@ function gace.RunTests()
 	local test_platform = {}
 
 	for k,v in pairs(gace.Tests) do
-		msg("= Running tests ", k)
+		msg("")
+		msg("= Running test ", k)
 
 		local runner = v
 
@@ -54,5 +55,6 @@ function gace.RunTests()
 		msg("= Test ", k, " completed")
 	end
 
+	msg("")
 	msg("Tests finished! ", compl, " completed tests; ", fails, " failed.")
 end
