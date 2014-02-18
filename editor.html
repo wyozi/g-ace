@@ -73,8 +73,7 @@ Select a file from the filetree to start editing!
         bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
         exec: function(editor) {
             gace.SaveSession(editor.getSession().getValue());
-        },
-        readOnly: true // false if this command should not apply in readOnly mode
+        }
     });
 
     var newfilecount = 0;
@@ -84,7 +83,7 @@ Select a file from the filetree to start editing!
         exec: function(editor) {
             gace.NewSession("newfile" + ++newfilecount + ".txt");
         },
-        readOnly: true // false if this command should not apply in readOnly mode
+        readOnly: true
     });
     editor.commands.addCommand({
         name: 'Add next instance of word to selection',
@@ -98,7 +97,7 @@ Select a file from the filetree to start editing!
             });
             editor.getSession().getSelection().addRange(range);
         },
-        readOnly: true // false if this command should not apply in readOnly mode
+        readOnly: true
     });
 
     editor.commands.addCommand({
@@ -127,6 +126,18 @@ Select a file from the filetree to start editing!
                 return;
             gace.CallLDFunc("RunOnShared", editor.getSession().getValue());
         },
+    }); 
+
+    editor.commands.addCommand({
+        name: 'Go to link',
+        bindKey: {win: 'Ctrl-enter',  mac: 'Ctrl-enter'},
+        exec: function(editor) {
+            var selectedText = editor.getSession().getLine(editor.getCursorPosition().row);
+            var res = selectedText.match(/goto\[f=(.*?);r=(.*?)\]/);
+            if (res && parseInt(res[2]))
+                gace.GotoPath(res[1], parseInt(res[2]));
+        },
+        readOnly: true
     }); 
 
     var gaceSessions = (function() {
