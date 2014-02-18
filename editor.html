@@ -36,14 +36,26 @@ Select a file from the filetree to start editing!
     
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
+<script src="ace/ext-settings_menu.js"></script>
+<script src="ace/ext-keybinding_menu.js"></script>
 <script src="base64.min.js" type="text/javascript" charset="utf-8"></script>
 <script>
-    // Load autocomplete extension
-    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor");
 
+    // Load editor related classes etc
+    ace.require("ace/ext/language_tools");
+    ace.require('ace/ext/settings_menu').init(editor);
+    ace.require('ace/ext/keybinding_menu').init(editor);
+    
     var Search = ace.require("ace/search").Search;
 
-    var editor = ace.edit("editor");
+    // Enable autocomplete etc
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true
+    });
+
+    // Initialize session
     editor.setTheme("ace/theme/tomorrow_night");
 
     var gaceText = editor.getSession().getValue();
@@ -51,12 +63,6 @@ Select a file from the filetree to start editing!
 
     editor.setSession(emptySession);
     editor.setReadOnly(true);
-
-    // Enable autocomplete etc
-    editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: true
-    });
 
     editor.on("change", function(e) {
         if ("gace" in window) {
@@ -102,6 +108,8 @@ Select a file from the filetree to start editing!
         name: 'Run on Self',
         bindKey: {win: 'F5',  mac: 'F5'},
         exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
             gace.CallLDFunc("RunOnSelf", editor.getSession().getValue());
         },
     }); 
@@ -109,6 +117,8 @@ Select a file from the filetree to start editing!
         name: 'Run on Server',
         bindKey: {win: 'F6',  mac: 'F6'},
         exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
             gace.CallLDFunc("RunOnServer", editor.getSession().getValue());
         },
     }); 
@@ -116,6 +126,8 @@ Select a file from the filetree to start editing!
         name: 'Run on Shared',
         bindKey: {win: 'F7',  mac: 'F7'},
         exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
             gace.CallLDFunc("RunOnShared", editor.getSession().getValue());
         },
     }); 
@@ -173,6 +185,19 @@ Select a file from the filetree to start editing!
             }
         }
     })();
+
+    editor.renderer.on("themeLoaded", function(e) {
+        var editorStyle = getComputedStyle(document.querySelector(".ace_editor"));
+        var gutterStyle = getComputedStyle(document.querySelector(".ace_gutter"));
+
+        var bgColor = editorStyle.backgroundColor.match(/\d+/g).slice(0,3);
+        var fgColor = editorStyle.color.match(/\d+/g).slice(0,3);
+
+        var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
+
+        gace.ThemeChanged(e.theme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+    });
+
 </script>
 </body>
-</html>
+</html>#002A7F
