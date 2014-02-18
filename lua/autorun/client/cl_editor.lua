@@ -269,23 +269,23 @@ concommand.Add("g-ace", function()
 
 		gace.Tabs = tabs
 
-	local splitter = vgui.Create("GAceSplitter", frame)
-	splitter:Dock(FILL)
+	local divider = vgui.Create("DHorizontalDivider", frame)
+	divider:Dock(FILL)
+	divider:SetDividerWidth(2)
 
 		local filetree = vgui.Create("DTree")
-			splitter:SetPanel(1, filetree)
+			divider:SetLeft(filetree)
+			divider:SetLeftWidth(200)
 			filetree.Paint = function(self, w, h)
 				surface.SetDrawColor(gace.UIColors.frame_bg)
 				surface.DrawRect(0, 0, w, h)
 			end
-			--filetree:Dock(LEFT)
-			filetree:SetWide(200)
 
 			-- Requests the server to update the whole filetree
 			gace.filetree.RefreshPath(filetree, "")
 
 		local html = gace.CreateHTMLPanel()
-			splitter:SetPanel(2, html, 4)
+			divider:SetRight(html)
 
 			gace.Editor = html
 

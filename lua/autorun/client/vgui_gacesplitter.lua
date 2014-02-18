@@ -1,4 +1,7 @@
 
+-- Obsolete. Replaced by my new knowledge of DHorizontalDivider existing. Not deleted because there might be use
+-- for this some time
+
 local VGUI_SPLITTER = {
 	Init = function(self)
 		self:SetDrawBackground(false)
