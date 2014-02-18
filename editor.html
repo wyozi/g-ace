@@ -55,9 +55,6 @@ Select a file from the filetree to start editing!
         enableSnippets: true
     });
 
-    // Initialize session
-    editor.setTheme("ace/theme/tomorrow_night");
-
     var gaceText = editor.getSession().getValue();
     var emptySession = ace.createEditSession(gaceText, "ace/mode/text");
 
@@ -186,6 +183,11 @@ Select a file from the filetree to start editing!
         }
     })();
 
+    // Ugly hack, required because theme id isn't passed to themeLoaded
+    var changingToTheme;
+    editor.renderer.on("themeChange", function(e) {
+        changingToTheme = e.theme;
+    });
     editor.renderer.on("themeLoaded", function(e) {
         var editorStyle = getComputedStyle(document.querySelector(".ace_editor"));
         var gutterStyle = getComputedStyle(document.querySelector(".ace_gutter"));
@@ -195,8 +197,14 @@ Select a file from the filetree to start editing!
 
         var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
 
-        gace.ThemeChanged(e.theme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+        gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
     });
+
+    function OnReady() {
+        if ("gace" in window)
+            gace.EditorReady();
+    }
+    document.addEventListener('DOMContentLoaded', OnReady);
 
 </script>
 </body>
