@@ -13,42 +13,46 @@ function gace.Debug(...)
 	--MsgN("GACE DEBUG: ", ...)
 end
 
-if SERVER then util.AddNetworkString("gace_fileacc") end
+gace.Tests = gace.Tests or {}
+function gace.AddTest(nm, fn)
+	gace.Tests[nm] = fn
+end
 
-net.Receive("gace_fileacc", function(len, cl)
-	local reqid = net.ReadString()
-	local op = net.ReadString()
-	local payload = net.ReadTable()
-
-	local cbfn = gace.RequestCallbacks[reqid]
-
-	gace.Debug("Received fileacc ", op, " with reqid: ", reqid, " resolving to req cb fn: ", cbfn)
-
-	if cbfn then
-		gace.RequestCallbacks[reqid] = nil
-		cbfn(reqid, op, payload)
-		return
+function gace.RunTests()
+	local function msg(...)
+		MsgN("[G-Ace tests] ", ...)
 	end
 
-	if SERVER then
-		gace.HandleNetworking(cl, reqid, op, payload)
-	else
-		gace.HandleNetworking(reqid, op, payload)
+	msg("Starting tests")
+
+	local compl, fails = 0, 0
+
+	-- A table to store random crap in
+	local test_platform = {}
+
+	for k,v in pairs(gace.Tests) do
+		msg("= Running tests ", k)
+
+		local runner = v
+
+		if type(v) == "table" then
+			runner = v.runner
+			if v.before then v.before(test_platform) end
+		end
+
+		local stat, err = pcall(runner, test_platform)
+		if not stat then
+			msg("= Test failed: ", err)
+			fails = fails + 1
+		end
+
+		if type(v) == "table" then
+			if v.after then v.after(test_platform) end
+		end
+		
+		compl = compl + 1
+		msg("= Test ", k, " completed")
 	end
-end)
 
-function gace.Send(target, reqid, op, payload)
-	net.Start("gace_fileacc")
-
-	gace.Debug("Sending gace msg ", op, " with reqid ", reqid)
-
-	net.WriteString(reqid)
-	net.WriteString(op)
-	net.WriteTable(payload)
-
-	if SERVER then
-		net.Send(target)
-	else
-		net.SendToServer()
-	end
+	msg("Tests finished! ", compl, " completed tests; ", fails, " failed.")
 end
