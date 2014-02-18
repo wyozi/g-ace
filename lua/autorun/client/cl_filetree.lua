@@ -111,6 +111,23 @@ function ft.AddFileNodeOptions(node, filetree)
 			end)
 		end):SetIcon("icon16/page_copy.png")
 
+		menu:AddOption("Rename", function()
+			gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+				local folderpath = ft.NodeToPath(node, true)
+				local filname = folderpath .. "/" .. nm
+
+				local oldpath = ft.NodeToPath(node)
+				gace.Fetch(oldpath, function(_, _, payload)
+					if payload.err then return MsgN("Failed to fetch: ", payload.err) end
+
+					gace.Delete(oldpath)
+					gace.Save(filname, payload.content)
+
+					ft.RefreshPath(filetree, folderpath)
+				end)
+			end, node:GetText())
+		end):SetIcon("icon16/page_edit.png")
+
 		local csubmenu, csmpnl = menu:AddSubMenu("Delete", function() end)
 		csmpnl:SetIcon( "icon16/cross.png" )
 

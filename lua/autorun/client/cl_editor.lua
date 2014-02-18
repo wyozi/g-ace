@@ -31,10 +31,11 @@ function gace.CloseSession(id)
 	end
 end
 
-function gace.AskForInput(query, callback)
+function gace.AskForInput(query, callback, default)
 	gace.InputPanel.QueryString = query
 	gace.InputPanel.InputCallback = callback
 
+	gace.InputPanel.Input:SetText(default or "")
 	gace.InputPanel.Input:RequestFocus()
 
 	gace.InputPanel:Show()
