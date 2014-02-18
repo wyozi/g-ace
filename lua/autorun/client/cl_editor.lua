@@ -310,7 +310,7 @@ concommand.Add("g-ace", function()
 
 			local x = 10
 			for _,v in pairs(btns) do
-				local btn = vgui.Create(v.fn and "DButton" or "DLabel", frame)
+				local btn = vgui.Create(v.fn and "GAceButton" or "DLabel", frame)
 				btn:SetPos(x, 2)
 				btn:SetSize(v.width or 60, 20)
 				x = x + (v.width or 62)
