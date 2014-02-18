@@ -135,20 +135,7 @@ end
 local gacedevurl = CreateConVar("g-ace-devurl", "", FCVAR_ARCHIVE)
 local gaceclosewithesc = CreateConVar("g-ace-closewithesc", "1", FCVAR_ARCHIVE)
 
-concommand.Add("g-ace", function()
-
-	if IsValid(gace.Frame) then
-		if gace.Frame:IsVisible() then return end
-		gace.Frame:Show()
-		gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
-		return
-	end
-
-	-- Clear some session variables that might've gotten cached
-
-	gace.OpenedSessionId = nil
-	gace.FileNodeTree = nil
-
+function gace.CreateFrame()
 	local frame = vgui.Create("DFrame")
 	frame:SetDeleteOnClose(false)
 	frame:SetSizable(true)
@@ -201,6 +188,25 @@ concommand.Add("g-ace", function()
 		cookie.Set("gace-frame-w", w)
 		cookie.Set("gace-frame-h", h)
 	end)
+
+	return frame
+end
+
+concommand.Add("g-ace", function()
+
+	if IsValid(gace.Frame) then
+		if gace.Frame:IsVisible() then return end
+		gace.Frame:Show()
+		gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
+		return
+	end
+
+	-- Clear some session variables that might've gotten cached
+
+	gace.OpenedSessionId = nil
+	gace.FileNodeTree = nil
+
+	local frame = gace.CreateFrame()
 
 	gace.Frame = frame
 
