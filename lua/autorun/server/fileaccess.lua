@@ -58,14 +58,14 @@ end
 function gace.ParsePath(path)
 	if not path then return false, "Provided path is nil" end
 	if path == "" then
-		return gace.ROOT, ""
+		return gace.ROOT, "", ""
 	end
 	local separators = path:Split("/")
 
 	local vfolder = gace.VirtualFolders[separators[1]]
 	if not vfolder then return false, "Inexistent virtual folder" end
 
-	return vfolder, table.concat(separators, "/", 2)
+	return vfolder, table.concat(separators, "/", 2), separators[1]
 end
 
 function gace.TableKeysToList(tbl)
@@ -112,7 +112,7 @@ function gace.MakeRecursiveListResponse(ply, path)
 		AddRec(vpath,  nfilepath, tree)
 	end
 
-	return {type="filetree", tree=tree}
+	return {ret="Success", type="filetree", tree=tree}
 end
 
 function gace.MakeListResponse(ply, path)
@@ -129,9 +129,9 @@ function gace.MakeListResponse(ply, path)
 
 	local type, files, folders = vpath.ffunc(filepath)
 	if type == "folder" then
-		return {type="folder", files=files, folders=folders}
+		return {ret="Success", type="folder", files=files, folders=folders}
 	end
-	return {err="Is a file"}
+	return {err="Not a folder"}
 end
 
 function gace.MakeFetchResponse(ply, path)
@@ -139,19 +139,18 @@ function gace.MakeFetchResponse(ply, path)
 	if not vpath then return {err=filepath} end
 
 	if vpath == gace.ROOT then
-		return {err="Is a folder"}
+		return {err="Not a file"}
 	end
 
 	if not gace.TestAccess(vpath.access, ply, filepath, "fetch") then
 		return {err="No access"}
 	end
 
-	local type, files, folders = vpath.ffunc(filepath)
 	local type, content = vpath.ffunc(filepath)
 	if type == "file" then
-		return {type="file", content=content}
+		return {ret="Success", type="file", content=content}
 	end
-	return {err="Is a folder"}
+	return {err="Not a file"}
 end
 
 function gace.MakeSaveResponse(ply, path, content)
@@ -159,7 +158,7 @@ function gace.MakeSaveResponse(ply, path, content)
 	if not vpath then return {err=filepath} end
 
 	if vpath == gace.ROOT then
-		return {err="Is a folder"}
+		return {err="Not a file"}
 	end
 
 	if not gace.TestAccess(vpath.access, ply, filepath, "save") then
@@ -177,7 +176,7 @@ function gace.MakeRmResponse(ply, path, content)
 	if not vpath then return {err=filepath} end
 
 	if vpath == gace.ROOT then
-		return {err="Is a folder"}
+		return {err="Not a file"}
 	end
 
 	if not gace.TestAccess(vpath.access, ply, filepath, "rm") then
@@ -188,4 +187,58 @@ function gace.MakeRmResponse(ply, path, content)
 	if not ret then return {err=err} end
 
 	return {ret="Success"}
+end
+
+function gace.MakeFindResponse(ply, path, phrase)
+	local vpath, filepath, vfname = gace.ParsePath(path)
+	if not vpath then return {err=filepath} end
+
+	if vpath == gace.ROOT then
+		return {err="Is a folder"}
+	end
+
+	if not gace.TestAccess(vpath.access, ply, filepath, "find") then
+		return {err="No access"}
+	end
+
+	local type, files, folders = vpath.ffunc(filepath)
+	if type ~= "folder" then
+		return {err="Not a folder"}
+	end
+
+	local matches = {}
+
+	for _,file in pairs(files) do
+		local fpath = filepath .. "/" .. file
+		if gace.TestAccess(vpath.access, ply, fpath, "find") then
+			local type, content = vpath.ffunc(fpath)
+
+			local curindex = 1
+
+			local function search()
+				local findindex = string.find(content, phrase, curindex, true)
+				if not findindex then return false end
+
+				-- Hacky method of finding which row we're on ::::
+
+				-- First get a string of all text until found index
+				local upuntil_src = string.sub(content, 1, findindex)
+				-- Then use gsub to count occurrences of newline chars
+				local _, count = string.gsub(upuntil_src, "\n", "")
+
+				-- Extremely hacky and expensive, but assuming there aren't a million files it's sufficient
+
+				table.insert(matches, {
+					path = vfname .. fpath,
+					row = count
+				})
+
+				curindex = findindex+1
+			end
+
+			while search() do end
+		end
+	end
+	
+	return {ret="Success", matches=matches}
 end

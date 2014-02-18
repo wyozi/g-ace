@@ -18,6 +18,8 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 		responder_func(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
 	elseif op == "rm" then
 		responder_func(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
+	elseif op == "find" then
+		responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
 	end
 
 	-- Collab edit

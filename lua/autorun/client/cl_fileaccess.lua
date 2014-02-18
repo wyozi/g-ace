@@ -13,3 +13,8 @@ end
 function gace.Delete(path, callback)
 	gace.SendRequest("rm", {path=path}, callback)
 end
+
+function gace.Find(path, phrase, callback)
+	gace.SendRequest("find", {path=path, phrase=phrase}, callback)
+end
+

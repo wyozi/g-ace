@@ -55,6 +55,36 @@ function ft.AddFolderNodeOptions(node, filetree)
 			end)
 		end):SetIcon("icon16/page.png")
 
+		menu:AddOption("Find", function()
+			gace.AskForInput("The phrase to search", function(nm)
+				local path = ft.NodeToPath(node)
+				gace.Find(path, nm, function(_, _, pl)
+
+					local resdocument = {}
+					local function ins(s) table.insert(resdocument, s) end
+
+					-- This weird formatting performs better than string concats, so excuse me
+
+					ins("Search results for searching '") ins(nm) ins("' in ") ins(path) ins("\n")
+					ins([[ 
+Note: each match is followed by a 'goto' line. 
+Place your cursor on a 'goto' line and press Ctrl-Enter to go to that row in that file.
+]])
+					ins("\n")
+					ins(tostring(#pl.matches)) ins(" matches\n")
+					ins("\n")
+					for i,match in ipairs(pl.matches) do
+						ins("#") ins(tostring(i)) ins(": ") ins(match.path) ins(" line ") ins(tostring(match.row)) ins("\n")
+						ins("goto[f=") ins(match.path) ins(";r=") ins(tostring(match.row)) ins("]\n")
+						ins("\n")
+					end
+
+					gace.OpenSession("find_results_" .. os.time(), table.concat(resdocument, ""))
+
+				end)
+			end)
+		end):SetIcon("icon16/magnifier.png")
+
 		menu:Open()
 	end
 
