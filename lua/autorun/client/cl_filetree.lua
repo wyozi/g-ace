@@ -65,19 +65,30 @@ function ft.AddFolderNodeOptions(node, filetree)
 
 					-- This weird formatting performs better than string concats, so excuse me
 
-					ins("Search results for searching '") ins(nm) ins("' in ") ins(path) ins("\n")
-					ins([[ 
-Note: each match is followed by a 'goto' line. 
-Place your cursor on a 'goto' line and press Ctrl-Enter to go to that row in that file.
+					ins([[
+local searchresults = {
+	phrase = "]] .. nm .. [[",
+	search_location = "]] .. path .. [[",
+	num_matches = ]] .. #pl.matches .. [[,
+}
+
+print("Note: each match is followed by a 'goto' line.")
+print("Place your cursor on a 'goto' line and press Ctrl-Enter to go to that row in that file.")
+
 ]])
-					ins("\n")
-					ins(tostring(#pl.matches)) ins(" matches\n")
-					ins("\n")
+					ins("local matches = {\n")
 					for i,match in ipairs(pl.matches) do
-						ins("#") ins(tostring(i)) ins(": ") ins(match.path) ins(" line ") ins(tostring(match.row)) ins("\n")
-						ins("goto[f=") ins(match.path) ins(";r=") ins(tostring(match.row)) ins("]\n")
-						ins("\n")
+						ins("	[") ins(i) ins("] = {\n")
+						ins("		row = ") ins(match.row) ins(", column = ") ins(match.col) ins(",\n")
+						ins("		line = [[") ins(match.line) ins("]],\n")
+
+						ins("		link = [[ ")
+							ins("goto[f=") ins(match.path) ins(";r=") ins(tostring(match.row))
+							ins(";c=") ins(tostring(match.col)) ins("]")
+						ins(" ]] -- Ctrl-enter on this line!\n")
+						ins("	},\n")
 					end
+					ins("}")
 
 					gace.OpenSession("find_results_" .. os.time(), table.concat(resdocument, ""))
 

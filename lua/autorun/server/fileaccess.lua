@@ -225,32 +225,28 @@ function gace.MakeFindResponse(ply, path, phrase)
 		if gace.TestAccess(vfolder.access, ply, fpath, "find") then
 			local type, content = vfolder.ffunc(fpath)
 
-			local curindex = 1
+			-- Go line by line. Might be slow but works for our purpose and keeps code clean
+			for i,line in pairs(content:Split("\n")) do
+				local curcolumn = 1
 
-			local function search()
-				local findindex = string.find(content, phrase, curindex, true)
-				if not findindex then return false end
+				local function search()
+					local findindex = string.find(line, phrase, curcolumn, true)
+					if not findindex then return false end
 
-				-- Hacky method of finding which row we're on ::::
+					table.insert(matches, {
+						path = fpath:ToString(),
+						row = (i-1),
+						col = (findindex-1),
+						line = line
+					})
 
-				-- First get a string of all text until found index
-				local upuntil_src = string.sub(content, 1, findindex)
-				-- Then use gsub to count occurrences of newline chars
-				local _, count = string.gsub(upuntil_src, "\n", "")
+					curcolumn = findindex+1
 
-				-- Extremely hacky and expensive, but assuming there aren't a million files it's sufficient
+					return true
+				end
 
-				table.insert(matches, {
-					path = fpath:ToString(),
-					row = count
-				})
-
-				curindex = findindex+1
-				
-				return true
+				while search() do end
 			end
-
-			while search() do end
 		end
 	end
 	
