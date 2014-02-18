@@ -134,8 +134,12 @@ Select a file from the filetree to start editing!
         exec: function(editor) {
             var selectedText = editor.getSession().getLine(editor.getCursorPosition().row);
             var res = selectedText.match(/goto\[f=(.*?);r=(.*?)\]/);
-            if (res && parseInt(res[2]))
+            if (res && !isNaN(res[2]))
                 gace.GotoPath(res[1], parseInt(res[2]));
+            else if (!res)
+                console.log("G-Ace Goto failed: line doesn't seem to be a 'goto' line");
+            else
+                console.log("G-Ace Goto failed: " + res[2] + " can't be converted to number");
         },
         readOnly: true
     }); 
