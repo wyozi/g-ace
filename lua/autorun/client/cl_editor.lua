@@ -39,6 +39,16 @@ function gace.AskForInput(query, callback)
 	gace.InputPanel:Show()
 end
 
+gace.UIColors = {
+	frame_bg = Color(29,31,33),
+
+	tab_bg = Color(78,77,74),
+	tab_bg_hover = Color(148,186,101),
+	tab_bg_active = Color(39,144,176),
+
+	filetree_bg = Color(29,31,33)
+}
+
 surface.CreateFont("EditorTabFont", {
 	font = "Roboto",
 	size = 14
@@ -72,11 +82,11 @@ local VGUI_EDITOR_TAB = {
 	end,
 	Paint = function(self, w, h)
 		if self.Hovered then
-			surface.SetDrawColor(52, 152, 219)
+			surface.SetDrawColor(gace.UIColors.tab_bg_hover)--52, 152, 219)
 		elseif self.SessionId == gace.OpenedSessionId then
-			surface.SetDrawColor(44, 62, 80)
+			surface.SetDrawColor(gace.UIColors.tab_bg_active)--44, 62, 80)
 		else
-			surface.SetDrawColor(127, 140, 141)
+			surface.SetDrawColor(gace.UIColors.tab_bg)--127, 140, 141)
 		end
 		surface.DrawRect(0, 0, w, h)
 
@@ -144,7 +154,7 @@ function gace.CreateFrame()
 		gace.SendRequest("colsetfile", {path=""})
 	end
 	frame.Paint = function(self, w, h)
-		surface.SetDrawColor(22, 31, 50)
+		surface.SetDrawColor(gace.UIColors.frame_bg)--22, 31, 50)
 		surface.DrawRect(0, 0, w, h)
 	end
 
@@ -216,6 +226,10 @@ concommand.Add("g-ace", function()
 	gace.Tabs = tabs
 
 	local filetree = vgui.Create("DTree", frame)
+	filetree.Paint = function(self, w, h)
+		surface.SetDrawColor(gace.UIColors.filetree_bg)
+		surface.DrawRect(0, 0, w, h)
+	end
 	filetree:Dock(LEFT)
 	filetree:SetWide(200)
 
