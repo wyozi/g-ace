@@ -41,6 +41,10 @@ end
 
 -- Adds right click options etc to given DTree_Node that represents a folder
 function ft.AddFolderNodeOptions(node, filetree)
+
+	-- Override expander's doclick to get rid of the annoying slide animation
+	node.Expander.DoClick = function() node:SetExpanded( !node.m_bExpanded, true ) end
+
 	node.DoRightClick = function()
 		local menu = DermaMenu()
 
