@@ -13,6 +13,10 @@ local path_meta = {
 
 		return self
 	end,
+	SetTable = function(self, tbl)
+		self.Parts = tbl
+		return self
+	end,
 	GetPart = function(self, idx)
 		if idx < 0 then
 			-- If negative (e.g. -1) we should start from the end (-1 -> #parts)
@@ -26,6 +30,22 @@ local path_meta = {
 	GetFile = function(self)
 		return self:GetPart(-1)
 	end,
+
+	Add = function(self, f)
+		-- Doesn't matter if there are extra slashes; they'll get stripped anyway
+		return gace.NewPath(self:ToString() .. f)
+	end,
+
+	-- Strips first part
+	WithoutVFolder = function(self, f)
+		return gace.NewPath(""):SetTable({unpack(self.Parts, 2)})
+	end,
+
+	-- Basically gets path one layer up
+	WithoutFile = function(self, f)
+		return gace.NewPath(""):SetTable({unpack(self.Parts, 1, #self.Parts-1)})
+	end,
+
 	ToString = function(self, str)
 		return table.concat(self.Parts, "/")
 	end
@@ -36,32 +56,25 @@ path_meta.__tostring = path_meta.ToString
 function gace.NewPath(s)
 	local tbl = {Parts={}}
 	setmetatable(tbl, path_meta)
-	if s then tbl:Set(s) end
+	tbl:Set(s)
 	return tbl
 end
 
 local gat = gace.AddTest
 gat("Paths: Set paths", function()
-	local path = gace.NewPath()
-	assert(path:ToString() == "", "new path's tostring not empty")
-
-	path:Set("home/test/foo")
-	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
-
-	path:Set("/home/test/foo")
-	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
-
-	path:Set("/home/test/foo/")
-	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
-
-	path:Set("/home/test/foo/")
-	assert(path:ToString() == "home/test/foo", "path didn't strip trailing/following slashes")
+	assert(gace.NewPath(""):ToString() == "", "empty path's tostring not empty")
+	assert(gace.NewPath("home/test/foo"):ToString() == "home/test/foo", "didn't strip trailing/following slashes")
+	assert(gace.NewPath("/home/test/foo"):ToString() == "home/test/foo", "didn't strip trailing/following slashes")
+	assert(gace.NewPath("/home/test/foo/"):ToString() == "home/test/foo", "didn't strip trailing/following slashes")
 end)
 
 gat("Paths: Invalid paths", function()
-	local path = gace.NewPath()
+	assert(gace.NewPath("/home//foo"):ToString() == "home/foo", "didn't skip empty part")
+end)
 
-	path:Set("/home//foo")
-	assert(path:ToString() == "home/foo", "path didn't skip empty part")
-
+gat("Paths: VFolders/Files", function()
+	assert(gace.NewPath("/home/foo/bar/"):GetVFolder() == "home", "didn't return correct vfolder")
+	assert(gace.NewPath("/home/foo/bar/"):GetFile() == "bar", "didn't return correct file")
+	assert(gace.NewPath("/home/foo/bar/"):WithoutVFolder():ToString() == "foo/bar", "didn't return correct path")
+	assert(gace.NewPath("/home/foo/bar/"):WithoutFile():ToString() == "home/foo", "didn't return correct path")
 end)
