@@ -59,6 +59,16 @@ gace.UIColors = {
 	tab_bg_active = Color(39,144,176)
 }
 
+gace.AvailableThemes = {
+	"ambiance", "chaos", "chrome", "clouds", "clouds_midnight", "cobalt",
+	"crimson_editor", "dawn", "dreamweaver", "eclipse", "github", "idle_fingers",
+	"katzenmilch", "kr", "kuroir", "merbivore", "merbivore_soft", "mono_industrial",
+	"monokai", "pastel_on_dark", "solarized_dark", "solarized_light", "terminal",
+	"textmate", "tomorrow", "tomorrow_night", "tomorrow_night_blue",
+	"tomorrow_night_bright", "tomorrow_night_eighties", "twilight",
+	"vibrant_ink", "xcode",
+}
+
 surface.CreateFont("EditorTabFont", {
 	font = "Roboto",
 	size = 14
@@ -202,13 +212,22 @@ function gace.CreateHTMLPanel()
 		return Color(tonumber(r), tonumber(g), tonumber(b))
 	end
 	html:AddFunction("gace", "ThemeChanged", function(theme, bgColor, fgColor, gutterBgColor)
-		MsgN("Gace theme changed to ", theme)
-
 		gace.UIColors.frame_bg = RGBStringToColor(bgColor)
 		gace.UIColors.frame_fg = RGBStringToColor(fgColor)
 
 		gace.UIColors.tab_bg = RGBStringToColor(gutterBgColor)
 		gace.UIColors.tab_fg = RGBStringToColor(fgColor)
+
+		cookie.Set("gace-theme", theme)
+	end)
+
+	html:AddFunction("gace", "EditorReady", function()
+		local c_theme = cookie.GetString("gace-theme")
+		local the_theme = "ace/theme/tomorrow_night"
+		if table.HasValue(gace.AvailableThemes, c_theme:Split("/")[3]) then
+			the_theme = c_theme
+		end
+		gace.RunEditorJS("editor.setTheme('" .. the_theme .. "')")
 	end)
 
 	local oldpaint = html.Paint
@@ -340,17 +359,8 @@ concommand.Add("g-ace", function()
 				{
 					text = "Theme",
 					fn = function()
-						local themes = {
-							"ambiance", "chaos", "chrome", "clouds", "clouds_midnight", "cobalt",
-							"crimson_editor", "dawn", "dreamweaver", "eclipse", "github", "idle_fingers",
-							"katzenmilch", "kr", "kuroir", "merbivore", "merbivore_soft", "mono_industrial",
-							"monokai", "pastel_on_dark", "solarized_dark", "solarized_light", "terminal",
-							"textmate", "tomorrow", "tomorrow_night", "tomorrow_night_blue",
-							"tomorrow_night_bright", "tomorrow_night_eighties", "twilight",
-							"vibrant_ink", "xcode",
-						}
 						local menu = DermaMenu()
-						for _,theme in pairs(themes) do
+						for _,theme in pairs(gace.AvailableThemes) do
 							menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
 						end
 						menu:Open()
@@ -397,8 +407,13 @@ end)
 
 concommand.Add("g-ace-refresh", function()
 	if IsValid(gace.Frame) then gace.Frame:Remove() end
+end)
+
+concommand.Add("g-ace-reset", function()
+	if IsValid(gace.Frame) then gace.Frame:Remove() end
 	cookie.Set("gace-frame-x", "0")
 	cookie.Set("gace-frame-y", "0")
 	cookie.Set("gace-frame-w", "900")
 	cookie.Set("gace-frame-h", "600")
+	cookie.Set("gace-theme", "tomorrow_night")
 end)
