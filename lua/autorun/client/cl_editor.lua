@@ -26,6 +26,7 @@ function gace.CloseSession(id)
 	]])
 	if gace.OpenedSessionId == id then
 		gace.OpenedSessionId = nil
+		gace.OpenedSessionContent = nil
 		gace.SendRequest("colsetfile", {path=""})
 	end
 end
@@ -214,8 +215,10 @@ function gace.CreateHTMLPanel()
 	
 	html:OpenURL(url)
 
-	html:AddFunction("gace", "SetOpenedSession", function(id)
+	html:AddFunction("gace", "SetOpenedSession", function(id, content)
 		gace.OpenedSessionId = id
+		gace.OpenedSessionContent = content
+
 		gace.CreateTab(id)
 		gace.SendRequest("colsetfile", {path=id})
 	end)
@@ -330,25 +333,31 @@ concommand.Add("g-ace", function()
 	do
 		local btns = {
 			{ text = "Run on", width = 40 },
-			{	text = "Self",
+			{
+				text = "Self",
 				fn = function()
 					luadev.RunOnSelf(gace.OpenedSessionContent)
 				end,
-				enabled = function() return luadev ~= nil end,
-				tt = "Hotkey in editor: F5"},
-			{	text = "Server",
+				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+				tt = "Hotkey in editor: F5"
+			},
+			{
+				text = "Server",
 				fn = function()
 					luadev.RunOnServer(gace.OpenedSessionContent)
 				end,
-				enabled = function() return luadev ~= nil end,
-				tt = "Hotkey in editor: F6"},
-			{	text = "Shared",
+				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+				tt = "Hotkey in editor: F6"
+			},
+			{
+				text = "Shared",
 				fn = function()
 					luadev.RunOnShared(gace.OpenedSessionContent)
 				end,
-				enabled = function() return luadev ~= nil end,
-				tt = "Hotkey in editor: F7"},
-			{ text = "", width = 10},
+				enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+				tt = "Hotkey in editor: F7"
+			},
+			{ text = "", width = 10 },
 		}
 
 		local x = 10
@@ -362,9 +371,19 @@ concommand.Add("g-ace", function()
 			if v.tt then btn:SetToolTip(v.tt) end
 
 			if v.enabled and not v.enabled() then
-				btn:SetEnabled(false)
-			elseif v.fn then
-				btn.DoClick = v.fn
+				btn.Think = function(self)
+					local b = v.enabled()
+					-- Yes, this inverses enabled to disabled, blame Garry for weird naming
+					self:SetDisabled(not b)
+				end
+			end
+
+			if v.fn then
+				btn.DoClick = function(self, ...)
+					if not self:GetDisabled() then
+						v.fn(self, ...)
+					end
+				end
 			end
 		end
 	end
