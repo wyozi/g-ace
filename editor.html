@@ -133,9 +133,9 @@ Select a file from the filetree to start editing!
         bindKey: {win: 'Ctrl-enter',  mac: 'Ctrl-enter'},
         exec: function(editor) {
             var selectedText = editor.getSession().getLine(editor.getCursorPosition().row);
-            var res = selectedText.match(/goto\[f=(.*?);r=(.*?)\]/);
+            var res = selectedText.match(/goto\[f=([^;]*);r=([^;\]]*)(?:;c=([^\]]*))?/);
             if (res && !isNaN(res[2]))
-                gace.GotoPath(res[1], parseInt(res[2]));
+                gace.GotoPath(res[1], parseInt(res[2]), parseInt(res[3]));
             else if (!res)
                 console.log("G-Ace Goto failed: line doesn't seem to be a 'goto' line");
             else
