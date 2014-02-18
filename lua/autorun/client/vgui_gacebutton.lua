@@ -13,7 +13,7 @@ local VGUI_BUTTON = {
 		surface.DrawRect(0, 0, w, h)
 
 		draw.SimpleText(self:GetText(), "EditorTabFont", w/2, h/2, self:GetDisabled() and 
-			Color(150, 150, 150) or Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			Color(150, 150, 150) or gace.UIColors.tab_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	
 		return true
 	end,

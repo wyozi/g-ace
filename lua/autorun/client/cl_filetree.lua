@@ -178,7 +178,7 @@ end
 
 -- Options for both file and folder tree nodes
 function ft.AddTreeNodeOptions(node, filetree)
-	node.Label:SetColor(gace.UIColors.filetree_labelclr)
+	node.Label.Think = function(self) self:SetColor(gace.UIColors.frame_fg) end
 end
 
 -- Refreshes path in filetree using given tree table

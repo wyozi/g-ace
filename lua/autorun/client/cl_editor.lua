@@ -1,4 +1,8 @@
 
+function gace.RunEditorJS(code)
+	gace.Editor:RunJavascript(code)
+end
+
 function gace.OpenSession(id, content, data)
 	if content == "" then -- Using base64encode on empty string returns nil, thus this
 		content = ""
@@ -11,17 +15,17 @@ function gace.OpenSession(id, content, data)
 		defens = data.defens or defens
 	end
 
-	gace.Editor:RunJavascript([[gaceSessions.open("]] .. id ..
+	gace.RunEditorJS([[gaceSessions.open("]] .. id ..
 		[[", {contentb: "]] .. content ..
 		[[", defens: ]] .. tostring(defens) .. [[});]])
 end
 function gace.ReOpenSession(id)
-	gace.Editor:RunJavascript([[
+	gace.RunEditorJS([[
 		gaceSessions.reopen("]] .. id .. [[");
 	]])
 end
 function gace.CloseSession(id)
-	gace.Editor:RunJavascript([[
+	gace.RunEditorJS([[
 		gaceSessions.close("]] .. id .. [[");
 	]])
 	if gace.OpenedSessionId == id then
@@ -47,13 +51,12 @@ end
 
 gace.UIColors = {
 	frame_bg = Color(29,31,33),
+	frame_fg = Color(255, 255, 255),
 
+	tab_fg = Color(255, 255, 255),
 	tab_bg = Color(78,77,74),
 	tab_bg_hover = Color(148,186,101),
-	tab_bg_active = Color(39,144,176),
-
-	filetree_bg = Color(29,31,33),
-	filetree_labelclr = Color(255, 255, 255)
+	tab_bg_active = Color(39,144,176)
 }
 
 surface.CreateFont("EditorTabFont", {
@@ -194,12 +197,26 @@ function gace.CreateHTMLPanel()
 		gace.OpenSession(name, "")
 	end)
 
+	local function RGBStringToColor(str)
+		local r, g, b = string.match(str, "(%d+):(%d+):(%d+)")
+		return Color(tonumber(r), tonumber(g), tonumber(b))
+	end
+	html:AddFunction("gace", "ThemeChanged", function(theme, bgColor, fgColor, gutterBgColor)
+		MsgN("Gace theme changed to ", theme)
+
+		gace.UIColors.frame_bg = RGBStringToColor(bgColor)
+		gace.UIColors.frame_fg = RGBStringToColor(fgColor)
+
+		gace.UIColors.tab_bg = RGBStringToColor(gutterBgColor)
+		gace.UIColors.tab_fg = RGBStringToColor(fgColor)
+	end)
+
 	local oldpaint = html.Paint
 	html.Paint = function(self, w, h)
 		if self:IsLoading() then
 			surface.SetDrawColor(gace.UIColors.frame_bg)
 			surface.DrawRect(0, 0, w, h)
-			draw.SimpleText("Loading", "Trebuchet24", 10, 10)
+			draw.SimpleText("Loading", "Trebuchet24", 10, 10, gace.UIColors.frame_fg)
 		else
 			html.Paint = oldpaint
 		end
@@ -236,7 +253,7 @@ concommand.Add("g-ace", function()
 
 	local filetree = vgui.Create("DTree", frame)
 		filetree.Paint = function(self, w, h)
-			surface.SetDrawColor(gace.UIColors.filetree_bg)
+			surface.SetDrawColor(gace.UIColors.frame_bg)
 			surface.DrawRect(0, 0, w, h)
 		end
 		filetree:Dock(LEFT)
@@ -305,21 +322,60 @@ concommand.Add("g-ace", function()
 					enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 					tt = "Hotkey in editor: F7"
 				},
-				{ text = "", width = 10 },
+				{ text = "", width = 20 },
+				{ text = "Editor", width = 35 },
+				{
+					text = "Settings",
+					fn = function()
+						gace.RunEditorJS("editor.showSettingsMenu();")
+					end
+				},
+				{
+					text = "Shortcuts",
+					fn = function()
+						gace.RunEditorJS("editor.showKeyboardShortcuts();")
+					end,
+					width = 75
+				},
+				{
+					text = "Theme",
+					fn = function()
+						local themes = {
+							"ambiance", "chaos", "chrome", "clouds", "clouds_midnight", "cobalt",
+							"crimson_editor", "dawn", "dreamweaver", "eclipse", "github", "idle_fingers",
+							"katzenmilch", "kr", "kuroir", "merbivore", "merbivore_soft", "mono_industrial",
+							"monokai", "pastel_on_dark", "solarized_dark", "solarized_light", "terminal",
+							"textmate", "tomorrow", "tomorrow_night", "tomorrow_night_blue",
+							"tomorrow_night_bright", "tomorrow_night_eighties", "twilight",
+							"vibrant_ink", "xcode",
+						}
+						local menu = DermaMenu()
+						for _,theme in pairs(themes) do
+							menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
+						end
+						menu:Open()
+					end
+				},
 			}
 
 			local x = 10
 			for _,v in pairs(btns) do
-				local btn = vgui.Create(v.fn and "GAceButton" or "DLabel", frame)
-				btn:SetPos(x, 2)
-				btn:SetSize(v.width or 60, 20)
-				x = x + (v.width or 62)
-				btn:SetText(v.text)
+				local is_label = not v.fn
 
-				if v.tt then btn:SetToolTip(v.tt) end
+				local comp = vgui.Create(is_label and "DLabel" or "GAceButton", frame)
+				comp:SetPos(x, 2)
+				comp:SetSize(v.width or 60, 20)
+				x = x + (v.width or 60)+2
+				comp:SetText(v.text)
+
+				if is_label then
+					comp.Think = function(self) self:SetColor(gace.UIColors.frame_fg) end
+				end
+
+				if v.tt then comp:SetToolTip(v.tt) end
 
 				if v.enabled and not v.enabled() then
-					btn.Think = function(self)
+					comp.Think = function(self)
 						local b = v.enabled()
 						-- Yes, this inverses enabled to disabled, blame Garry for weird naming
 						self:SetDisabled(not b)
@@ -327,7 +383,7 @@ concommand.Add("g-ace", function()
 				end
 
 				if v.fn then
-					btn.DoClick = function(self, ...)
+					comp.DoClick = function(self, ...)
 						if not self:GetDisabled() then
 							v.fn(self, ...)
 						end
