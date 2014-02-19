@@ -1,10 +1,11 @@
 gace.VirtualFolders = gace.VirtualFolders or {}
 
-function gace.SetupRawVFolder(id, filebrowser_func, save_func, delete_func, access)
+function gace.SetupRawVFolder(id, access, data)
 	gace.VirtualFolders[id] = {
-		ffunc=filebrowser_func,
-		svfunc=save_func,
-		delfunc=delete_func,
+		ffunc=data.filebrowser_func,
+		svfunc=data.save_func,
+		delfunc=data.delete_func,
+		mkdirfunc=data.mkdir_func,
 		access=access
 	}
 end
@@ -25,34 +26,53 @@ function gace.SetupSimpleVFolder(id, tbl, access, data)
 
 		for _,v in ipairs(path.Parts) do
 			if last then parfolder = folder end
+			if not folder then break end
+
 			folder = folder[v]
-			if not folder then
-				return false, "Invalid path"
-			end
 		end
 		return folder, parfolder
 	end
 
-	gace.SetupRawVFolder(id, function(curpath)
-		local folder, parfolder = TraversePath(curpath)
-		if not folder then return false, "Doesn't exist" end
+	gace.SetupRawVFolder(id, access, {
+		filebrowser_func = function(curpath)
+			local folder, parfolder = TraversePath(curpath)
+			if not folder then return false, "Doesn't exist" end
 
-		if type(folder) == "table" then
-			local keys = gace.TableKeys(folder)
-			return "folder",
-					-- Files
-					gace.Map(
-						gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "string" end),
-						function(nm) return curpath + nm end
-					),
-					-- Folders
-					gace.Map(
-						gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "table" end),
-						function(nm) return curpath + nm end
-					)
+			if type(folder) == "table" then
+				local keys = gace.TableKeys(folder)
+				return "folder",
+						-- Files
+						gace.Map(
+							gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "string" end),
+							function(nm) return curpath + nm end
+						),
+						-- Folders
+						gace.Map(
+							gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "table" end),
+							function(nm) return curpath + nm end
+						)
+			end
+			return "file", folder, 0, 0
+		end,
+		mkdir_func = function(curpath)
+			local folder, parfolder = TraversePath(curpath)
+			if not parfolder then return false, "Doesn't exist" end
+
+			parfolder[curpath:GetFile()] = {}
+		end,
+		save_func = function(curpath, content)
+			local folder, parfolder = TraversePath(curpath)
+			if not parfolder then return false, "Folder doesn't exist" end
+
+			parfolder[curpath:GetFile()] = content
+		end,
+		delete_func = function(curpath)
+			local folder, parfolder = TraversePath(curpath)
+			if not folder then return false, "Doesn't exist" end
+
+			parfolder[curpath:GetFile()] = nil
 		end
-		return "file", folder, 0, 0
-	end, _, _, access)
+	})
 
 end
 
@@ -68,50 +88,65 @@ function gace.SetupGModIOVFolder(id, root, path, access)
 		end
 	end
 
-	gace.SetupRawVFolder(id, function(curpath)
-		curpath = curpath:WithoutVFolder()
-		curpath = root:Add(curpath)
+	gace.SetupRawVFolder(id, access, {
+		filebrowser_func = function(curpath)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
 
-		if not file.Exists(curpath:ToString(), path) then
-			return false, "Doesn't exist"
-		end
+			if not file.Exists(curpath:ToString(), path) then
+				return false, "Doesn't exist"
+			end
 
-		local is_dir = curpath:IsRoot() or file.IsDir(curpath:ToString(), path)
-		if is_dir then
-			local files, folders = file.Find(curpath:ToString() .. "/*", path)
-			gace.Debug("Crawling ", curpath:ToString() .. "/*", " results to ", #files, " files and ", #folders, " folders")
-			
-			return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
-		end
-		return "file", file.Read(curpath:ToString(), path), file.Size(curpath:ToString(), path), file.Time(curpath:ToString(), path)
-	end, function(curpath, content)
-		curpath = curpath:WithoutVFolder()
+			local is_dir = curpath:IsRoot() or file.IsDir(curpath:ToString(), path)
+			if is_dir then
+				local files, folders = file.Find(curpath:ToString() .. "/*", path)
+				gace.Debug("Crawling ", curpath:ToString() .. "/*", " results to ", #files, " files and ", #folders, " folders")
+				
+				return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
+			end
+			return "file", file.Read(curpath:ToString(), path), file.Size(curpath:ToString(), path), file.Time(curpath:ToString(), path)
+		end,
+		save_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
 
-		if path ~= "DATA" then
-			return false, "Unable to save outside data folder"
-		end
-		if not curpath:GetFile():EndsWith(".txt") then
-			return false, "Path must end in .txt"
-		end
-		file.Write(root .. curpath, content)
-		return true
-	end, function(curpath, content)
-		curpath = curpath:WithoutVFolder()
+			if path ~= "DATA" then
+				return false, "Unable to do IO outside data folder"
+			end
+			if not curpath:GetFile():EndsWith(".txt") then
+				return false, "Path must end in .txt"
+			end
+			file.Write(root .. curpath, content)
+			return true
+		end,
+		mkdir_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
 
-		if path ~= "DATA" then
-			return false, "Unable to save outside data folder"
-		end
-		if not file.Exists(curpath:ToString(), path) then
-			return false, "Doesn't exist"
-		end
+			if path ~= "DATA" then
+				return false, "Unable to do IO outside data folder"
+			end
+			file.CreateDir(root .. curpath)
+			return true
+		end,
+		delete_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
 
-		file.Delete(root .. curpath)
-		return true
-	end, access)
+			if path ~= "DATA" then
+				return false, "Unable to do IO outside data folder"
+			end
+			--if not file.Exists(curpath:ToString(), path) then
+			--	return false, "Doesn't exist"
+			--end
+
+			file.Delete(root .. curpath)
+			return true
+		end
+	})
 end
 
 --gace.SetupVFolder("Data", "", "DATA", "superadmin")
 gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
+
+gace.SetupSimpleVFolder("test", {}, "admin")
 
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
@@ -244,6 +279,24 @@ function gace.MakeSaveResponse(ply, path, content)
 	end
 
 	local ret, err = vfolder.svfunc(pathobj, content)
+	if not ret then return {err=err} end
+
+	return {ret="Success"}
+end
+
+function gace.MakeMkDirResponse(ply, path, content)
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
+
+	if pathobj:IsRoot() then
+		return {err="Not a folder"}
+	end
+
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "mkdir") then
+		return {err="No access"}
+	end
+
+	local ret, err = vfolder.mkdirfunc(pathobj)
 	if not ret then return {err=err} end
 
 	return {ret="Success"}

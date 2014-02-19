@@ -57,7 +57,16 @@ function ft.AddFolderNodeOptions(node, filetree)
 				local filname = ft.NodeToPath(node) .. "/" .. nm
 				gace.OpenSession(filname, "", {defens = true})
 			end)
-		end):SetIcon("icon16/page.png")
+		end):SetIcon("icon16/page_add.png")
+
+		menu:AddOption("Create Folder", function()
+			gace.AskForInput("Folder name", function(nm)
+				local filname = ft.NodeToPath(node) .. "/" .. nm
+				gace.MkDir(filname, function()
+					ft.RefreshPath(filetree, ft.NodeToPath(node))
+				end)
+			end)
+		end):SetIcon("icon16/folder_add.png")
 
 		menu:AddOption("Find", function()
 			gace.AskForInput("The phrase to search", function(nm)

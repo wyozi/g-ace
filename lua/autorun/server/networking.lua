@@ -16,6 +16,8 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 		responder_func(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
 	elseif op == "save" then
 		responder_func(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
+	elseif op == "mkdir" then
+		responder_func(ply, reqid, op, gace.MakeMkDirResponse(ply, payload.path))
 	elseif op == "rm" then
 		responder_func(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
 	elseif op == "find" then
