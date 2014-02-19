@@ -88,6 +88,12 @@ function gace.FilterSeq(tbl, fn)
 	return t
 end
 
+function gace.SortedTable(tbl, fn)
+	local c = table.Copy(tbl)
+	table.sort(c, fn)
+	return c
+end
+
 local norm_eq_tester = function(a, b) return a == b end
 
 function gace.Equals(f, s, deep)
@@ -124,6 +130,7 @@ function gace.TableKeysToList(tbl)
 	return keys
 end
 
+gace.TableKeys = gace.TableKeysToList -- alias
 
 local gat = gace.AddTest
 gat("Utils", function()
@@ -135,11 +142,6 @@ gat("Utils", function()
 	assert(gace.ShallowEquals({}, {}))
 	assert(not gace.ShallowEquals({{}}, {{}}))
 	assert(not gace.ShallowEquals({1}, {}))
-	assert(gace.ShallowEquals(gace.TableKeysToList({"a", "b"}), {1, 2}))
-	assert(gace.ShallowEquals(gace.TableKeysToList({"a", c="b"}), {1, "c"}))
-
-	assert(gace.ShallowEquals(gace.Filter({a=1,b=2,c=4}, function(v) return v%2 == 0 end), {b=2,c=4}))
-	assert(gace.ShallowEquals(gace.FilterSeq({1,2,3,4}, function(v) return v%2 == 0 end), {2, 4}))
 
 	assert(gace.DeepEquals({}, {}))
 	assert(not gace.DeepEquals({}, {{}}))
@@ -147,6 +149,12 @@ gat("Utils", function()
 	assert(not gace.DeepEquals({1}, {}))
 	assert(gace.DeepEquals({1, 2, 3}, {1, 2, 3}))
 	assert(gace.DeepEquals({1, {2, 3}}, {1, {2, 3}}))
+	
+	assert(gace.ShallowEquals(gace.TableKeys({"a", "b"}), {1, 2}))
+	assert(gace.ShallowEquals(gace.TableKeys({"a", c="b"}), {1, "c"}))
+
+	assert(gace.ShallowEquals(gace.Filter({a=1,b=2,c=4}, function(v) return v%2 == 0 end), {b=2,c=4}))
+	assert(gace.ShallowEquals(gace.FilterSeq({1,2,3,4}, function(v) return v%2 == 0 end), {2, 4}))
 
 	assert(gace.ShallowEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}), "Map giving wrong result")
 end)

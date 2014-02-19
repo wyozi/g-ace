@@ -42,28 +42,52 @@ gat("Virtual folder functions", {
 		gace.RemoveVFolder("@@@TESTING@@@")
 	end,
 	runner = function(tbl)
-		gace.SetupRawVFolder("@@@TESTING@@@", function(path)
-			local wvpath = path:WithoutVFolder()
-			if wvpath:IsRoot() then
-				return "folder", {path+"abc.txt", path+"file2.txt"}, {path+"foo"}
-			elseif wvpath:ToString() == "foo" then
-				return "folder", {path+"foo/test.txt", path+"foo/bar.txt"}, {}
-			end
-			return "file", "hello world " .. path:GetFile()
-		end, nil, nil, "admin")
+		gace.SetupSimpleVFolder("@@@TESTING@@@", {
+			["abc.txt"] = "Hello, this is abc",
+			["file2.txt"] = "File 2 is da best",
+			["foo"] = {
+				["bar.txt"] = "Bars n' soap, we be rollin"
+			}
+		}, "admin")
 
 		local fake_ply = CreateFakePly()
 
 		assert(gace.MakeRecursiveListResponse(fake_ply, "").err == nil, "failed to recur-list root")
 		assert(gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}), "listed vfolder with no access")
-		assert(gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}), "listed vfolder folders with no access")
-		assert(gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}), "listed vfolder files with no access")
+		assert(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").err == "No access", "listed vfolder folders with no access")
 
 		fake_ply.is_admin = true
 
 		assert(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}), "didn't list vfolder with access")
 		assert(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}), "didn't list vfolder folders with access")
 		assert(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}), "didn't list vfolder files with access")
+
+		assert(gace.DeepEquals(
+			gace.MakeListResponse(fake_ply, "@@@TESTING@@@"),
+			{
+				ret = "Success",
+				type = "folder",
+				files = {"abc.txt", "file2.txt"},
+				folders = {"foo"}
+			}
+		), "list response doesn't match expected")
+
+		assert(gace.DeepEquals(
+			gace.MakeListResponse(fake_ply, "@@@TESTING@@@/foo"),
+			{
+				ret = "Success",
+				type = "folder",
+				files = {"bar.txt"},
+				folders = {}
+			}
+		), "list response doesn't match expected")
+
+		assert(gace.DeepEquals(
+			gace.MakeListResponse(fake_ply, "@@@TESTING@@@/bar"),
+			{
+				err = "Doesn't exist"
+			}
+		), "list response doesn't match expected")
 
 	end
 })

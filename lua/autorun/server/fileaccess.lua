@@ -13,7 +13,51 @@ function gace.RemoveVFolder(id)
 	gace.VirtualFolders[id] = nil
 end
 
-function gace.SetupVFolder(id, root, path, access)
+-- Setups a simple virtual folder, which is simple based on a table, where folders are subtables and files are strings.
+function gace.SetupSimpleVFolder(id, tbl, access, data)
+	data = data or {}
+
+	local function TraversePath(path)
+		path = path:WithoutVFolder()
+
+		-- Parent folder, folder
+		local parfolder, folder = tbl, tbl
+
+		for _,v in ipairs(path.Parts) do
+			if last then parfolder = folder end
+			folder = folder[v]
+			if not folder then
+				return false, "Invalid path"
+			end
+		end
+		return folder, parfolder
+	end
+
+	gace.SetupRawVFolder(id, function(curpath)
+		local folder, parfolder = TraversePath(curpath)
+		if not folder then return false, "Doesn't exist" end
+
+		if type(folder) == "table" then
+			local keys = gace.TableKeys(folder)
+			return "folder",
+					-- Files
+					gace.Map(
+						gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "string" end),
+						function(nm) return curpath + nm end
+					),
+					-- Folders
+					gace.Map(
+						gace.FilterSeq(gace.SortedTable(gace.TableKeys(folder)), function(x) return type(folder[x]) == "table" end),
+						function(nm) return curpath + nm end
+					)
+		end
+		return "file", folder, 0, 0
+	end, _, _, access)
+
+end
+
+-- Setups a virtual folder that uses Garry's Mod's IO lib (file.Write, file.Read etc)
+function gace.SetupGModIOVFolder(id, root, path, access)
 
 	local vfolderpath = gace.Path(id)
 
@@ -28,12 +72,16 @@ function gace.SetupVFolder(id, root, path, access)
 		curpath = curpath:WithoutVFolder()
 		curpath = root:Add(curpath)
 
+		if not file.Exists(curpath:ToString(), path) then
+			return false, "Doesn't exist"
+		end
+
 		local is_dir = curpath:IsRoot() or file.IsDir(curpath:ToString(), path)
 		if is_dir then
 			local files, folders = file.Find(curpath:ToString() .. "/*", path)
 			gace.Debug("Crawling ", curpath:ToString() .. "/*", " results to ", #files, " files and ", #folders, " folders")
 			
-			return "folder", gace.Map(files, PathAdder(curpath)), gace.Map(folders, PathAdder(curpath))
+			return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
 		end
 		return "file", file.Read(curpath:ToString(), path), file.Size(curpath:ToString(), path), file.Time(curpath:ToString(), path)
 	end, function(curpath, content)
@@ -53,13 +101,17 @@ function gace.SetupVFolder(id, root, path, access)
 		if path ~= "DATA" then
 			return false, "Unable to save outside data folder"
 		end
+		if not file.Exists(curpath:ToString(), path) then
+			return false, "Doesn't exist"
+		end
+
 		file.Delete(root .. curpath)
 		return true
 	end, access)
 end
 
 --gace.SetupVFolder("Data", "", "DATA", "superadmin")
-gace.SetupVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
+gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
@@ -92,12 +144,6 @@ function gace.ParsePath(path)
 	return pathobj, vfolder
 end
 
-function gace.TableKeysToList(tbl)
-	local keys = {}
-	for k,v in pairs(tbl) do table.insert(keys, k) end
-	return keys
-end
-
 function gace.MakeRecursiveListResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
@@ -108,8 +154,10 @@ function gace.MakeRecursiveListResponse(ply, path)
 		if not v.ffunc then return end -- No traversal function
 
 		local type, files, folders = v.ffunc(ipath)
-		if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
-		if type ~= "folder" then return end
+		if not type then return false, files end
+
+		if not gace.TestAccess(v.access, ply, ipath, "ls") then return false, "No access" end
+		if type ~= "folder" then return false, "Not a folder" end
 
 		for _,fol in pairs(folders) do
 			local t = {}
@@ -122,6 +170,8 @@ function gace.MakeRecursiveListResponse(ply, path)
 			parent.fil = parent.fil or {}
 			table.insert(parent.fil, fil:GetFile())
 		end
+
+		return true
 	end
 
 	if pathobj:IsRoot() then
@@ -130,7 +180,10 @@ function gace.MakeRecursiveListResponse(ply, path)
 			AddRec(v, pathobj + k, tree.fol[k])
 		end
 	else
-		AddRec(vfolder, pathobj, tree)
+		local ret, err = AddRec(vfolder, pathobj, tree)
+		if not ret then
+			return {err=err}
+		end
 	end
 
 	return {ret="Success", type="filetree", tree=tree}
@@ -149,6 +202,8 @@ function gace.MakeListResponse(ply, path)
 	end
 
 	local type, files, folders = vfolder.ffunc(pathobj)
+	if not type then return {err=files} end
+
 	if type == "folder" then
 		return {ret="Success", type="folder", files=gace.Map(files, function(x)return x:GetFile() end), folders=gace.Map(folders, function(x)return x:GetFile() end)}
 	end
@@ -168,6 +223,8 @@ function gace.MakeFetchResponse(ply, path)
 	end
 
 	local type, content = vfolder.ffunc(pathobj)
+	if not type then return {err=files} end
+
 	if type == "file" then
 		return {ret="Success", type="file", content=content}
 	end
