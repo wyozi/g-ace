@@ -71,6 +71,23 @@ function gace.Map(tbl, fn)
 	return t
 end
 
+function gace.Filter(tbl, fn)
+	local t = {}
+	for k,v in pairs(tbl) do
+		if fn(v, k) then t[k] = v end
+	end
+	return t
+end
+
+-- Filter for sequential tables
+function gace.FilterSeq(tbl, fn)
+	local t = {}
+	for k,v in pairs(tbl) do
+		if fn(v, k) then t[#t+1] = v end
+	end
+	return t
+end
+
 local norm_eq_tester = function(a, b) return a == b end
 
 function gace.Equals(f, s, deep)
@@ -115,9 +132,19 @@ gat("Utils", function()
 	assert(not gace.ShallowEquals({a=1}, {a=2}))
 	assert(gace.ShallowEquals({a=1}, {a=1}))
 
+	assert(gace.ShallowEquals({}, {}))
+	assert(not gace.ShallowEquals({{}}, {{}}))
+	assert(not gace.ShallowEquals({1}, {}))
 	assert(gace.ShallowEquals(gace.TableKeysToList({"a", "b"}), {1, 2}))
 	assert(gace.ShallowEquals(gace.TableKeysToList({"a", c="b"}), {1, "c"}))
 
+	assert(gace.ShallowEquals(gace.Filter({a=1,b=2,c=4}, function(v) return v%2 == 0 end), {b=2,c=4}))
+	assert(gace.ShallowEquals(gace.FilterSeq({1,2,3,4}, function(v) return v%2 == 0 end), {2, 4}))
+
+	assert(gace.DeepEquals({}, {}))
+	assert(not gace.DeepEquals({}, {{}}))
+	assert(gace.DeepEquals({{}}, {{}}))
+	assert(not gace.DeepEquals({1}, {}))
 	assert(gace.DeepEquals({1, 2, 3}, {1, 2, 3}))
 	assert(gace.DeepEquals({1, {2, 3}}, {1, {2, 3}}))
 
