@@ -75,7 +75,9 @@ function gace.RunTests()
 
 	for k,v in pairs(gace.Tests) do
 		msg("")
-		msg("= Running test group ", k)
+		msgc(Color(149, 165, 166), "= Running test group ", Color(52, 152, 219), k)
+
+		local startfails = fails
 
 		local runner = v
 
@@ -90,7 +92,7 @@ function gace.RunTests()
 			if v.after then v.after() end
 		end
 		
-		msg("= Test group ", k, " completed")
+		msgc(Color(149, 165, 166), "= Test group ", (fails == startfails) and Color(0, 255, 0) or Color(255, 0, 0), "completed")
 	end
 
 	msg("")
