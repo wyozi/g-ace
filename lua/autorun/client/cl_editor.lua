@@ -383,6 +383,11 @@ concommand.Add("g-ace", function()
 		gace.Frame = frame
 
 	local tabs = vgui.Create("DHorizontalScroller", frame)
+		tabs.Paint = function(self, w, h)
+			local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
+			surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
 		tabs:Dock(TOP)
 		tabs:SetOverlap(-1)
 
@@ -392,12 +397,12 @@ concommand.Add("g-ace", function()
 		gace.Tabs = tabs
 
 	local divider = vgui.Create("DHorizontalDivider", frame)
-	divider:Dock(FILL)
-	divider:SetDividerWidth(4)
-	divider:SetLeftWidth(cookie.GetNumber("gace-ftreewidth", 200))
-	divider.Think = function(self)
-		cookie.Set("gace-ftreewidth", self:GetLeftWidth())
-	end
+		divider:Dock(FILL)
+		divider:SetDividerWidth(4)
+		divider:SetLeftWidth(cookie.GetNumber("gace-ftreewidth", 200))
+		divider.Think = function(self)
+			cookie.Set("gace-ftreewidth", self:GetLeftWidth())
+		end
 
 		local filetree = vgui.Create("DTree")
 			divider:SetLeft(filetree)

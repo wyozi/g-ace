@@ -6,7 +6,8 @@ function gace.SetupRawVFolder(id, access, data)
 		svfunc=data.save_func,
 		delfunc=data.delete_func,
 		mkdirfunc=data.mkdir_func,
-		access=access
+		access=access,
+		description=data.description
 	}
 end
 
@@ -71,7 +72,8 @@ function gace.SetupSimpleVFolder(id, tbl, access, data)
 			if not folder then return false, "Doesn't exist" end
 
 			parfolder[curpath:GetFile()] = nil
-		end
+		end,
+		description = data.description
 	})
 
 end
