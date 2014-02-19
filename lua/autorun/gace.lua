@@ -71,16 +71,42 @@ function gace.Map(tbl, fn)
 	return t
 end
 
-function gace.ShallowEquals(f, s)
-	-- Two fors because one of them might have less/different indices than the other
-	for k,v in pairs(f) do
-		if f[k] ~= s[k] then return false end
+local norm_eq_tester = function(a, b) return a == b end
+
+function gace.Equals(f, s, deep)
+	if type(f) ~= "table" or type(s) ~= "table" then return f == s end
+
+	local eq_tester = deep and gace.Equals or norm_eq_tester
+
+	for kf, vf in pairs(f) do
+		local vs = s[kf]
+
+		if not eq_tester(vf, vs) then return false end
 	end
-	for k,v in pairs(s) do
-		if f[k] ~= s[k] then return false end
+
+	for ks, vs in pairs(s) do
+		local vf = f[ks]
+
+		if not eq_tester(vf, vs) then return false end
 	end
+
 	return true
 end
+
+function gace.ShallowEquals(f, s)
+	return gace.Equals(f, s)
+end
+
+function gace.DeepEquals(f, s)
+	return gace.Equals(f, s, true)
+end
+
+function gace.TableKeysToList(tbl)
+	local keys = {}
+	for k,v in pairs(tbl) do table.insert(keys, k) end
+	return keys
+end
+
 
 local gat = gace.AddTest
 gat("Utils", function()
@@ -88,6 +114,12 @@ gat("Utils", function()
 	assert(not gace.ShallowEquals({1,2,3}, {1,2,3,4}))
 	assert(not gace.ShallowEquals({a=1}, {a=2}))
 	assert(gace.ShallowEquals({a=1}, {a=1}))
+
+	assert(gace.ShallowEquals(gace.TableKeysToList({"a", "b"}), {1, 2}))
+	assert(gace.ShallowEquals(gace.TableKeysToList({"a", c="b"}), {1, "c"}))
+
+	assert(gace.DeepEquals({1, 2, 3}, {1, 2, 3}))
+	assert(gace.DeepEquals({1, {2, 3}}, {1, {2, 3}}))
 
 	assert(gace.ShallowEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}), "Map giving wrong result")
 end)
