@@ -25,7 +25,7 @@ function gace.SetupSimpleVFolder(id, tbl, access, data)
 		local parfolder, folder = tbl, tbl
 
 		for _,v in ipairs(path.Parts) do
-			if last then parfolder = folder end
+			if folder then parfolder = folder end
 			if not folder then break end
 
 			folder = folder[v]
@@ -62,7 +62,7 @@ function gace.SetupSimpleVFolder(id, tbl, access, data)
 		end,
 		save_func = function(curpath, content)
 			local folder, parfolder = TraversePath(curpath)
-			if not parfolder then return false, "Folder doesn't exist" end
+			if not parfolder then return false, "Doesn't exist" end
 
 			parfolder[curpath:GetFile()] = content
 		end,
