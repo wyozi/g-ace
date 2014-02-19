@@ -58,7 +58,7 @@ function gace.RunTests()
 	end
 
 	msg("")
-	msg("Tests finished! ", compl, " completed tests; ", fails, " failed.")
+	MsgC(fails == 0 and Color(0, 255, 0) or Color(255, 0, 0), "All tests finished! ", compl, " completed tests; ", fails, " failed.") MsgN("")
 end
 
 -- Small utility functions

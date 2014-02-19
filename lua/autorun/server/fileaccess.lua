@@ -1,5 +1,4 @@
 gace.VirtualFolders = gace.VirtualFolders or {}
-gace.ROOT = {} -- Empty table object indicates uniqueness
 
 function gace.SetupRawVFolder(id, filebrowser_func, save_func, delete_func, access)
 	gace.VirtualFolders[id] = {
@@ -8,6 +7,10 @@ function gace.SetupRawVFolder(id, filebrowser_func, save_func, delete_func, acce
 		delfunc=delete_func,
 		access=access
 	}
+end
+
+function gace.RemoveVFolder(id)
+	gace.VirtualFolders[id] = nil
 end
 
 function gace.SetupVFolder(id, root, path, access)
@@ -59,7 +62,10 @@ end
 gace.SetupVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
 function gace.TestAccess(access, ply, ...)
-	if access == "admin" then return ply:IsAdmin() end
+	-- Invalid player (aka console) overrides all access right checks
+	if not ply:IsValid() then return true end
+
+	if access == "admin" then return ply:IsAdmin() or ply:IsSuperAdmin() end
 	if access == "superadmin" then return ply:IsSuperAdmin() end
 
 	if type(access) == "function" then
@@ -69,7 +75,8 @@ function gace.TestAccess(access, ply, ...)
 		return ply:IsUserGroup(access)
 	end
 
-	return not ply:IsValid()
+	-- Invalid usergroup given?
+	return false
 end
 
 function gace.ParsePath(path)
@@ -98,6 +105,8 @@ function gace.MakeRecursiveListResponse(ply, path)
 	local tree = {fol={}, fil={}}
 
 	local function AddRec(v, ipath, parent)
+		if not v.ffunc then return end -- No traversal function
+
 		local type, files, folders = v.ffunc(ipath)
 		if not gace.TestAccess(v.access, ply, ipath, "ls") then return end
 		if type ~= "folder" then return end

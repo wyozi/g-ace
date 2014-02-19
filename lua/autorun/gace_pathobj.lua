@@ -105,4 +105,6 @@ gat("Paths: VFolders/Files", function()
 	assert(gace.Path("/home/foo/bar/"):GetFile() == "bar", "didn't return correct file")
 	assert(gace.Path("/home/foo/bar/"):WithoutVFolder():ToString() == "foo/bar", "didn't return correct path")
 	assert(gace.Path("/home/foo/bar/"):WithoutFile():ToString() == "home/foo", "didn't return correct path")
+
+	assert(gace.Path("home"):WithoutVFolder():IsRoot(), "didn't return correct IsRoot value")
 end)
