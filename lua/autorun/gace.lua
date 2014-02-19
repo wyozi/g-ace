@@ -47,11 +47,11 @@ function gace.RunTests()
 	end
 
 	local function pass(msg)
-		msgc(Color(189, 195, 199), GetDetails(), Color(189, 195, 199), msg, Color(0, 255, 0), " passed!")
+		msgc(Color(236, 240, 241), GetDetails(), Color(189, 195, 199), msg, Color(0, 255, 0), " passed!")
 		compl = compl + 1
 	end
 	local function fail(msg)
-		msgc(Color(189, 195, 199), GetDetails(), Color(189, 195, 199), msg, Color(255, 0, 0), " failed!")
+		msgc(Color(236, 240, 241), GetDetails(), Color(189, 195, 199), msg, Color(255, 0, 0), " failed!")
 		fails = fails + 1
 	end
 
@@ -70,6 +70,9 @@ function gace.RunTests()
 		end,
 		assertDeepEquals = function(a, b, msg)
 			if gace.DeepEquals(a, b) then pass(msg) else fail(msg) end
+		end,
+		assertNonDeepEqual = function(a, b, msg)
+			if not gace.DeepEquals(a, b) then pass(msg) else fail(msg) end
 		end,
 	}
 
