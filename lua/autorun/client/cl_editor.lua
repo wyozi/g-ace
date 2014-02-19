@@ -20,7 +20,12 @@ function gace.OpenSession(id, content, data)
 		[[", defens: ]] .. tostring(defens) .. [[});]])
 end
 function gace.OpenPath(id, callback)
-	-- TODO check if path is opened as a tab and go to file instantly if it is
+	local tab = gace.GetTabFor(id)
+	if tab then -- Tab exists, thus session exists, thus we can go to session directly without fetching contents
+		gace.OpenSession(id, "") -- Contents not needed; OpenSession doesn't replace them anyway
+		return
+	end
+
 	gace.Fetch(id, function(_, _, payload)
 		gace.OpenSession(id, payload.content)
 		if callback then callback() end
