@@ -253,13 +253,6 @@ end
 function gace.CreateHTMLPanel()
 	local html = vgui.Create("DHTML")
 
-	local url = "http://wyozi.github.io/g-ace/editor.html"
-	if gacedevurl:GetString() ~= "" then
-		url = gacedevurl:GetString()
-	end
-	
-	html:OpenURL(url)
-
 	html:AddFunction("gace", "SetOpenedSession", function(id, content)
 		gace.OpenedSessionId = id
 		gace.OpenedSessionContent = content
@@ -362,6 +355,13 @@ function gace.CreateHTMLPanel()
 		end
 	end
 
+	local url = "http://wyozi.github.io/g-ace/editor.html"
+	if gacedevurl:GetString() ~= "" then
+		url = gacedevurl:GetString()
+	end
+	
+	html:OpenURL(url)
+	
 	return html
 end
 
