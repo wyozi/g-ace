@@ -49,6 +49,10 @@ local path_meta = {
 		return self:Add(f):ToString()
 	end,
 
+	Equals = function(self, f)
+		return self:ToString() == f:ToString()
+	end,
+
 	-- Strips first part
 	WithoutVFolder = function(self, f)
 		return gace.NewPath(""):SetTable({unpack(self.Parts, 2)})
@@ -67,6 +71,7 @@ path_meta.__index = path_meta
 path_meta.__tostring = path_meta.ToString
 path_meta.__add = path_meta.Add
 path_meta.__concat = path_meta.Concat
+path_meta.__eq = path_meta.Equals
 
 function gace.NewPath(s)
 	local tbl = {Parts={}}
@@ -94,6 +99,8 @@ end)
 gat("Paths: Operator overloading", function()
 	assert((gace.Path("foo") + gace.Path("bar")):ToString() == "foo/bar", "invalid result from Add")
 	assert((gace.Path("foo") .. gace.Path("bar")) == "foo/bar", "invalid result from Concat")
+
+	assert(gace.Path("foo/bar") == gace.Path("foo/bar/"), "invalid result from Equals")
 end)
 
 gat("Paths: Invalid paths", function()
