@@ -66,7 +66,7 @@ function gace.RunTests()
 			if gace.Equals(a, b) then pass(msg) else fail(msg) end
 		end,
 		assertNonEqual = function(a, b, msg)
-			if not gace.Equals then pass(msg) else fail(msg) end
+			if not gace.Equals(a, b) then pass(msg) else fail(msg) end
 		end,
 		assertDeepEquals = function(a, b, msg)
 			if gace.DeepEquals(a, b) then pass(msg) else fail(msg) end

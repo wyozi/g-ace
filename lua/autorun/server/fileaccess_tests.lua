@@ -58,54 +58,53 @@ gat("Virtual folder functions", {
 
 		fake_ply.is_admin = true
 
-		t.assertTrue(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}), "rec. list test vfolder in rec. root list")
-		t.assertTrue(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}), "rec. list vfolder folders")
-		t.assertTrue(not gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}), "rec. list vfolder files")
+		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}, "rec. list test vfolder in rec. root list")
+		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}, "rec. list vfolder folders")
+		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}, "rec. list vfolder files")
 
-		t.assertTrue(gace.DeepEquals(
-			gace.MakeListResponse(fake_ply, "@@@TESTING@@@"),
+		t.assertDeepEquals(gace.MakeListResponse(fake_ply, "@@@TESTING@@@"),
 			{
 				ret = "Success",
 				type = "folder",
 				files = {"abc.txt", "file2.txt"},
 				folders = {"foo"}
-			}
-		), "list test vfolder")
+			},
+		"list test vfolder")
 
-		t.assertTrue(gace.DeepEquals(
+		t.assertDeepEquals(
 			gace.MakeListResponse(fake_ply, "@@@TESTING@@@/foo"),
 			{
 				ret = "Success",
 				type = "folder",
 				files = {"bar.txt"},
 				folders = {}
-			}
-		), "list subfolder in test vfolder")
+			},
+		"list subfolder in test vfolder")
 
-		t.assertTrue(gace.DeepEquals(
+		t.assertDeepEquals(
 			gace.MakeListResponse(fake_ply, "@@@TESTING@@@/bar"),
 			{
 				err = "Doesn't exist"
-			}
-		), "try to list nonexistent folder")
+			},
+		"try to list nonexistent folder")
 
-		t.assertTrue(gace.DeepEquals(
+		t.assertDeepEquals(
 			gace.MakeFetchResponse(fake_ply, "@@@TESTING@@@/abc.txt"),
 			{
 				ret = "Success",
 				type = "file",
 				content = "Hello, this is abc"
-			}
-		), "fetch file contents")
+			},
+		"fetch file contents")
 
 		fake_ply.is_admin = false
 
-		t.assertTrue(gace.DeepEquals(
+		t.assertDeepEquals(
 			gace.MakeFetchResponse(fake_ply, "@@@TESTING@@@/abc.txt"),
 			{
 				err = "No access"
-			}
-		), "try to fetch with no access")
+			},
+		"try to fetch with no access")
 
 	end
 })
