@@ -135,6 +135,19 @@ gace.TitleBarComponents = {
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
 	},
 	{
+		text = "Player",
+		fn = function()
+			local menu = DermaMenu()
+			for _,ply in pairs(player.GetAll()) do
+				menu:AddOption(ply:Nick(), function()
+					luadev.RunOnClient(ply, gace.OpenedSessionContent, "g-ace code")
+				end)
+			end
+			menu:Open()
+		end,
+		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
+	},
+	{
 		text = "ULX Group",
 		fn = function()
 			local menu = DermaMenu()
