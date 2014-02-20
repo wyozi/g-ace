@@ -377,7 +377,7 @@ function gace.CreateHTMLPanel()
 	end)
 
 	html:AddFunction("gace", "EditorReady", function()
-		local c_theme = cookie.GetString("gace-theme")
+		local c_theme = cookie.GetString("gace-theme", "ace/theme/tomorrow_night") or "ace/theme/tomorrow_night"
 		local the_theme = "ace/theme/tomorrow_night"
 		if table.HasValue(gace.AvailableThemes, c_theme:Split("/")[3]) then
 			the_theme = c_theme
