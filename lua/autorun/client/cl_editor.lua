@@ -106,7 +106,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Self",
 		fn = function()
-			luadev.RunOnSelf(gace.OpenedSessionContent)
+			luadev.RunOnSelf(gace.OpenedSessionContent, "g-ace code")
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F5"
@@ -114,7 +114,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Server",
 		fn = function()
-			luadev.RunOnServer(gace.OpenedSessionContent)
+			luadev.RunOnServer(gace.OpenedSessionContent, "g-ace code")
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F6"
@@ -122,10 +122,38 @@ gace.TitleBarComponents = {
 	{
 		text = "Shared",
 		fn = function()
-			luadev.RunOnShared(gace.OpenedSessionContent)
+			luadev.RunOnShared(gace.OpenedSessionContent, "g-ace code")
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F7"
+	},
+	{
+		text = "Clients",
+		fn = function()
+			luadev.RunOnClients(gace.OpenedSessionContent, "g-ace code")
+		end,
+		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
+	},
+	{
+		text = "ULX Group",
+		fn = function()
+			local menu = DermaMenu()
+			for group,_ in pairs(ULib.ucl.groups) do
+				menu:AddOption(group, function()
+					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
+					for _,tply in pairs(targetplys) do
+						luadev.RunOnClient(tply, gace.OpenedSessionContent, "g-ace code")
+					end
+				end)
+			end
+			menu:Open()
+		end,
+		enabled = function() return luadev ~= nil and
+									ULib ~= nil and
+									ULib.ucl ~= nil and
+									ULib.ucl.groups ~= nil and
+									gace.OpenedSessionContent
+							end
 	},
 	{ text = "", width = 20 },
 	{ text = "Editor", width = 35 },
