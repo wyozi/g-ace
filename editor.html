@@ -38,7 +38,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 <script src="ace/ext-language_tools.js"></script>
 <script src="ace/ext-settings_menu.js"></script>
 <script src="ace/ext-keybinding_menu.js"></script>
-<script src="base64.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
 <script>
     var editor = ace.edit("editor");
 
@@ -144,6 +144,15 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         readOnly: true
     }); 
 
+    // Weirdest hack EU. We need to throw an error in here, or typing right curly brackets won't work
+    editor.commands.addCommand({
+        name: 'Add right curly bracket',
+        bindKey: {win: 'Ctrl-alt-0',  mac: 'Ctrl-alt-0'},
+        exec: function(editor) {
+            throw "dirty hack to make right curly bracket work";
+        }
+    });
+
     var gaceSessions = (function() {
         var sessions = {};
 
@@ -223,4 +232,4 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
 </script>
 </body>
-</html>#002A7F
+</html>
