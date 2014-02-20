@@ -106,7 +106,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Self",
 		fn = function()
-			luadev.RunOnSelf(gace.OpenedSessionContent, "g-ace code")
+			luadev.RunOnSelf(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F5"
@@ -114,7 +114,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Server",
 		fn = function()
-			luadev.RunOnServer(gace.OpenedSessionContent, "g-ace code")
+			luadev.RunOnServer(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F6"
@@ -122,7 +122,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Shared",
 		fn = function()
-			luadev.RunOnShared(gace.OpenedSessionContent, "g-ace code")
+			luadev.RunOnShared(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
 		tt = "Hotkey in editor: F7"
@@ -130,7 +130,7 @@ gace.TitleBarComponents = {
 	{
 		text = "Clients",
 		fn = function()
-			luadev.RunOnClients(gace.OpenedSessionContent, "g-ace code")
+			luadev.RunOnClients(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
 	},
@@ -140,7 +140,7 @@ gace.TitleBarComponents = {
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(ply, gace.OpenedSessionContent, "g-ace code")
+					luadev.RunOnClient(ply, gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 				end)
 			end
 			menu:Open()
@@ -155,7 +155,7 @@ gace.TitleBarComponents = {
 				menu:AddOption(group, function()
 					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
 					for _,tply in pairs(targetplys) do
-						luadev.RunOnClient(tply, gace.OpenedSessionContent, "g-ace code")
+						luadev.RunOnClient(tply, gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
 					end
 				end)
 			end
