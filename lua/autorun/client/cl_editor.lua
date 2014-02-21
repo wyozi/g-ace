@@ -1,4 +1,8 @@
 
+-- IMPORTANT TO KNOW
+-- Session id is equal to the path (the text in tab)
+-- Id and path might be used interchangeably in code
+
 function gace.RunEditorJS(code)
 	gace.Editor:RunJavascript(code)
 end
@@ -40,9 +44,8 @@ function gace.CloseSession(id)
 	gace.RunEditorJS([[
 		gaceSessions.close("]] .. id .. [[");
 	]])
-	if gace.OpenedSessionId == id then
-		gace.OpenedSessionId = nil
-		gace.OpenedSessionContent = nil
+	if gace.GetSessionId() == id then
+		gace.ResetGaceSession()
 	end
 
 	local tab = gace.GetTabFor(id)
@@ -66,6 +69,27 @@ function gace.CloseSession(id)
 	if my_collab == id then
 		gace.SendRequest("colsetfile", {path=""})
 	end
+end
+
+function gace.GetSession()
+	return gace.OpenedSession
+end
+function gace.ResetGaceSession()
+	local t = {}
+	gace.OpenedSession = t
+	return t
+end
+function gace.GetSessionId()
+	local sess = gace.GetSession()
+	if sess then return sess.id end
+end
+function gace.GetSessionContent()
+	local sess = gace.GetSession()
+	if sess then return sess.content end
+end
+function gace.GetSessionMode()
+	local sess = gace.GetSession()
+	if sess then return sess.mode end
 end
 
 function gace.AskForInput(query, callback, default)
@@ -106,33 +130,33 @@ gace.TitleBarComponents = {
 	{
 		text = "Self",
 		fn = function()
-			luadev.RunOnSelf(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+			luadev.RunOnSelf(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
 		tt = "Hotkey in editor: F5"
 	},
 	{
 		text = "Server",
 		fn = function()
-			luadev.RunOnServer(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+			luadev.RunOnServer(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
 		tt = "Hotkey in editor: F6"
 	},
 	{
 		text = "Shared",
 		fn = function()
-			luadev.RunOnShared(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+			luadev.RunOnShared(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
 		tt = "Hotkey in editor: F7"
 	},
 	{
 		text = "Clients",
 		fn = function()
-			luadev.RunOnClients(gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+			luadev.RunOnClients(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
+		enabled = function() return luadev ~= nil and gace.GetSessionContent end
 	},
 	{
 		text = "Player",
@@ -140,12 +164,12 @@ gace.TitleBarComponents = {
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(ply, gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+					luadev.RunOnClient(ply, gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()
 		end,
-		enabled = function() return luadev ~= nil and gace.OpenedSessionContent end
+		enabled = function() return luadev ~= nil and gace.GetSessionContent end
 	},
 	{
 		text = "ULX Group",
@@ -155,7 +179,7 @@ gace.TitleBarComponents = {
 				menu:AddOption(group, function()
 					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
 					for _,tply in pairs(targetplys) do
-						luadev.RunOnClient(tply, gace.OpenedSessionContent, "g-ace: " .. (gace.OpenedSessionId or ""))
+						luadev.RunOnClient(tply, gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
 					end
 				end)
 			end
@@ -165,7 +189,7 @@ gace.TitleBarComponents = {
 									ULib ~= nil and
 									ULib.ucl ~= nil and
 									ULib.ucl.groups ~= nil and
-									gace.OpenedSessionContent
+									gace.GetSessionContent
 							end
 	},
 	{ text = "", width = 20 },
@@ -222,7 +246,7 @@ gace.TitleBarComponents = {
 			for _,mode in pairs(modes) do
 				local mode2 = "ace/mode/" .. mode
 				local opt = menu:AddOption(mode, function() gace.RunEditorJS("editor.getSession().setMode('" .. mode2 .. "')") end)
-				if gace.OpenedSessionMode == mode2 then
+				if gace.GetSessionMode() == mode2 then
 					opt:SetChecked(true)
 				end
 			end
@@ -331,26 +355,29 @@ function gace.CreateHTMLPanel()
 	local html = vgui.Create("DHTML")
 
 	html:AddFunction("gace", "SetOpenedSession", function(id, content, mode)
-		gace.OpenedSessionId = id
-		gace.OpenedSessionContent = content
+		local sess = gace.ResetGaceSession()
+
+		sess.id = id
+		sess.content = content
 
 		gace.CreateTab(id)
 	end)
 	html:AddFunction("gace", "ReportLatestContent", function(content)
-		gace.OpenedSessionContent = content
+		local sess = gace.GetSession()
+		if sess then sess.content = content end
 
 		local my_collab = gace.CollabPositions[LocalPlayer()]
-		if my_collab ~= gace.OpenedSessionId then
+		if my_collab ~= gace.GetSessionId() then
 			-- This might get called multiple times if player types a lot before new collab file
 			-- is broadcasted, but sending packets isn't that expensive.
 			--  TODO this might get spammed if user is not allowed to receive their own collab packets
-			gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
+			gace.SendRequest("colsetfile", {path=gace.GetSessionId()})
 		end
 	end)
 	html:AddFunction("gace", "SaveSession", function(content)
 		-- If we're trying to save under root folder
 
-		local initial_osi = gace.OpenedSessionId
+		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
 			gace.Save(path, content, function(_, _, pl)
@@ -383,7 +410,7 @@ function gace.CreateHTMLPanel()
 		SaveTo(initial_osi)
 	end)
 	html:AddFunction("gace", "SetEditedNotSaved", function(b)
-		local t = gace.GetTabFor(gace.OpenedSessionId)
+		local t = gace.GetTabFor(gace.GetSessionId())
 		if t then t.EditedNotSaved = b end
 	end)
 	html:AddFunction("gace", "CallLDFunc", function(ldf, content)
@@ -411,9 +438,10 @@ function gace.CreateHTMLPanel()
 
 		cookie.Set("gace-theme", theme)
 	end)
-	
+
 	html:AddFunction("gace", "ModeChanged", function(mode)
-		gace.OpenedSessionMode = mode
+		local sess = gace.GetSession()
+		if sess then sess.mode = mode end
 	end)
 
 	html:AddFunction("gace", "EditorReady", function()
@@ -451,13 +479,13 @@ concommand.Add("g-ace", function()
 	if IsValid(gace.Frame) then
 		if gace.Frame:IsVisible() then return end
 		gace.Frame:Show()
-		gace.SendRequest("colsetfile", {path=gace.OpenedSessionId})
+		gace.SendRequest("colsetfile", {path=gace.GetSessionId()})
 		return
 	end
 
 	-- Clear some session variables that might've gotten cached
-	gace.OpenedSessionId = nil
 	gace.FileNodeTree = nil
+	gace.OpenedSession = nil
 
 	local frame = gace.CreateFrame()
 

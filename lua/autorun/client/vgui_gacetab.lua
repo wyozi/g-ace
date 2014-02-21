@@ -26,7 +26,7 @@ local VGUI_EDITOR_TAB = {
 	Paint = function(self, w, h)
 		if self.Hovered then
 			surface.SetDrawColor(gace.UIColors.tab_bg_hover)--52, 152, 219)
-		elseif self.SessionId == gace.OpenedSessionId then
+		elseif self.SessionId == gace.GetSessionId() then
 			surface.SetDrawColor(gace.UIColors.tab_bg_active)--44, 62, 80)
 		else
 			surface.SetDrawColor(gace.UIColors.tab_bg)--127, 140, 141)

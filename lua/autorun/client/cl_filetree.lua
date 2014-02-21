@@ -195,7 +195,7 @@ function ft.AddFileNodeOptions(node, filetree)
 end
 
 local function PaintFileNode(self, w, h)
-	if self.Path == gace.OpenedSessionId then
+	if self.Path == gace.GetSessionId() then
 		surface.SetDrawColor(127, 255, 127, 140)
 		surface.DrawRect(0, 0, w, h)
 	end
