@@ -155,6 +155,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
     var gaceSessions = (function() {
         var sessions = {};
+        var sessionId = null;
 
         return {
             exists: function(id) {
@@ -163,8 +164,10 @@ Select a file or press Ctrl-n from the filetree to start hacking!
             reopen: function(id) {
                 if (this.exists(id)) {
                     editor.setSession(sessions[id]);
-                    gace.SetOpenedSession(id, editor.getSession().getValue());
                     editor.setReadOnly(false);
+                    sessionId = id;
+                    
+                    gace.SetOpenedSession(id, editor.getSession().getValue());
                     return true;
                 }
                 return false;
@@ -201,8 +204,12 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 if (editor.getSession() == sessions[id]) {
                     editor.setSession(emptySession);
                     editor.setReadOnly(true);
+                    sessionId = null;
                 }
                 delete sessions[id];
+            },
+            getSessionId: function() {
+                return sessionId;
             }
         }
     })();
@@ -222,6 +229,11 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
 
         gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+    });
+
+    editor.on("changeMode", function(e) {
+        if ("gace" in window)
+            gace.ModeChanged(editor.getSession().getMode().$id);
     });
 
     function OnReady() {
