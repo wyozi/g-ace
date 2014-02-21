@@ -187,8 +187,15 @@ gace.TitleBarComponents = {
 		text = "Theme",
 		fn = function()
 			local menu = DermaMenu()
+
+			local c_theme = cookie.GetString("gace-theme", "ace/theme/tomorrow_night") or "ace/theme/tomorrow_night"
+			local theme_name = c_theme:Split("/")[3]
+
 			for _,theme in pairs(gace.AvailableThemes) do
-				menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
+				local opt = menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
+				if theme_name == theme then
+					opt:SetChecked(true)
+				end
 			end
 			menu:Open()
 		end
