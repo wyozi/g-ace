@@ -199,8 +199,8 @@ gace.TitleBarComponents = {
 	{ text = "", width = 20 },
 	{ text = "Custom", width = 40 },
 	{
-		text = "HudBuilder mode",
-		tt = "HudBuilder mode compiles and runs code in real time. Useful for building HUDs.",
+		text = "Reload mode",
+		tt = "Reload mode compiles and runs code every time code changes. Useful for e.g. building HUDs.",
 		width = 100,
 		toggle = true,
 		fn = function(state)
