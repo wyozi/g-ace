@@ -192,6 +192,20 @@ gace.TitleBarComponents = {
 									gace.GetSessionContent
 							end
 	},
+
+	{ text = "", width = 20 },
+	{ text = "Custom", width = 40 },
+	{
+		text = "HudBuilder mode",
+		tt = "HudBuilder mode compiles and runs code in real time. Useful for building HUDs.",
+		width = 100,
+		toggle = true,
+		fn = function(state)
+			local sess = gace.GetSession()
+			if sess then sess.hbmode = state end
+		end
+	},
+
 	{ text = "", width = 20 },
 	{ text = "Editor", width = 35 },
 	{
@@ -364,7 +378,17 @@ function gace.CreateHTMLPanel()
 	end)
 	html:AddFunction("gace", "ReportLatestContent", function(content)
 		local sess = gace.GetSession()
-		if sess then sess.content = content end
+		if sess then
+			sess.content = content
+			if sess.hbmode then
+				local fn = CompileString(content, "g-ace hbmode code", false)
+				if type(fn) == "string" then
+					MsgN("[G-Ace] HBMode compilation failed: ", fn)
+				elseif fn then
+					fn()
+				end
+			end
+		end
 
 		local my_collab = gace.CollabPositions[LocalPlayer()]
 		if my_collab ~= gace.GetSessionId() then
@@ -567,6 +591,8 @@ concommand.Add("g-ace", function()
 				x = x + (v.width or 60)+2
 				comp:SetText(v.text)
 
+				if v.toggle then comp.ToggleMode = true end
+
 				if is_label then
 					comp.Think = function(self) self:SetColor(gace.UIColors.frame_fg) end
 				end
@@ -582,9 +608,12 @@ concommand.Add("g-ace", function()
 				end
 
 				if v.fn then
-					comp.DoClick = function(self, ...)
+					comp.DoClick = function(self)
 						if not self:GetDisabled() then
-							v.fn(self, ...)
+							if self.ToggleMode then
+								self.Toggled = not self.Toggled
+							end
+							v.fn(self, self.Toggled)
 						end
 					end
 				end

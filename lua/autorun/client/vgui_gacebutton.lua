@@ -7,6 +7,8 @@ local VGUI_BUTTON = {
 			surface.SetDrawColor(gace.UIColors.tab_bg_active)
 		elseif self.Hovered then
 			surface.SetDrawColor(gace.UIColors.tab_bg_hover)
+		elseif self.ToggleMode and self.Toggled then
+			surface.SetDrawColor(gace.UIColors.tab_bg_active)
 		else
 			surface.SetDrawColor(gace.UIColors.tab_bg)
 		end
