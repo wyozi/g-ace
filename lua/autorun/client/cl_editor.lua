@@ -31,6 +31,9 @@ function gace.OpenPath(id, callback)
 	end
 
 	gace.Fetch(id, function(_, _, payload)
+		if payload.err then
+			return MsgN("[G-Ace] Can't open ", id, ": ", payload.err)
+		end
 		gace.OpenSession(id, payload.content)
 		if callback then callback() end
 	end)
