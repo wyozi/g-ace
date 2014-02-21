@@ -146,12 +146,20 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
     // Weirdest hack EU. We need to throw an error in here, or typing right curly brackets won't work
     editor.commands.addCommand({
-        name: 'Add right curly bracket',
+        name: 'Add right curly bracket }',
         bindKey: {win: 'Ctrl-alt-0',  mac: 'Ctrl-alt-0'},
         exec: function(editor) {
             throw "dirty hack to make right curly bracket work";
         }
     });
+
+    editor.commands.addCommand({
+        name: "Outdent (workaround)",
+        bindKey: {win: "Ctrl-Shift-Tab", max: "Ctrl-Shift-Tab"},
+        exec: function(editor) { editor.blockOutdent(); },
+        multiSelectAction: "forEach",
+        scrollIntoView: "selectionPart"
+    })
 
     var gaceSessions = (function() {
         var sessions = {};
