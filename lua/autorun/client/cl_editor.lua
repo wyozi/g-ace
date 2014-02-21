@@ -130,33 +130,33 @@ gace.TitleBarComponents = {
 	{
 		text = "Self",
 		fn = function()
-			luadev.RunOnSelf(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnSelf(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end,
 		tt = "Hotkey in editor: F5"
 	},
 	{
 		text = "Server",
 		fn = function()
-			luadev.RunOnServer(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnServer(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end,
 		tt = "Hotkey in editor: F6"
 	},
 	{
 		text = "Shared",
 		fn = function()
-			luadev.RunOnShared(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnShared(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.GetSessionContent end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end,
 		tt = "Hotkey in editor: F7"
 	},
 	{
 		text = "Clients",
 		fn = function()
-			luadev.RunOnClients(gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnClients(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil and gace.GetSessionContent end
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end
 	},
 	{
 		text = "Player",
@@ -164,12 +164,12 @@ gace.TitleBarComponents = {
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(ply, gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+					luadev.RunOnClient(ply, gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()
 		end,
-		enabled = function() return luadev ~= nil and gace.GetSessionContent end
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end
 	},
 	{
 		text = "ULX Group",
@@ -179,7 +179,7 @@ gace.TitleBarComponents = {
 				menu:AddOption(group, function()
 					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
 					for _,tply in pairs(targetplys) do
-						luadev.RunOnClient(tply, gace.GetSessionContent, "g-ace: " .. (gace.GetSessionId() or ""))
+						luadev.RunOnClient(tply, gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 					end
 				end)
 			end
@@ -189,7 +189,7 @@ gace.TitleBarComponents = {
 									ULib ~= nil and
 									ULib.ucl ~= nil and
 									ULib.ucl.groups ~= nil and
-									gace.GetSessionContent
+									gace.GetSessionContent()
 							end
 	},
 
