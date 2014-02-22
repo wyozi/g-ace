@@ -183,7 +183,7 @@ function gace.SetupGaceIOVFolder(id, root, access)
 				local files, folders = gaceio.List(GIOPath(curpath))
 				return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
 			end
-			return "file", gaceio.Read(GIOPath(curpath:ToString())), 0, 0
+			return "file", gaceio.Read(GIOPath(curpath)), 0, 0
 		end,
 		save_func = function(curpath, content)
 			curpath = curpath:WithoutVFolder()
@@ -203,8 +203,7 @@ function gace.SetupGaceIOVFolder(id, root, access)
 			curpath = curpath:WithoutVFolder()
 			curpath = root:Add(curpath)
 
-			-- TODO
-			--file.Delete(root .. curpath)
+			gaceio.Delete(GIOPath(curpath))
 			return true
 		end
 	})
@@ -215,7 +214,9 @@ gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
 gace.SetupSimpleVFolder("test", {}, "admin")
 
-gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "admin")
+pcall(function()
+	gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "admin")
+end)
 
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
