@@ -110,6 +110,7 @@ function gace.SetupGModIOVFolder(id, root, path, access)
 		end,
 		save_func = function(curpath, content)
 			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
 
 			if path ~= "DATA" then
 				return false, "Unable to do IO outside data folder"
@@ -117,20 +118,22 @@ function gace.SetupGModIOVFolder(id, root, path, access)
 			if not curpath:GetFile():EndsWith(".txt") then
 				return false, "Path must end in .txt"
 			end
-			file.Write(root .. curpath, content)
+			file.Write(curpath:ToString(), content)
 			return true
 		end,
 		mkdir_func = function(curpath, content)
 			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
 
 			if path ~= "DATA" then
 				return false, "Unable to do IO outside data folder"
 			end
-			file.CreateDir(root .. curpath)
+			file.CreateDir(curpath:ToString())
 			return true
 		end,
 		delete_func = function(curpath, content)
 			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
 
 			if path ~= "DATA" then
 				return false, "Unable to do IO outside data folder"
@@ -139,7 +142,69 @@ function gace.SetupGModIOVFolder(id, root, path, access)
 			--	return false, "Doesn't exist"
 			--end
 
-			file.Delete(root .. curpath)
+			file.Delete(curpath:ToString())
+			return true
+		end
+	})
+end
+
+-- GaceIO support (https://github.com/wyozi/g-ace-io)
+local module_loaded = pcall(require, "gaceio") and (gaceio ~= nil)
+
+function gace.SetupGaceIOVFolder(id, root, access)
+	if not module_loaded then
+		error("Trying to setup a GaceIO VFolder when GaceIO module isn't loaded")
+	end
+
+	local vfolderpath = gace.Path(id)
+
+	-- Returns a function that maps source files (e.g. foo.txt) to full paths (e.g. VFolder/root/foo.txt)
+	local function PathAdder(tpath)
+		return function(src)
+			return vfolderpath + tpath + src
+		end
+	end
+	-- Turns path into a string that can be passed to gaceio
+	local function GIOPath(path)
+		return "./garrysmod/" .. path:ToString()
+	end
+
+	gace.SetupRawVFolder(id, access, {
+		filebrowser_func = function(curpath)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
+
+			if not gaceio.Exists(GIOPath(curpath)) then
+				return false, "Doesn't exist"
+			end
+
+			local is_dir = curpath:IsRoot() or gaceio.IsFolder(GIOPath(curpath))
+			if is_dir then
+				local files, folders = gaceio.List(GIOPath(curpath))
+				return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
+			end
+			return "file", gaceio.Read(GIOPath(curpath:ToString())), 0, 0
+		end,
+		save_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
+
+			gaceio.Write(GIOPath(curpath), content)
+			return true
+		end,
+		mkdir_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
+
+			gaceio.CreateFolder(GIOPath(curpath))
+			return true
+		end,
+		delete_func = function(curpath, content)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
+
+			-- TODO
+			--file.Delete(root .. curpath)
 			return true
 		end
 	})
@@ -149,6 +214,8 @@ end
 gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
 gace.SetupSimpleVFolder("test", {}, "admin")
+
+gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "admin")
 
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
