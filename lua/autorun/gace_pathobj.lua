@@ -5,6 +5,10 @@ local path_meta = {
 		local spl = str:Split("/")
 
 		for i,s in pairs(spl) do
+			-- Replace especially bad characters
+			s = s:Replace(".", "")
+			s = s:Replace("\\", "")
+
 			-- Skip empty parts
 			if s ~= "" then
 				table.insert(self.Parts, s)
@@ -106,6 +110,7 @@ end)
 
 gat("Paths: Invalid paths", function(t)
 	t.assertTrue(gace.Path("/home//foo"):ToString() == "home/foo", "path with an empty part")
+	t.assertTrue(gace.Path("/home/../foo"):ToString() == "home/foo", "path with periods")
 end)
 
 gat("Paths: VFolders/Files", function(t)
