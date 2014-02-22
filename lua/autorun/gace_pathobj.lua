@@ -6,7 +6,7 @@ local path_meta = {
 
 		for i,s in pairs(spl) do
 			-- Replace especially bad characters
-			s = s:Replace(".", "")
+			s = s:Replace("..", "")
 			s = s:Replace("\\", "")
 
 			-- Skip empty parts
