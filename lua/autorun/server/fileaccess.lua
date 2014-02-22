@@ -212,10 +212,10 @@ end
 --gace.SetupVFolder("Data", "", "DATA", "superadmin")
 gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
-gace.SetupSimpleVFolder("test", {}, "admin")
+gace.SetupSimpleVFolder("test", {}, "superadmin")
 
 pcall(function()
-	gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "admin")
+	gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "superadmin")
 end)
 
 function gace.TestAccess(access, ply, ...)
