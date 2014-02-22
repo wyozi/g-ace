@@ -12,7 +12,9 @@ function gace.SetupRawVFolder(id, access, data)
 end
 
 function gace.RemoveVFolder(id)
+	local r = gace.VirtualFolders[id] ~= nil
 	gace.VirtualFolders[id] = nil
+	return r
 end
 
 -- Setups a simple virtual folder, which is simple based on a table, where folders are subtables and files are strings.
@@ -210,13 +212,13 @@ function gace.SetupGaceIOVFolder(id, root, access)
 end
 
 --gace.SetupVFolder("Data", "", "DATA", "superadmin")
-gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
+--gace.SetupGModIOVFolder("EpicJB", gace.Path("epicjb/"), "DATA", "superadmin")
 
-gace.SetupSimpleVFolder("test", {}, "superadmin")
+--gace.SetupSimpleVFolder("test", {}, "superadmin")
 
-pcall(function()
-	gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "superadmin")
-end)
+--pcall(function()
+	--gace.SetupGaceIOVFolder("gaceiotest", gace.Path("lua"), "superadmin")
+--end)
 
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
