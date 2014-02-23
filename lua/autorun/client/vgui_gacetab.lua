@@ -41,7 +41,7 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(self.SessionId, "EditorTabFont", w-22, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(gace.Path(self.SessionId):GetFile(), "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 	
 		if self.EditedNotSaved then
 			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
