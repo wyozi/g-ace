@@ -37,18 +37,19 @@ local norm_eq_tester = function(a, b) return a == b end
 function gace.Equals(f, s, deep)
 	if type(f) ~= "table" or type(s) ~= "table" then return f == s end
 
-	local eq_tester = deep and gace.Equals or norm_eq_tester
+	local eq_tester = deep and function(a, b) return gace.Equals(a, b, deep) end
+						   or norm_eq_tester
 
 	for kf, vf in pairs(f) do
 		local vs = s[kf]
 
-		if not eq_tester(vf, vs) then return false end
+		if not eq_tester(vf, vs) then msg(kf, vf, vs) return false end
 	end
 
 	for ks, vs in pairs(s) do
 		local vf = f[ks]
 
-		if not eq_tester(vf, vs) then return false end
+		if not eq_tester(vf, vs) then msg(ks, vs, vf) return false end
 	end
 
 	return true
@@ -86,6 +87,7 @@ gat("Utils", function(t)
 	t.assertNonDeepEqual({1}, {}, "deep nonequality")
 	t.assertDeepEquals({1, 2, 3}, {1, 2, 3}, "single-dim table equality")
 	t.assertDeepEquals({1, {2, 3}}, {1, {2, 3}}, "multi-dim table equality")
+	t.assertDeepEquals({a={b={c="hi"}}}, {a={b={c="hi"}}}, "string-key table equality")
 	
 	t.assertEquals(gace.TableKeys({"a", "b"}), {1, 2}, "simple TableKeys")
 	t.assertEquals(gace.TableKeys({"a", c="b"}), {1, "c"}, "string-key TableKeys")
