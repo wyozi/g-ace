@@ -35,6 +35,7 @@ end
 -- Sends a request to server to send back a tree of the given path
 function ft.RefreshPath(filetree, path)
 	gace.List(path, function(_, _, payload)
+		if payload.err then return MsgN("Failed to refresh path: ", payload.err) end
 		ft.RefreshPathUsingTree(filetree, path, payload.tree)
 	end, true)
 end
