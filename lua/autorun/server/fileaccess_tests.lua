@@ -108,3 +108,38 @@ gat("Virtual folder functions", {
 
 	end
 })
+
+gat("Virtual folder abuse", {
+	after = function()
+		gace.RemoveVFolder("@@@TESTING@@@")
+	end,
+	runner = function(t)
+		local tbl = {}
+		tbl.inception = tbl
+
+		gace.SetupSimpleVFolder("@@@TESTING@@@", tbl, "admin")
+
+		local fake_ply = CreateFakePly()
+		fake_ply.is_admin = true
+
+		t.assertDeepEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {
+			fol = {
+				inception=  {
+					fol = {
+						inception=  {
+							fol = {
+								inception=  {
+									fol = {
+										inception=  {
+											fil = {"ERR: TOO DEEP"}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}, "recursivity limit")
+	end
+})

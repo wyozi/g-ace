@@ -43,13 +43,13 @@ function gace.Equals(f, s, deep)
 	for kf, vf in pairs(f) do
 		local vs = s[kf]
 
-		if not eq_tester(vf, vs) then msg(kf, vf, vs) return false end
+		if not eq_tester(vf, vs) then return false end
 	end
 
 	for ks, vs in pairs(s) do
 		local vf = f[ks]
 
-		if not eq_tester(vf, vs) then msg(ks, vs, vf) return false end
+		if not eq_tester(vf, vs) then return false end
 	end
 
 	return true

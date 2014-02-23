@@ -257,7 +257,7 @@ function gace.MakeRecursiveListResponse(ply, path)
 
 	local tree = {fol={}, fil={}}
 
-	local function AddRec(v, ipath, parent)
+	local function AddRec(v, ipath, parent, depth)
 		if not v.ffunc then return end -- No traversal function
 
 		local type, files, folders = v.ffunc(ipath)
@@ -266,12 +266,18 @@ function gace.MakeRecursiveListResponse(ply, path)
 		if not gace.TestAccess(v.access, ply, ipath, "ls") then return false, "No access" end
 		if type ~= "folder" then return false, "Not a folder" end
 
+		if depth >= 5 then
+			parent.fil = parent.fil or {}
+			table.insert(parent.fil, "ERR: TOO DEEP")
+			return
+		end
+
 		for _,fol in pairs(folders) do
 			local t = {}
 			parent.fol = parent.fol or {}
 			parent.fol[fol:GetFile()] = t
 
-			AddRec(v, ipath + fol:GetFile(), t)
+			AddRec(v, ipath + fol:GetFile(), t, depth+1)
 		end
 		for _,fil in pairs(files) do
 			parent.fil = parent.fil or {}
@@ -284,10 +290,10 @@ function gace.MakeRecursiveListResponse(ply, path)
 	if pathobj:IsRoot() then
 		for k,v in pairs(gace.VirtualFolders) do
 			tree.fol[k] = {}
-			AddRec(v, pathobj + k, tree.fol[k])
+			AddRec(v, pathobj + k, tree.fol[k], 1)
 		end
 	else
-		local ret, err = AddRec(vfolder, pathobj, tree)
+		local ret, err = AddRec(vfolder, pathobj, tree, 0)
 		if not ret then
 			return {err=err}
 		end
