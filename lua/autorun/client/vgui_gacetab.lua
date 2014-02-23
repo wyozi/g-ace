@@ -7,17 +7,25 @@ local VGUI_EDITOR_TAB = {
 			self:CloseTab()
 		end
 	end,
-	CloseTab = function(self, force)
+	CloseTab = function(self, force, callback)
 		if not force and self.EditedNotSaved then
 			local menu = DermaMenu()
 			menu:AddOption("Unsaved changes. Are you sure you want to close the tab?", function()
-				self:CloseTab(true)
+				self:CloseTab(true, callback)
 			end):SetIcon("icon16/stop.png")
+
+			local x, y = self:GetPos()
+			local x2, y2 = gace.Frame:GetPos()
+			local w, h = self:GetSize()
+			x, y = x2 + x + w, y2 + y + h
+
 			menu:Open()
+			menu:SetPos(x, y)
 			return
 		end
 		
 		gace.CloseSession(self.SessionId)
+		if callback then callback() end
 	end,
 	PerformLayout = function(self)
 		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
@@ -62,8 +70,25 @@ local VGUI_EDITOR_TAB = {
 		gace.ReOpenSession(self.SessionId)
 	end,
 	DoRightClick = function(self)
+
+		-- Timer simples here are because opening another menu from menu isn't possible. There needs to be a slight delay
+
 		local menu = DermaMenu()
-		menu:AddOption("Close", function() self:CloseTab() end)
+		menu:AddOption("Close", function() timer.Simple(0, function() self:CloseTab() end) end)
+		menu:AddOption("Close others", function()
+			local to_be_closed = gace.FilterSeq(gace.Tabs.Panels, function(x) return x.SessionId ~= nil and x ~= self end)
+
+			local function CloseAnother()
+				local tab = table.remove(to_be_closed, 1)
+				if not tab then return end
+
+				-- Delay slightly longer here because the tab HorizontalScroller needs to update so DMenu
+				-- pops up at the right place
+				tab:CloseTab(nil, function() timer.Simple(0.1, CloseAnother) end)
+			end
+
+			timer.Simple(0, CloseAnother)
+		end)
 		menu:Open()
 	end,
 }
