@@ -23,6 +23,7 @@ G-Ace comes with a simple virtual filesystem. There are two ways to add folders 
 
 **g-ace-vfs-add [name] [type] [access] [root-path]**  
 > Adds a permanent virtual folder.  
+> Example command: g-ace-vfs-add ulxlogs gmodio admin ulx_logs/  
 
 >**[name]** = Name of the virtual folder  
 >**[type]** = Type of the virtual folder (available types: see [wiki](https://github.com/wyozi/g-ace/wiki/Virtual-folder-types))  
@@ -32,6 +33,7 @@ G-Ace comes with a simple virtual filesystem. There are two ways to add folders 
 
 **g-ace-vfs-add-temp [name] [type] [access] [root-path]**
 > Adds a temporary virtual folder (will be deleted on map change or restart).  
+> Example command: g-ace-vfs-add-temp ulxlogs gmodio admin ulx_logs/  
 
 >**[name]** = Name of the virtual folder  
 >**[type]** = Type of the virtual folder (available types: see [wiki](https://github.com/wyozi/g-ace/wiki/Virtual-folder-types))  
@@ -40,5 +42,6 @@ G-Ace comes with a simple virtual filesystem. There are two ways to add folders 
 
 **g-ace-vfs-del [name]**
 > Deletes a virtual folder.  
+> Example command: g-ace-vfs-del ulxlogs  
 
 >**[name]** = Name of the virtual folder  
