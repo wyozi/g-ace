@@ -167,7 +167,7 @@ gace.TitleBarComponents = {
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(ply, gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
+					luadev.RunOnClient(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""), ply)
 				end)
 			end
 			menu:Open()
