@@ -85,6 +85,16 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         },
         readOnly: true
     });
+
+    editor.commands.addCommand({
+        name: 'Close file',
+        bindKey: {win: 'Ctrl-W',  mac: 'Command-W'},
+        exec: function(editor) {
+            gace.GracefullyCloseSession();
+        },
+        readOnly: true
+    });
+
     editor.commands.addCommand({
         name: 'Add next instance of word to selection',
         bindKey: {win: 'Ctrl-Alt-D',  mac: 'Command-Alt-D'},
