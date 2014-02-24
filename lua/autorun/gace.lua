@@ -1,13 +1,4 @@
 gace = gace or {}
-gace.RequestCallbacks = gace.RequestCallbacks or {}
-
-function gace.AddRequestCallback(reqid, fn)
-	gace.RequestCallbacks[reqid] = fn
-end
-
-function gace.GenReqId(id)
-	return util.CRC(id .. os.time() .. math.random())
-end
 
 function gace.Debug(...)
 	--MsgN("GACE DEBUG: ", ...)

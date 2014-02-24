@@ -1,6 +1,14 @@
 function gace.HandleNetworking(ply, reqid, op, payload)
 
-	local responder_func = gace.Send
+	local responder_func = function(ply, reqid, op, payload)
+		if payload.multipart then
+			for _,part in pairs(payload.parts) do
+				gace.Send(ply, reqid, op, part)
+			end
+			return
+		end
+		gace.Send(ply, reqid, op, payload)
+	end
 
 	-- If reqid is zero or empty, the client (most likely) doesnt care about response, so we dont send anything
 	if reqid == "0" or reqid == "" then

@@ -255,6 +255,14 @@ function gace.MakeRecursiveListResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
 
+	if pathobj:IsRoot() then
+		local parts = {}
+		for k,v in pairs(gace.VirtualFolders) do
+			table.insert(parts, gace.MakeRecursiveListResponse(ply, k))
+		end
+		return {multipart = true, parts=parts}
+	end
+
 	local tree = {fol={}, fil={}}
 
 	local function AddRec(v, ipath, parent, depth)
@@ -287,19 +295,12 @@ function gace.MakeRecursiveListResponse(ply, path)
 		return true
 	end
 
-	if pathobj:IsRoot() then
-		for k,v in pairs(gace.VirtualFolders) do
-			tree.fol[k] = {}
-			AddRec(v, pathobj + k, tree.fol[k], 1)
-		end
-	else
-		local ret, err = AddRec(vfolder, pathobj, tree, 0)
-		if not ret then
-			return {err=err}
-		end
+	local ret, err = AddRec(vfolder, pathobj, tree, 0)
+	if not ret then
+		return {err=err}
 	end
 
-	return {ret="Success", type="filetree", tree=tree}
+	return {ret="Success", type="filetree", path=pathobj:ToString(), tree=tree}
 end
 
 function gace.MakeListResponse(ply, path)

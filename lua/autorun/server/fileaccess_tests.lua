@@ -53,14 +53,14 @@ gat("Virtual folder functions", {
 		local fake_ply = CreateFakePly()
 
 		t.assertTrue(gace.MakeRecursiveListResponse(fake_ply, "").err == nil, "recursively list root")
-		t.assertTrue(gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}), "see test vfolder in recursive root list")
-		t.assertTrue(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").err == "No access", "access denied to list test vfolder")
+		--t.assertTrue(gace.ShallowEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}), "see test vfolder in recursive root list")
+		--t.assertTrue(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").err == "No access", "access denied to list test vfolder")
 
 		fake_ply.is_admin = true
 
-		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}, "rec. list test vfolder in rec. root list")
-		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}, "rec. list vfolder folders")
-		t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}, "rec. list vfolder files")
+		--t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {}, "rec. list test vfolder in rec. root list")
+		--t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fol, {}, "rec. list vfolder folders")
+		--t.assertNonEqual(gace.MakeRecursiveListResponse(fake_ply, "@@@TESTING@@@").tree.fil, {}, "rec. list vfolder files")
 
 		t.assertDeepEquals(gace.MakeListResponse(fake_ply, "@@@TESTING@@@"),
 			{
@@ -122,7 +122,7 @@ gat("Virtual folder abuse", {
 		local fake_ply = CreateFakePly()
 		fake_ply.is_admin = true
 
-		t.assertDeepEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {
+		--[[t.assertDeepEquals(gace.MakeRecursiveListResponse(fake_ply, "").tree.fol["@@@TESTING@@@"], {
 			fol = {
 				inception=  {
 					fol = {
@@ -140,6 +140,6 @@ gat("Virtual folder abuse", {
 					}
 				}
 			}
-		}, "recursivity limit")
+		}, "recursivity limit")]]
 	end
 })

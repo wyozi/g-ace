@@ -1,4 +1,13 @@
 
+gace.RequestCallbacks = gace.RequestCallbacks or {}
+
+function gace.AddRequestCallback(reqid, fn, manual_del)
+	gace.RequestCallbacks[reqid] = {fn=fn, manual_del = manual_del}
+end
+
+function gace.GenReqId(id)
+	return util.CRC(id .. os.time() .. math.random())
+end
 
 if SERVER then util.AddNetworkString("gace_fileacc") end
 
@@ -7,13 +16,15 @@ net.Receive("gace_fileacc", function(len, cl)
 	local op = net.ReadString()
 	local payload = net.ReadTable()
 
-	local cbfn = gace.RequestCallbacks[reqid]
+	local cbtbl = gace.RequestCallbacks[reqid]
 
-	gace.Debug("Received fileacc ", op, " with reqid: ", reqid, " resolving to req cb fn: ", cbfn)
+	gace.Debug("Received fileacc ", op, " with reqid: ", reqid, " resolving to req cb tbl: ", cbtbl)
 
-	if cbfn then
-		gace.RequestCallbacks[reqid] = nil
-		cbfn(reqid, op, payload)
+	if cbtbl then
+		cbtbl.fn(reqid, op, payload)
+		if not cbtbl.manual_del or payload.mp_final then
+			gace.RequestCallbacks[reqid] = nil
+		end
 		return
 	end
 

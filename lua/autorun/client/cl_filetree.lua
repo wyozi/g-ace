@@ -32,14 +32,6 @@ function ft.SubtractTable(large, sub)
 	return ret
 end
 
--- Sends a request to server to send back a tree of the given path
-function ft.RefreshPath(filetree, path)
-	gace.List(path, function(_, _, payload)
-		if payload.err then return MsgN("Failed to refresh path: ", payload.err) end
-		ft.RefreshPathUsingTree(filetree, path, payload.tree)
-	end, true)
-end
-
 -- Adds right click options etc to given DTree_Node that represents a folder
 function ft.AddFolderNodeOptions(node, filetree)
 
@@ -239,18 +231,9 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 	local root = gace.FileNodeTree
 	local replace_everything = false
 
-	if path == "" then
+	if path == "" or not root then
 		root = {node=filetree, fol={}, fil={}}
 		gace.FileNodeTree = root
-
-		local rootnode = filetree:Root()
-		if rootnode.ChildNodes then rootnode.ChildNodes:Remove() rootnode.ChildNodes=nil end
-		replace_everything = true
-	else
-		local pathcomps = path:Split("/")
-		for _,pc in ipairs(pathcomps) do
-			root = root.fol[pc]
-		end
 	end
 
 	local function AddTreeNode(node, par)
@@ -294,5 +277,30 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 		end
 	end
 
+	if path == "" then
+		local rootnode = filetree:Root()
+		if rootnode.ChildNodes then rootnode.ChildNodes:Remove() rootnode.ChildNodes=nil end
+		replace_everything = true
+	else
+		local pathcomps = path:Split("/")
+		for depth,pc in ipairs(pathcomps) do
+			-- A hack! If we're trying to traverse a folder in depth 1 (aka direct child of root)
+			--  we should create the folder if it doesnt exist and create a node for it
+			if depth == 1 and not root.fol[pc] then
+				root.fol[pc] = {}
+				AddTreeNode({fol={[pc]={}}}, root)
+			end
+			root = root.fol[pc]
+		end
+	end
+
 	AddTreeNode(tree, root)
+end
+
+-- Sends a request to server to send back a tree of the given path
+function ft.RefreshPath(filetree, path)
+	gace.ListTree(path, function(_, _, payload)
+		if payload.err then return MsgN("Failed to refresh path: ", payload.err) end
+		ft.RefreshPathUsingTree(filetree, payload.path, payload.tree)
+	end)
 end
