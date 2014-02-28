@@ -167,7 +167,7 @@ gace.TitleBarComponents = {
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""), ply)
+					luadev.RunOnClient(gace.GetSessionContent(), ply, "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()
@@ -181,9 +181,7 @@ gace.TitleBarComponents = {
 			for group,_ in pairs(ULib.ucl.groups) do
 				menu:AddOption(group, function()
 					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
-					for _,tply in pairs(targetplys) do
-						luadev.RunOnClient(tply, gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
-					end
+					luadev.RunOnClient(gace.GetSessionContent(), targetplys, "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()
