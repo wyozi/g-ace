@@ -1,3 +1,5 @@
+local gace_hide_dotfiles = CreateConVar("g-ace-hide-dotfiles", "1", FCVAR_ARCHIVE)
+
 function gace.TestAccess(access, ply, ...)
 	-- Invalid player (aka console) overrides all access right checks
 	if not ply:IsValid() then return true end
@@ -29,6 +31,18 @@ function gace.ParsePath(path)
 	return pathobj, vfolder
 end
 
+-- Calls to v.ffunc should be passed through this function. It validates that everything is correct and filters
+--  unwanted things
+function gace.ValidateFFunc(type, files, folders)
+	if not type then return type, files, folders end
+	if gace_hide_dotfiles:GetBool() then
+		folders = gace.Filter(folders, function(v, k)
+			return not v:GetFile():StartWith(".")
+		end)
+	end
+	return type, files, folders
+end
+
 function gace.MakeRecursiveListResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
@@ -46,7 +60,7 @@ function gace.MakeRecursiveListResponse(ply, path)
 	local function AddRec(v, ipath, parent, depth)
 		if not v.ffunc then return end -- No traversal function
 
-		local type, files, folders = v.ffunc(ipath)
+		local type, files, folders = gace.ValidateFFunc(v.ffunc(ipath))
 		if not type then return false, files end
 
 		if not gace.TestAccess(v.access, ply, ipath, "ls") then return false, "No access" end
@@ -93,7 +107,7 @@ function gace.MakeListResponse(ply, path)
 		return {err="No access"}
 	end
 
-	local type, files, folders = vfolder.ffunc(pathobj)
+	local type, files, folders = gace.ValidateFFunc(vfolder.ffunc(pathobj))
 	if not type then return {err=files} end
 
 	if type == "folder" then
@@ -114,7 +128,7 @@ function gace.MakeFetchResponse(ply, path)
 		return {err="No access"}
 	end
 
-	local type, content = vfolder.ffunc(pathobj)
+	local type, content = gace.ValidateFFunc(vfolder.ffunc(pathobj))
 	if not type then return {err=files} end
 
 	if type == "file" then
@@ -189,7 +203,7 @@ function gace.MakeFindResponse(ply, path, phrase)
 		return {err="No access"}
 	end
 
-	local type, files, folders = vfolder.ffunc(pathobj)
+	local type, files, folders = gace.ValidateFFunc(vfolder.ffunc(pathobj))
 	if type ~= "folder" then
 		return {err="Not a folder"}
 	end
@@ -199,7 +213,7 @@ function gace.MakeFindResponse(ply, path, phrase)
 	for _,file in pairs(files) do
 		local fpath = pathobj + file:GetFile()
 		if gace.TestAccess(vfolder.access, ply, fpath, "find") then
-			local type, content = vfolder.ffunc(fpath)
+			local type, content = gace.ValidateFFunc(vfolder.ffunc(fpath))
 
 			-- Go line by line. Might be slow but works for our purpose and keeps code clean
 			for i,line in pairs(content:Split("\n")) do
