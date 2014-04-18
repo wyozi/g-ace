@@ -128,7 +128,7 @@ function gace.MakeFetchResponse(ply, path)
 		return {err="No access"}
 	end
 
-	local type, content = gace.ValidateFFunc(vfolder.ffunc(pathobj))
+	local type, content = vfolder.ffunc(pathobj)
 	if not type then return {err=files} end
 
 	if type == "file" then
