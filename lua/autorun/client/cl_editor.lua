@@ -86,6 +86,12 @@ function gace.GetSessionId()
 	local sess = gace.GetSession()
 	if sess then return sess.id end
 end
+
+-- Strips file extension and path from session id
+function gace.GetExtlessSessionId()
+	local sessid = gace.GetSessionId()
+	if sessid then return string.StripExtension(gace.Path(sessid):GetFile()) end -- StripExtension = a builtin gmod function
+end
 function gace.GetSessionContent()
 	local sess = gace.GetSession()
 	if sess then return sess.content end
@@ -205,6 +211,45 @@ gace.TitleBarComponents = {
 			local sess = gace.GetSession()
 			if sess then sess.hbmode = state end
 		end
+	},
+	{
+		text = "Run as",
+		fn = function(state)
+			local menu = DermaMenu()
+
+			menu:AddOption("Scripted weapon", function()
+				local base = [[
+local SWEP = {}
+SWEP.Primary = {}
+SWEP.Secondary = {}
+%s
+weapons.Register(SWEP, "%s", true)
+				]]
+
+				luadev.RunOnShared(
+					string.format(base, gace.GetSessionContent(), gace.GetExtlessSessionId()),
+					"g-ace swep: " .. (gace.GetSessionId() or "")
+				)
+			end)
+			menu:AddOption("Scripted entity", function()
+				local base = [[
+local ENT = {}
+ENT.Primary = {}
+ENT.Secondary = {}
+%s
+scripted_ents.Register(ENT, "%s")
+				]]
+
+				luadev.RunOnShared(
+					string.format(base, gace.GetSessionContent(), gace.GetExtlessSessionId()),
+					"g-ace sent: " .. (gace.GetSessionId() or "")
+				)
+			end)
+
+			menu:Open()
+		end,
+		enabled = function() return luadev ~= nil and gace.GetSessionContent() end,
+		tt = "Runs the code as if it was a SWEP or a SENT"
 	},
 
 	{ text = "", width = 20 },
