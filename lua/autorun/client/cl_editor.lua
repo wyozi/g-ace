@@ -234,8 +234,6 @@ weapons.Register(SWEP, "%s", true)
 			menu:AddOption("Scripted entity", function()
 				local base = [[
 local ENT = {}
-ENT.Primary = {}
-ENT.Secondary = {}
 %s
 scripted_ents.Register(ENT, "%s")
 				]]
