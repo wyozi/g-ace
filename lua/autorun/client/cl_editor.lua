@@ -546,6 +546,37 @@ function gace.CreateHTMLPanel()
 	return html
 end
 
+-- TODO make these smoother/lighter
+gace.LOG_ERROR = Color(255, 0, 0)
+gace.LOG_WARN = Color(255, 127, 0)
+gace.LOG_SUCCESS = Color(0, 255, 0)
+
+function gace.AppendToConsole(...)
+	local function setclr(r, g, b)
+		gace.Frame.Console:InsertColorChange(r,g,b,255)
+	end
+	local function append(txt)
+		gace.Frame.Console:AppendText(txt)
+	end
+	setclr(100,100,100)	append(			"[")
+	setclr(255,255,255)	append(os.date(	"%H"))
+	setclr(255,255,255)	append(			":")
+	setclr(255,255,255)	append(os.date(	"%M"))
+	setclr(100,100,100)	append(			"] ")
+	
+	setclr(255, 255, 255)
+	for _,v in pairs({...}) do
+		if type(v) == "table" then
+			setclr(v.r, v.g, v.b)
+		else
+			append(tostring(v))
+		end
+	end
+	append("\n")
+
+	gace.Frame.Console:GotoTextEnd()
+end
+
 concommand.Add("g-ace", function()
 
 	if IsValid(gace.Frame) then
@@ -585,15 +616,23 @@ concommand.Add("g-ace", function()
 			cookie.Set("gace-ftreewidth", self:GetLeftWidth())
 		end
 
-		local filetree = vgui.Create("DTree")
-			divider:SetLeft(filetree)
-			filetree.Paint = function(self, w, h)
-				surface.SetDrawColor(gace.UIColors.frame_bg)
-				surface.DrawRect(0, 0, w, h)
-			end
+		local left_divider = vgui.Create("DVerticalDivider")
+			divider:SetLeft(left_divider)
+			left_divider:SetTopHeight(450)
 
-			-- Requests the server to update the whole filetree
-			gace.filetree.RefreshPath(filetree, "")
+			local filetree = vgui.Create("DTree")
+				left_divider:SetTop(filetree)
+				filetree.Paint = function(self, w, h)
+					surface.SetDrawColor(gace.UIColors.frame_bg)
+					surface.DrawRect(0, 0, w, h)
+				end
+
+				-- Requests the server to update the whole filetree
+				gace.filetree.RefreshPath(filetree, "")
+
+			local console = vgui.Create("RichText")
+				left_divider:SetBottom(console)
+				frame.Console = console
 
 		local html = gace.CreateHTMLPanel()
 			divider:SetRight(html)
