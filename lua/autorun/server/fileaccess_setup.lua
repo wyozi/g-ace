@@ -17,7 +17,7 @@ function gace.RemoveVFolder(id)
 	return r
 end
 
--- Setups a simple virtual folder, which is simple based on a table, where folders are subtables and files are strings.
+-- Setups a simple fully virtual folder, which is simply based on a table, where folders are subtables and files are strings.
 function gace.SetupSimpleVFolder(id, tbl, access, data)
 	data = data or {}
 
@@ -80,7 +80,7 @@ function gace.SetupSimpleVFolder(id, tbl, access, data)
 
 end
 
--- Setups a virtual folder that uses Garry's Mod's IO lib (file.Write, file.Read etc)
+-- Setups a folder that uses Garry's Mod's IO lib (file.Write, file.Read etc)
 function gace.SetupGModIOVFolder(id, root, path, access)
 
 	local vfolderpath = gace.Path(id)
@@ -183,6 +183,9 @@ function gace.SetupGaceIOVFolder(id, root, access)
 			local is_dir = curpath:IsRoot() or gaceio.IsFolder(GIOPath(curpath))
 			if is_dir then
 				local files, folders = gaceio.List(GIOPath(curpath))
+				if not files then
+					return false, folders
+				end
 				return "folder", gace.Map(gace.SortedTable(files), PathAdder(curpath)), gace.Map(gace.SortedTable(folders), PathAdder(curpath))
 			end
 			return "file", gaceio.Read(GIOPath(curpath)), 0, 0
