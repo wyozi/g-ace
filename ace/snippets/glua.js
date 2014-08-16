@@ -12,7 +12,7 @@ snippet fun\n\
 	end\n\
 snippet anonfun\n\
 	function(${2:...})\n\
-		${3:-- body}\n\
+	\t${3:-- body}\n\
 	end\n\
 snippet for\n\
 	for ${1:i}=${2:1},${3:10} do\n\
