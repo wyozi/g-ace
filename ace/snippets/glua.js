@@ -26,6 +26,10 @@ snippet fori\n\
 	for ${1:i},${2:v} in ipairs(${3:table_name}) do\n\
 	\t${4:-- body}\n\
 	end\n\
+snippet if\n\
+	if ${1:condition} then\n\
+	\t${4:-- body}\n\
+	end\n\
 ";
 exports.scope = "glua";
 
