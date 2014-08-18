@@ -71,3 +71,18 @@ function gace.CreateFrame()
 
 	return frame
 end
+
+function gace.CreateTabPanel()
+	local tabs = vgui.Create("DHorizontalScroller")
+	tabs.Paint = function(self, w, h)
+		local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
+		surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+	tabs:SetOverlap(-1)
+
+	local tabsel = vgui.Create("GAceTabSelector", tabs)
+	tabs:AddPanel(tabsel)
+
+	return tabs
+end
