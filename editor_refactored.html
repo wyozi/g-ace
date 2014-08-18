@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ACE in Action</title>
+<style type="text/css" media="screen">
+    #editor { 
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+    #quickcmd {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 25px;
+    }
+</style>
+</head>
+<body>
+
+<div id="editor">
+  ______          ______                    
+ /      \        /      \                   
+|  $$$$$$\      |  $$$$$$\ _______  ______  
+| $$ __\$$______| $$__| $$/       \/      \ 
+| $$|    |      | $$    $|  $$$$$$|  $$$$$$\
+| $$ \$$$$\$$$$$| $$$$$$$| $$     | $$    $$
+| $$__| $$      | $$  | $| $$_____| $$$$$$$$
+ \$$    $$      | $$  | $$\$$     \\$$     \
+  \$$$$$$        \$$   \$$ \$$$$$$$ \$$$$$$$
+
+Select a file or press Ctrl-n from the filetree to start hacking!
+</div>
+    
+<script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="ace/ext-language_tools.js"></script>
+<script src="ace/ext-settings_menu.js"></script>
+<script src="ace/ext-keybinding_menu.js"></script>
+<script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+
+    // Load editor related classes etc
+    ace.require("ace/ext/language_tools");
+    ace.require('ace/ext/settings_menu').init(editor);
+    ace.require('ace/ext/keybinding_menu').init(editor);
+    
+    var Search = ace.require("ace/search").Search;
+
+    // Enable autocomplete etc
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true
+    });
+
+    var gaceText = editor.getSession().getValue();
+    var emptySession = ace.createEditSession(gaceText, "ace/mode/rust");
+
+    editor.setSession(emptySession);
+    editor.setReadOnly(true);
+
+    editor.on("change", function(e) {
+        if ("gace" in window) {
+            gace.SetEditedNotSaved(true);
+            gace.ReportLatestContent(editor.getSession().getValue());
+        }
+    });
+
+    editor.commands.addCommand({
+        name: 'Save',
+        bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
+        exec: function(editor) {
+            gace.SaveSession(editor.getSession().getValue());
+        }
+    });
+
+    var newfilecount = 0;
+    editor.commands.addCommand({
+        name: 'New file',
+        bindKey: {win: 'Ctrl-N',  mac: 'Command-N'},
+        exec: function(editor) {
+            gace.NewSession("newfile" + ++newfilecount + ".txt");
+        },
+        readOnly: true
+    });
+
+    editor.commands.addCommand({
+        name: 'Close file',
+        bindKey: {win: 'Ctrl-W',  mac: 'Command-W'},
+        exec: function(editor) {
+            gace.GracefullyCloseSession();
+        },
+        readOnly: true
+    });
+
+    editor.commands.addCommand({
+        name: 'Add next instance of word to selection',
+        bindKey: {win: 'Ctrl-Alt-D',  mac: 'Command-Alt-D'},
+        exec: function(editor) {
+            var selectedText = editor.getSession().getTextRange(editor.getSelectionRange());
+            var range = editor.find({
+                needle: selectedText,
+                start: editor.getSelectionRange(),
+                preventScroll: true
+            });
+            editor.getSession().getSelection().addRange(range);
+        },
+        readOnly: true
+    });
+
+    editor.commands.addCommand({
+        name: 'Run on Self',
+        bindKey: {win: 'F5',  mac: 'F5'},
+        exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
+            gace.CallLDFunc("RunOnSelf", editor.getSession().getValue());
+        },
+    }); 
+    editor.commands.addCommand({
+        name: 'Run on Server',
+        bindKey: {win: 'F6',  mac: 'F6'},
+        exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
+            gace.CallLDFunc("RunOnServer", editor.getSession().getValue());
+        },
+    }); 
+    editor.commands.addCommand({
+        name: 'Run on Shared',
+        bindKey: {win: 'F7',  mac: 'F7'},
+        exec: function(editor) {
+            if (editor.getSession() == emptySession)
+                return;
+            gace.CallLDFunc("RunOnShared", editor.getSession().getValue());
+        },
+    }); 
+
+    editor.commands.addCommand({
+        name: 'Go to link',
+        bindKey: {win: 'Ctrl-enter',  mac: 'Ctrl-enter'},
+        exec: function(editor) {
+            var selectedText = editor.getSession().getLine(editor.getCursorPosition().row);
+            var res = selectedText.match(/goto\[f=([^;]*);r=([^;\]]*)(?:;c=([^\]]*))?/);
+            if (res && !isNaN(res[2]))
+                gace.GotoPath(res[1], parseInt(res[2]), parseInt(res[3]));
+            else if (!res)
+                console.log("G-Ace Goto failed: line doesn't seem to be a 'goto' line");
+            else
+                console.log("G-Ace Goto failed: " + res[2] + " can't be converted to number");
+        },
+        readOnly: true
+    }); 
+
+    // Weirdest hack EU. We need to throw an error in here, or typing right curly brackets won't work
+    editor.commands.addCommand({
+        name: 'Add right curly bracket }',
+        bindKey: {win: 'Ctrl-alt-0',  mac: 'Ctrl-alt-0'},
+        exec: function(editor) {
+            throw "dirty hack to make right curly bracket work";
+        }
+    });
+
+    editor.commands.addCommand({
+        name: "Outdent (workaround)",
+        bindKey: {win: "Ctrl-Shift-Tab", max: "Ctrl-Shift-Tab"},
+        exec: function(editor) { editor.blockOutdent(); },
+        multiSelectAction: "forEach",
+        scrollIntoView: "selectionPart"
+    })
+
+    var gaceSessions = (function() {
+        var sessions = {};
+        var sessionId = null;
+
+        return {
+            exists: function(id) {
+                return id in sessions;
+            },
+            reopen: function(id) {
+                if (this.exists(id)) {
+                    editor.setSession(sessions[id]);
+                    editor.setReadOnly(false);
+                    sessionId = id;
+                    
+                    gace.SetOpenedSession(id, editor.getSession().getValue());
+                    return true;
+                }
+                return false;
+            },
+            open: function(id, data) {
+                if (this.reopen(id))
+                    return;
+
+                var content;
+                if ("contentb" in data)
+                    content = Base64.decode(data.contentb);
+                else
+                    content = data.content;
+
+                sessions[id] = ace.createEditSession(content, "ace/mode/glua");
+                
+                this.reopen(id);
+                gace.SetEditedNotSaved(data.defens || false);
+            },
+            refresh: function(id, data) {
+                this.open(id, data);
+
+                var content;
+                if ("contentb" in data)
+                    content = Base64.decode(data.contentb);
+                else
+                    content = data.content;
+
+                sessions[id].setValue(content);
+                gace.SetEditedNotSaved(data.defens || false)
+            },
+            close: function(id) {
+                // If closed session is current session, lets clear it by making new empty session
+                if (editor.getSession() == sessions[id]) {
+                    editor.setSession(emptySession);
+                    editor.setReadOnly(true);
+                    sessionId = null;
+                }
+                delete sessions[id];
+            },
+            getSessionId: function() {
+                return sessionId;
+            }
+        }
+    })();
+
+    // Ugly hack, required because theme id isn't passed to themeLoaded
+    var changingToTheme;
+    editor.renderer.on("themeChange", function(e) {
+        changingToTheme = e.theme;
+    });
+    editor.renderer.on("themeLoaded", function(e) {
+        var editorStyle = getComputedStyle(document.querySelector(".ace_editor"));
+        var gutterStyle = getComputedStyle(document.querySelector(".ace_gutter"));
+
+        var bgColor = editorStyle.backgroundColor.match(/\d+/g).slice(0,3);
+        var fgColor = editorStyle.color.match(/\d+/g).slice(0,3);
+
+        var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
+
+        gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+    });
+
+    editor.on("changeMode", function(e) {
+        if ("gace" in window)
+            gace.ModeChanged(editor.getSession().getMode().$id);
+    });
+
+    function OnReady() {
+        if ("gace" in window)
+            gace.EditorReady();
+    }
+    document.addEventListener('DOMContentLoaded', OnReady);
+
+</script>
+</body>
+</html>
