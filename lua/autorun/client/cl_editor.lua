@@ -536,7 +536,7 @@ function gace.CreateHTMLPanel()
 		end
 	end
 
-	local url = "http://wyozi.github.io/g-ace/editor.html"
+	local url = "http://wyozi.github.io/g-ace/editor_refactored.html"
 	if gacedevurl:GetString() ~= "" then
 		url = gacedevurl:GetString()
 	end
