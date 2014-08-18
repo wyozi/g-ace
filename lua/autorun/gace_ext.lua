@@ -1,4 +1,5 @@
-gace.Extensions = {}
+-- Table extensions can use for their own stuff
+gace.ext = gace.ext or {}
 
 local cl_extensions = file.Find("gace-ext/cl/*.lua", "LUA")
 local sh_extensions = file.Find("gace-ext/sh/*.lua", "LUA")

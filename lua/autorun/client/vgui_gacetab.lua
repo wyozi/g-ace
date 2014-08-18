@@ -1,4 +1,9 @@
 
+surface.CreateFont("EditorTabFont", {
+	font = "Roboto",
+	size = 14
+})
+
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
 		self.CloseButton = vgui.Create("DImageButton", self)
