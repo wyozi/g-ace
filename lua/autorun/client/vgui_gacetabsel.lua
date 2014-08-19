@@ -25,9 +25,10 @@ local VGUI_EDITOR_TAB_SEL = {
 	end,
 	DoClick = function(self)
 		local menu = DermaMenu()
-		for _,pnl in pairs(gace.Tabs.Panels) do
+		local tabs = gace.GetPanel("Tabs")
+		for _,pnl in pairs(tabs.Panels) do
 			if pnl.SessionId then
-				menu:AddOption(pnl.SessionId, function() gace.ReOpenSession(pnl.SessionId) end)
+				menu:AddOption(pnl.SessionId, function() gace.OpenSession(pnl.SessionId) end)
 			end
 		end
 		menu:Open()
