@@ -74,7 +74,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		end
 
 		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
-			gace.AskForInput("Where to save? Must be absolute path (e.g. EpicJB/folder/file.txt) and must end in .txt", function(txt)
+			gace.ext.ShowTextInputPrompt("Where to save? Must be absolute path (e.g. EpicJB/folder/file.txt) and must end in .txt", function(txt)
 				SaveTo(txt)
 			end)
 			return
@@ -82,7 +82,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		SaveTo(initial_osi)
 	end)
 	html:AddFunction("gace", "NewSession", function(id, line, column)
-		gace.OpenSession("newfile" .. os.time() .. ".txt")
+		gace.OpenSession("newfile" .. os.time() .. ".txt", {content=""})
 	end)
 	html:AddFunction("gace", "OpenSession", function(id, line, column)
 		gace.Log("Opening session '", id, "' at line ", line, " column ", column)
