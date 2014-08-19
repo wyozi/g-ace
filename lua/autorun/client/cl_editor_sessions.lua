@@ -34,7 +34,7 @@ function gace.CreateSession(id, tbl)
 	return t
 end
 
-function gace.OpenSession(id, callback)
+function gace.OpenSession(id, data)
 	if gace.OpenedSessionId == id then return end
 
 	local sess = gace.GetSession(id)
@@ -43,12 +43,16 @@ function gace.OpenSession(id, callback)
 
 	gace.CallHook("OnSessionOpened", id)
 
-	if sess then
-		gace.SetHTMLSession(id, _, true)
-		if callback then callback() end
-	else
-		sess = gace.CreateSession(id)
+	local sess_exists = sess ~= nil
 
+	if not sess_exists then
+		sess = gace.CreateSession(id)
+	end
+
+	if sess_exists or (data and data.content) then
+		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true)
+		if data and data.callback then callback() end
+	else
 		gace.SetHTMLSession(id, "Fetching latest sources from server.")
 
 		gace.Fetch(id, function(_, _, payload)
@@ -59,7 +63,7 @@ function gace.OpenSession(id, callback)
 			sess.Content = payload.content
 			gace.SetHTMLSession(id, sess.Content)
 
-			if callback then callback() end
+			if data and data.callback then callback() end
 		end)
 	end
 

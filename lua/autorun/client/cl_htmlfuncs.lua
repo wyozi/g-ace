@@ -62,11 +62,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 
 				if path ~= initial_osi then
 					gace.CloseSession(initial_osi)
-					gace.OpenSession(path, content)
+					gace.OpenSession(path, {content=content})
 				end
-
-				local t = gace.GetTabFor(path)
-				if t then t.EditedNotSaved = false end
 
 				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
 			end)
@@ -85,14 +82,21 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 	end)
 	html:AddFunction("gace", "OpenSession", function(id, line, column)
 		gace.Log("Opening session '", id, "' at line ", line, " column ", column)
-		gace.OpenSession(id, function()
+		gace.OpenSession(id, {callback = function()
 			if not line and not column then return end
 
 			gace.RunJavascript("editor.moveCursorTo(" .. line .. ", " .. (column or 0) .. ");")
-		end)
+		end})
 	end)
 	html:AddFunction("gace", "CloseSession", function(force)
 		gace.Log("Closing session (force=", force, ")")
+
+		if force then
+			gace.CloseSession(gace.GetSessionId())
+		else
+			local tab = gace.GetTabFor(gace.GetSessionId() or "")
+			if tab then tab:CloseTab() end
+		end
 	end)
 
 
