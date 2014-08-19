@@ -18,7 +18,9 @@ function gace.AddBasePanels(frame)
 
 		basepnl:AddDocked("Editor", html, FILL)
 
-		html:OpenURL("http://wyozi.github.io/g-ace/editor_refactored.html")
+		gace.CallHook("SetupHTMLPanel", html)
+
+		html:OpenURL("http://wyozi.github.io/g-ace/editor_refactored.html?refresh=" .. os.time())
 	end
 
 	-- Tabs

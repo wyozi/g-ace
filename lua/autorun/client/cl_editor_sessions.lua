@@ -14,15 +14,15 @@ function gace.SessionExists(id)
 	return gace.Sessions[id] ~= nil
 end
 
-function gace.GetOpenedSession()
-	return gace.Sessions[gace.OpenedSessionId]
+function gace.GetOpenSession()
+	return gace.Sessions[gace.OpenedSessionId], gace.OpenedSessionId
 end
 
 function gace.CreateSession(id, tbl)
 	local t = {}
 
 	if tbl then
-		if tbl.contents then t.Contents = tbl.contents end
+		if tbl.content then t.Content = tbl.content end
 	end
 
 	gace.Sessions[id] = t
@@ -32,17 +32,27 @@ end
 
 function gace.OpenSession(id, callback)
 	local sess = gace.GetSession(id)
+
+	gace.OpenedSessionId = id
+
 	if sess then
-		gace.OpenedSessionId = id
-		if callback then callback(true) end
-		return
+		gace.SetHTMLSession(id, _, true)
+		if callback then callback() end
+	else
+		sess = gace.CreateSession(id)
+
+		gace.SetHTMLSession(id, "Fetching latest sources from server.")
+
+		gace.Fetch(id, function(_, _, payload)
+			if payload.err then
+				return gace.Log(gace.LOG_ERROR, "Can't open ", id, ": ", payload.err)
+			end
+
+			sess.Content = payload.content
+			gace.SetHTMLSession(id, sess.Content)
+
+			if callback then callback() end
+		end)
 	end
 
-	gace.Fetch(id, function(_, _, payload)
-		if payload.err then
-			return MsgN("[G-Ace] Can't open ", id, ": ", payload.err)
-		end
-		gace.CreateSession(id, {contents = payload.content})
-		if callback then callback(false) end
-	end)
 end
