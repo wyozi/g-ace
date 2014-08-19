@@ -41,9 +41,9 @@ function PANEL:AddDocked(id, pnl, dockpos)
 	return self
 end
 
-function PANEL:AddSubPanel(dockpos)
-	local v = vgui.Create("DDynPanel", self)
-	v:Dock(dockpos or "FILL")
+function PANEL:AddSubPanel(id, dockpos)
+	local v = vgui.Create("DDynPanel")
+	self:AddDocked(id, v, dockpos)
 	return v
 end
 

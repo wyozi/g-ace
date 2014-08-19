@@ -86,3 +86,8 @@ function gace.CreateTabPanel()
 
 	return tabs
 end
+
+function gace.GetPanel(id)
+	if not IsValid(gace.Frame) then return end
+	return gace.Frame.BasePanel:GetById(id)
+end

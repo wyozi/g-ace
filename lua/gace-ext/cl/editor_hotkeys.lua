@@ -19,7 +19,7 @@ gace.AddHook("FrameThink", "Hotkey_ESCToHide", function(frame)
 		--	gace.Frame:InvalidateLayout()
 		--	CancelGUIOpen()
 		--elseif gaceclosewithesc:GetBool() then
-			self:SetVisible(false)
+			frame:SetVisible(false)
 			CancelGUIOpen()
 		--end
 	end

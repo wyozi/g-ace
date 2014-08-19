@@ -1,5 +1,5 @@
-
 -- Small utility functions
+-- Note: name has two underscores because we want to be sure we're loaded before any other gace related files
 
 function gace.Map(tbl, fn)
 	local t = {}
@@ -97,3 +97,11 @@ gat("Utils", function(t)
 
 	t.assertEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}, "map")
 end)
+
+-- Hook system used by gace extensions. Uses Garry's Mod's hook system
+function gace.CallHook(name, ...)
+	return hook.Call("GAce" .. name, GAMEMODE, ...)
+end
+function gace.AddHook(name, id, fn)
+	hook.Add("GAce" .. name, id, fn)
+end
