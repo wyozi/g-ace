@@ -6,6 +6,8 @@ function gace.SetupRawVFolder(id, access, data)
 		svfunc=data.save_func,
 		delfunc=data.delete_func,
 		mkdirfunc=data.mkdir_func,
+		getabspathfunc=data.getabspath_func,
+
 		access=access,
 		description=data.description
 	}
@@ -210,6 +212,12 @@ function gace.SetupGaceIOVFolder(id, root, access)
 
 			gaceio.Delete(GIOPath(curpath))
 			return true
+		end,
+		getabspath_func = function(curpath)
+			curpath = curpath:WithoutVFolder()
+			curpath = root:Add(curpath)
+			
+			return GIOPath(curpath)
 		end
 	})
 end

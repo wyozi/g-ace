@@ -6,28 +6,28 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 		fn = function()
 			luadev.RunOnSelf(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Server",
 		fn = function()
 			luadev.RunOnServer(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Shared",
 		fn = function()
 			luadev.RunOnShared(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Clients",
 		fn = function()
 			luadev.RunOnClients(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Player",
@@ -40,7 +40,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 			end
 			menu:Open()
 		end,
-		enabled = function() return luadev ~= nil end
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "ULX Group",
@@ -57,7 +57,8 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 		enabled = function() return luadev ~= nil and
 									ULib ~= nil and
 									ULib.ucl ~= nil and
-									ULib.ucl.groups ~= nil
+									ULib.ucl.groups ~= nil and
+									gace.IsSessionOpen()
 							end
 	}
 end)

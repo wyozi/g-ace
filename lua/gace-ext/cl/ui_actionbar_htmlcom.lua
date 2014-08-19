@@ -1,4 +1,4 @@
-gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
+gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(comps)
 	
 	comps:AddComponent { text = "Editor", width = 35 },
 	comps:AddComponent {

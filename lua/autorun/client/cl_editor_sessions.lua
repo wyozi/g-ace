@@ -6,6 +6,10 @@
 gace.Sessions = {}
 gace.OpenedSessionId = nil
 
+function gace.IsSessionOpen()
+	return gace.OpenedSessionId ~= nil
+end
+
 function gace.GetSession(id)
 	return gace.Sessions[id]
 end
@@ -51,7 +55,7 @@ function gace.OpenSession(id, data)
 
 	if sess_exists or (data and data.content) then
 		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true)
-		
+
 		if (data and data.content) then
 			sess.SavedContent = data.content
 		end

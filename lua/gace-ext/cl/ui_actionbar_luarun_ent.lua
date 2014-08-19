@@ -1,4 +1,4 @@
-gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
+gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 	comps:AddComponent {
 		text = "Run as",
 		fn = function(state)
@@ -33,7 +33,7 @@ scripted_ents.Register(ENT, "%s")
 
 			menu:Open()
 		end,
-		enabled = function() return luadev ~= nil end,
+		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end,
 		tt = "Runs the code as if it was a SWEP or a SENT"
-	},
+	}
 end)

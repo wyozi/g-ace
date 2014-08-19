@@ -37,4 +37,15 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 		local targs = gace.FindCollabTargets(payload.path, ply)
 		gace.Send(targs, "", "colsetfile", {ply=ply, path=payload.path})
 	end
+
+	-- Git integration
+	if op == "git-status" then
+		responder_func(ply, reqid, op, gace.Git_MakeStatusResponse(ply, payload.path))
+	elseif op == "git-diff" then
+		responder_func(ply, reqid, op, gace.Git_MakeDiffResponse(ply, payload.path))
+	elseif op == "git-push" then
+		responder_func(ply, reqid, op, gace.Git_MakePushResponse(ply, payload.path))
+	elseif op == "git-commitall" then
+		responder_func(ply, reqid, op, gace.Git_MakeCommitAllResponse(ply, payload.path, payload.msg))
+	end
 end

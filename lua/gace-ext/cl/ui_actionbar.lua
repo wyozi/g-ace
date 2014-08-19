@@ -20,7 +20,8 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 		comp:SetPos(x, 2)
 		comp:SetSize(v.width or 60, 20)
 		x = x + (v.width or 60)+2
-		comp:SetText(v.text)
+
+		comp:SetText(type(v.text) == "function" and v.text() or v.text)
 
 		if v.toggle then comp.ToggleMode = true end
 
@@ -30,11 +31,14 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 
 		if v.tt then comp:SetToolTip(v.tt) end
 
-		if v.enabled and not v.enabled() then
-			comp.Think = function(self)
+		comp.Think = function(self)
+			if v.enabled then
 				local b = v.enabled()
 				-- Yes, this inverses enabled to disabled, blame Garry for weird naming
 				self:SetDisabled(not b)
+			end
+			if type(v.text) == "function" then
+				self:SetText(v.text())
 			end
 		end
 
