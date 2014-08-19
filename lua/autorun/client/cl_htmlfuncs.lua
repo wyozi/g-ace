@@ -43,14 +43,18 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local sess = gace.GetOpenSession()
 		sess.Content = content
 
-		-- TODO check if we need to add marker for "file contains unsaved changes"
+		gace.CallHook("OnSessionContentUpdated", gace.GetSessionId(), content)
 	end)
 	html:AddFunction("gace", "SaveSession", function()
 		gace.Log("Saving session")
 
+		local sess = gace.GetOpenSession()
+		local content = sess.Content
+
 		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
+			sess.SavedContent = content
 			gace.Save(path, content, function(_, _, pl)
 				if pl.err then
 					local better_err = pl.err

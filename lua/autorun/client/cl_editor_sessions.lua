@@ -51,6 +51,11 @@ function gace.OpenSession(id, data)
 
 	if sess_exists or (data and data.content) then
 		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true)
+		
+		if (data and data.content) then
+			sess.SavedContent = data.content
+		end
+
 		if data and data.callback then callback() end
 	else
 		gace.SetHTMLSession(id, "Fetching latest sources from server.")
@@ -61,6 +66,7 @@ function gace.OpenSession(id, data)
 			end
 
 			sess.Content = payload.content
+			sess.SavedContent = sess.Content
 			gace.SetHTMLSession(id, sess.Content)
 
 			if data and data.callback then callback() end

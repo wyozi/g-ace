@@ -13,7 +13,8 @@ local VGUI_EDITOR_TAB = {
 		end
 	end,
 	CloseTab = function(self, force, callback)
-		if not force and self.EditedNotSaved then
+		local sess = gace.GetSession(self.SessionId)
+		if not force and sess.SavedContent ~= sess.Content then
 			local menu = DermaMenu()
 			menu:AddOption("Unsaved changes. Are you sure you want to close the tab?", function()
 				self:CloseTab(true, callback)
@@ -46,9 +47,10 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(gace.Path(self.SessionId):GetFile(), "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.FileName, "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 	
-		if self.EditedNotSaved then
+		local sess = gace.GetSession(self.SessionId)
+		if sess and sess.SavedContent ~= sess.Content then
 			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
 			local lx, ly
 			for x=0,w,5 do
@@ -65,6 +67,8 @@ local VGUI_EDITOR_TAB = {
 		self:SetText("")
 		self.SessionId = id
 		self:SetToolTip(id)
+
+		self.FileName = gace.Path(self.SessionId):GetFile()
 
 		surface.SetFont("EditorTabFont")
 		local w = surface.GetTextSize(self.SessionId)
