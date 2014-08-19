@@ -6,24 +6,21 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 		fn = function()
 			luadev.RunOnSelf(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end,
-		tt = "Hotkey in editor: F5"
+		enabled = function() return luadev ~= nil end
 	}
 	comps:AddComponent {
 		text = "Server",
 		fn = function()
 			luadev.RunOnServer(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end,
-		tt = "Hotkey in editor: F6"
+		enabled = function() return luadev ~= nil end
 	}
 	comps:AddComponent {
 		text = "Shared",
 		fn = function()
 			luadev.RunOnShared(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
-		enabled = function() return luadev ~= nil end,
-		tt = "Hotkey in editor: F7"
+		enabled = function() return luadev ~= nil end
 	}
 	comps:AddComponent {
 		text = "Clients",
