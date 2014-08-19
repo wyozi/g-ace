@@ -63,8 +63,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
     editor.on("change", function(e) {
         if ("gace" in window) {
-            gace.SetEditedNotSaved(true);
-            gace.ReportLatestContent(editor.getSession().getValue());
+            gace.UpdateSessionContent(editor.getSession().getValue());
         }
     });
 
@@ -72,16 +71,15 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         name: 'Save',
         bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
         exec: function(editor) {
-            gace.SaveSession(editor.getSession().getValue());
+            gace.SaveSession();
         }
     });
 
-    var newfilecount = 0;
     editor.commands.addCommand({
         name: 'New file',
         bindKey: {win: 'Ctrl-N',  mac: 'Command-N'},
         exec: function(editor) {
-            gace.NewSession("newfile" + ++newfilecount + ".txt");
+            gace.NewSession();
         },
         readOnly: true
     });
@@ -90,7 +88,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         name: 'Close file',
         bindKey: {win: 'Ctrl-W',  mac: 'Command-W'},
         exec: function(editor) {
-            gace.GracefullyCloseSession();
+            gace.CloseSession(false);
         },
         readOnly: true
     });
@@ -109,34 +107,6 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         },
         readOnly: true
     });
-
-    editor.commands.addCommand({
-        name: 'Run on Self',
-        bindKey: {win: 'F5',  mac: 'F5'},
-        exec: function(editor) {
-            if (editor.getSession() == emptySession)
-                return;
-            gace.CallLDFunc("RunOnSelf", editor.getSession().getValue());
-        },
-    }); 
-    editor.commands.addCommand({
-        name: 'Run on Server',
-        bindKey: {win: 'F6',  mac: 'F6'},
-        exec: function(editor) {
-            if (editor.getSession() == emptySession)
-                return;
-            gace.CallLDFunc("RunOnServer", editor.getSession().getValue());
-        },
-    }); 
-    editor.commands.addCommand({
-        name: 'Run on Shared',
-        bindKey: {win: 'F7',  mac: 'F7'},
-        exec: function(editor) {
-            if (editor.getSession() == emptySession)
-                return;
-            gace.CallLDFunc("RunOnShared", editor.getSession().getValue());
-        },
-    }); 
 
     editor.commands.addCommand({
         name: 'Go to link',
@@ -179,20 +149,17 @@ Select a file or press Ctrl-n from the filetree to start hacking!
             exists: function(id) {
                 return id in sessions;
             },
-            reopen: function(id) {
-                if (this.exists(id)) {
-                    editor.setSession(sessions[id]);
-                    editor.setReadOnly(false);
-                    sessionId = id;
-                    
-                    gace.SetOpenedSession(id, editor.getSession().getValue());
-                    return true;
+            setSession: function(id, data) {
+                var existedBefore = true;
+
+                if (!this.exists(id)) {
+                    sessions[id] = ace.createEditSession("", "ace/mode/glua");
+                    existedBefore = false;
                 }
-                return false;
-            },
-            open: function(id, data) {
-                if (this.reopen(id))
-                    return;
+
+                editor.setSession(sessions[id]);
+                editor.setReadOnly(false);
+                sessionId = id;
 
                 var content;
                 if ("contentb" in data)
@@ -200,24 +167,13 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 else
                     content = data.content;
 
-                sessions[id] = ace.createEditSession(content, "ace/mode/glua");
-                
-                this.reopen(id);
-                gace.SetEditedNotSaved(data.defens || false);
+                if (content)
+                    sessions[id].setValue(content);
+                else if (data.requestDataIfNotCached && !existedBefore)
+                    // If we're setting session without passing contents and contents are not cached in html, request newest content from lua
+                    gace.RequestSessionContent();
             },
-            refresh: function(id, data) {
-                this.open(id, data);
-
-                var content;
-                if ("contentb" in data)
-                    content = Base64.decode(data.contentb);
-                else
-                    content = data.content;
-
-                sessions[id].setValue(content);
-                gace.SetEditedNotSaved(data.defens || false)
-            },
-            close: function(id) {
+            removeSession: function(id) {
                 // If closed session is current session, lets clear it by making new empty session
                 if (editor.getSession() == sessions[id]) {
                     editor.setSession(emptySession);
