@@ -72,7 +72,7 @@ local VGUI_EDITOR_TAB = {
 		self:SetWide(140)--math.min(w+34, 160))
 	end,
 	DoClick = function(self)
-		gace.ReOpenSession(self.SessionId)
+		gace.OpenSession(self.SessionId)
 	end,
 	DoRightClick = function(self)
 
@@ -81,7 +81,8 @@ local VGUI_EDITOR_TAB = {
 		local menu = DermaMenu()
 		menu:AddOption("Close", function() timer.Simple(0, function() self:CloseTab() end) end)
 		menu:AddOption("Close others", function()
-			local to_be_closed = gace.FilterSeq(gace.Tabs.Panels, function(x) return x.SessionId ~= nil and x ~= self end)
+			local tabs = gace.GetPanel("Tabs")
+			local to_be_closed = gace.FilterSeq(tabs.Panels, function(x) return x.SessionId ~= nil and x ~= self end)
 
 			local function CloseAnother()
 				local tab = table.remove(to_be_closed, 1)

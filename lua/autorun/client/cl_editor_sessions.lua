@@ -10,6 +10,10 @@ function gace.GetSession(id)
 	return gace.Sessions[id]
 end
 
+function gace.GetSessionId()
+	return gace.OpenedSessionId
+end
+
 function gace.SessionExists(id)
 	return gace.Sessions[id] ~= nil
 end
@@ -31,9 +35,13 @@ function gace.CreateSession(id, tbl)
 end
 
 function gace.OpenSession(id, callback)
+	if gace.OpenedSessionId == id then return end
+
 	local sess = gace.GetSession(id)
 
 	gace.OpenedSessionId = id
+
+	gace.CallHook("OnSessionOpened", id)
 
 	if sess then
 		gace.SetHTMLSession(id, _, true)
@@ -55,4 +63,15 @@ function gace.OpenSession(id, callback)
 		end)
 	end
 
+end
+
+function gace.CloseSession(id)
+	gace.RunJavascript([[
+		gaceSessions.removeSession("]] .. id .. [[");
+	]])
+	if gace.GetSessionId() == id then
+		gace.OpenedSessionId = nil
+	end
+
+	gace.CallHook("OnSessionClosed", id)
 end

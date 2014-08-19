@@ -47,6 +47,38 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 	end)
 	html:AddFunction("gace", "SaveSession", function()
 		gace.Log("Saving session")
+
+		local initial_osi = gace.GetSessionId()
+
+		local function SaveTo(path)
+			gace.Save(path, content, function(_, _, pl)
+				if pl.err then
+					local better_err = pl.err
+					if better_err == "Inexistent virtual folder" then
+						better_err = "Trying to save to root. Try to save inside a folder instead."
+					end
+					return gace.Log(gace.LOG_ERROR, "Unable to save: ", better_err)
+				end
+
+				if path ~= initial_osi then
+					gace.CloseSession(initial_osi)
+					gace.OpenSession(path, content)
+				end
+
+				local t = gace.GetTabFor(path)
+				if t then t.EditedNotSaved = false end
+
+				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
+			end)
+		end
+
+		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
+			gace.AskForInput("Where to save? Must be absolute path (e.g. EpicJB/folder/file.txt) and must end in .txt", function(txt)
+				SaveTo(txt)
+			end)
+			return
+		end
+		SaveTo(initial_osi)
 	end)
 	html:AddFunction("gace", "NewSession", function(id, line, column)
 		gace.OpenSession("newfile" .. os.time() .. ".txt")
