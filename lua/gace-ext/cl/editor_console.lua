@@ -1,15 +1,26 @@
 
+gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
+	local sb = basepnl:GetById("SideBar")
+
+	local console = vgui.Create("RichText")
+	console:SetTall(150)
+	sb:AddDocked("Console", console, BOTTOM)
+end)
+
 -- TODO make these smoother/lighter
 gace.LOG_ERROR = Color(255, 0, 0)
 gace.LOG_WARN = Color(255, 127, 0)
 gace.LOG_SUCCESS = Color(0, 255, 0)
 
-function gace.AppendToConsole(...)
+gace.AddHook("LogMessage", "Console_OverrideOldLogSystem", function(...)
+
+	local console = gace.GetPanel("Console")
+
 	local function setclr(r, g, b)
-		gace.Frame.Console:InsertColorChange(r,g,b,255)
+		console:InsertColorChange(r,g,b,255)
 	end
 	local function append(txt)
-		gace.Frame.Console:AppendText(txt)
+		console:AppendText(txt)
 	end
 	setclr(100,100,100)	append(			"[")
 	setclr(255,255,255)	append(os.date(	"%H"))
@@ -27,5 +38,6 @@ function gace.AppendToConsole(...)
 	end
 	append("\n")
 
-	gace.Frame.Console:GotoTextEnd()
-end
+	console:GotoTextEnd()
+
+end)

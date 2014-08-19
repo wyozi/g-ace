@@ -1,6 +1,5 @@
-gace.AddHook("AddPanels", "Editor_AddSideBar", function(frame, basepnl)
-	local sb = basepnl:AddSubPanel("SideBar", LEFT)
-	sb:SetWide(250)
+gace.AddHook("AddPanels", "Editor_AddFileTree", function(frame, basepnl)
+	local sb = basepnl:GetById("SideBar")
 
 	gace.FileNodeTree = nil
 

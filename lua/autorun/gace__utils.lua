@@ -98,10 +98,24 @@ gat("Utils", function(t)
 	t.assertEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}, "map")
 end)
 
--- Hook system used by gace extensions. Uses Garry's Mod's hook system
+-- Hook system used by gace extensions.
+
+local hooks = {}
+
 function gace.CallHook(name, ...)
-	return hook.Call("GAce" .. name, GAMEMODE, ...)
+	if not hooks[name] then return end
+	local hks = hooks[name]
+	for i=1,#hks do
+		local val = hks[i].fn(...)
+		if val ~= nil then return val end
+	end
 end
 function gace.AddHook(name, id, fn)
-	hook.Add("GAce" .. name, id, fn)
+	if not hooks[name] then hooks[name] = {} end
+	for _,hk in pairs(hooks[name]) do
+		if hk.id == id then
+			table.RemoveByValue(hooks[name], hk)
+		end
+	end
+	table.insert(hooks[name], {id=id, fn=fn})
 end

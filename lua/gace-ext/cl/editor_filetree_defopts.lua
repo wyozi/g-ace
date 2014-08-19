@@ -6,7 +6,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(node, me
 	local ft = gace.filetree -- Shortcut to filetree library
 
 	menu:AddOption("Duplicate", function()
-		gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local filname = ft.NodeToPath(node, true) .. "/" .. nm
 			gace.Fetch(ft.NodeToPath(node), function(_, _, payload)
 				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
@@ -16,7 +16,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(node, me
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local folderpath = ft.NodeToPath(node, true)
 			local filname = folderpath .. "/" .. nm
 
@@ -47,7 +47,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, 
 	local ft = gace.filetree -- Shortcut to filetree library
 
 	menu:AddOption("Duplicate", function()
-		gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local filname = ft.NodeToPath(node, true) .. "/" .. nm
 			gace.Fetch(ft.NodeToPath(node), function(_, _, payload)
 				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
@@ -57,7 +57,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, 
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		gace.AskForInput("Filename? Needs to end in .txt", function(nm)
+		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local folderpath = ft.NodeToPath(node, true)
 			local filname = folderpath .. "/" .. nm
 

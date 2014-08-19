@@ -31,15 +31,21 @@ function PANEL:GetById(id)
 	return self.DynIdMappings[id]
 end
 
-function PANEL:AddDocked(id, pnl, dockpos)
+function PANEL:AddRaw(id, pnl)
 	self:StorePanelId(id, pnl)
 
 	pnl.DynPanelId = id
 	self:Add(pnl)
-	pnl:Dock(dockpos or "FILL")
 
 	return self
 end
+function PANEL:AddDocked(id, pnl, dockpos)
+	self:AddRaw(id, pnl)
+	pnl:Dock(dockpos or FILL)
+
+	return self
+end
+
 
 function PANEL:AddSubPanel(id, dockpos)
 	local v = vgui.Create("DDynPanel")
