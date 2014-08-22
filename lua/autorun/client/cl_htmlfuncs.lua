@@ -41,6 +41,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 	-- Session related functions
 	html:AddFunction("gace", "UpdateSessionContent", function(content)
 		local sess = gace.GetOpenSession()
+		if not sess then return end
+
 		sess.Content = content
 
 		gace.CallHook("OnSessionContentUpdated", gace.GetSessionId(), content)
@@ -107,6 +109,53 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 	html:AddFunction("gace", "RequestSessionContent", function()
 		local sess, id = gace.GetOpenSession()
 		gace.SetHTMLSession(id, sess.Content)
+	end)
+
+	html:AddFunction("gace", "QueryGModApi", function(requestid, prefix)
+		local spl = prefix:Split(".")
+
+		local cur_table = _G
+
+		local i = 1
+		while i <= #spl do
+			local is_last = i == #spl
+
+			local val = spl[i]
+			local lookedup_val = cur_table[val]
+
+			if lookedup_val == nil and not is_last then
+				return -- No possibilities found
+			end
+
+			if type(lookedup_val) == "table" then
+				if is_last then return end -- If last val == table, no useful data to show
+				cur_table = lookedup_val
+
+			elseif lookedup_val == nil and is_last then
+				local possibilities = {}
+				for key,_ in pairs(cur_table) do
+					if key:StartWith(val) then
+						table.insert(possibilities, {
+							name = key,
+							value = key
+						})
+					end
+				end
+
+				local jstbl = {}
+				for _,pos in pairs(possibilities) do
+					table.insert(jstbl, "{name: \"" .. pos.name .. "\", value: \"" .. pos.value .. "\", meta: \"gmod\"}")
+				end
+
+				local runjs = [[ParseGModQueryResponse("]] .. requestid .. [[", []] .. table.concat(jstbl, ", ") .. [[])]]
+				MsgN(runjs)
+				gace.RunJavascript(runjs)
+			else
+				return -- No possibilities can be found
+			end
+
+			i = i + 1
+		end
 	end)
 
 	-- General editor related functions (such as updating theme)
