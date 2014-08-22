@@ -4,28 +4,28 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 	comps:AddComponent {
 		text = "Self",
 		fn = function()
-			luadev.RunOnSelf(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnSelf(gace.GetOpenSession().Content, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Server",
 		fn = function()
-			luadev.RunOnServer(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnServer(gace.GetOpenSession().Content, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Shared",
 		fn = function()
-			luadev.RunOnShared(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnShared(gace.GetOpenSession().Content, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
 	comps:AddComponent {
 		text = "Clients",
 		fn = function()
-			luadev.RunOnClients(gace.GetSessionContent(), "g-ace: " .. (gace.GetSessionId() or ""))
+			luadev.RunOnClients(gace.GetOpenSession().Content, "g-ace: " .. (gace.GetSessionId() or ""))
 		end,
 		enabled = function() return luadev ~= nil and gace.IsSessionOpen() end
 	}
@@ -35,7 +35,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 			local menu = DermaMenu()
 			for _,ply in pairs(player.GetAll()) do
 				menu:AddOption(ply:Nick(), function()
-					luadev.RunOnClient(gace.GetSessionContent(), ply, "g-ace: " .. (gace.GetSessionId() or ""))
+					luadev.RunOnClient(gace.GetOpenSession().Content, ply, "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()
@@ -49,7 +49,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 			for group,_ in pairs(ULib.ucl.groups) do
 				menu:AddOption(group, function()
 					local targetplys = gace.FilterSeq(player.GetAll(), function(x) return x:IsUserGroup(group) end)
-					luadev.RunOnClient(gace.GetSessionContent(), targetplys, "g-ace: " .. (gace.GetSessionId() or ""))
+					luadev.RunOnClient(gace.GetOpenSession().Content, targetplys, "g-ace: " .. (gace.GetSessionId() or ""))
 				end)
 			end
 			menu:Open()

@@ -4,13 +4,13 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 	comps:AddComponent {
 		text = "Settings",
 		fn = function()
-			gace.RunEditorJS("editor.showSettingsMenu();")
+			gace.RunJavascript("editor.showSettingsMenu();")
 		end
 	}
 	comps:AddComponent {
 		text = "Shortcuts",
 		fn = function()
-			gace.RunEditorJS("editor.showKeyboardShortcuts();")
+			gace.RunJavascript("editor.showKeyboardShortcuts();")
 		end,
 		width = 75
 	}
