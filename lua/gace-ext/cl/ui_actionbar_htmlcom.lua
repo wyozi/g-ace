@@ -23,7 +23,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 			local theme_name = c_theme:Split("/")[3]
 
 			for _,theme in pairs(gace.AvailableThemes) do
-				local opt = menu:AddOption(theme, function() gace.RunEditorJS("editor.setTheme('ace/theme/" .. theme .. "')") end)
+				local opt = menu:AddOption(theme, function() gace.RunJavascript("editor.setTheme('ace/theme/" .. theme .. "')") end)
 				if theme_name == theme then
 					opt:SetChecked(true)
 				end
@@ -52,7 +52,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 
 			for _,mode in pairs(modes) do
 				local mode2 = "ace/mode/" .. mode
-				local opt = menu:AddOption(mode, function() gace.RunEditorJS("editor.getSession().setMode('" .. mode2 .. "')") end)
+				local opt = menu:AddOption(mode, function() gace.RunJavascript("editor.getSession().setMode('" .. mode2 .. "')") end)
 				if gace.GetSessionMode() == mode2 then
 					opt:SetChecked(true)
 				end
