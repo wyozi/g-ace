@@ -16,7 +16,7 @@ gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
 		input.OnEnter = function(self)
 			inputpanel.InputCallback(self:GetText())
 			inputpanel:Hide()
-			gace.Frame:InvalidateLayout()
+			gace.Frame.BasePanel:InvalidateLayout(true)
 		end
 	end
 

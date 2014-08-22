@@ -90,6 +90,8 @@ function PANEL:PerformLayout()
 
 	do
 		for idx, pnl in ipairs(self.DockedPanels[TOP]) do
+			if not pnl:IsVisible() then continue end
+			
 			pnl:StretchToParent(0, off_top, 0, nil)
 			pnl:InvalidateLayout()
 			off_top = off_top + pnl:GetTall()
@@ -98,6 +100,8 @@ function PANEL:PerformLayout()
 
 	do
 		for idx, pnl in ipairs(self.DockedPanels[BOTTOM]) do
+			if not pnl:IsVisible() then continue end
+			
 			pnl:StretchToParent(0, par_height-pnl:GetTall()-off_bottom, 0, off_bottom)
 			pnl:InvalidateLayout()
 
@@ -107,6 +111,8 @@ function PANEL:PerformLayout()
 
 	do
 		for idx, pnl in ipairs(self.DockedPanels[LEFT]) do
+			if not pnl:IsVisible() then continue end
+			
 			pnl:StretchToParent(off_left, off_top, nil, off_bottom)
 			pnl:InvalidateLayout()
 			off_left = off_left + pnl:GetWide()
@@ -115,6 +121,8 @@ function PANEL:PerformLayout()
 
 	do
 		for idx, pnl in ipairs(self.DockedPanels[RIGHT]) do
+			if not pnl:IsVisible() then continue end
+			
 			pnl:StretchToParent(par_width - pnl:GetWide()-off_right, off_top, off_right, off_bottom)
 			pnl:InvalidateLayout()
 			off_right = off_right + pnl:GetWide()
