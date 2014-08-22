@@ -39,11 +39,13 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 <script src="ace/ext-settings_menu.js"></script>
 <script src="ace/ext-keybinding_menu.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+
 <script>
     var editor = ace.edit("editor");
 
     // Load editor related classes etc
-    ace.require("ace/ext/language_tools");
+    var langTools = ace.require("ace/ext/language_tools");
     ace.require('ace/ext/settings_menu').init(editor);
     ace.require('ace/ext/keybinding_menu').init(editor);
     
@@ -55,11 +57,36 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         enableSnippets: true
     });
 
-    var gaceText = editor.getSession().getValue();
-    var emptySession = ace.createEditSession(gaceText, "ace/mode/rust");
+    var acutil = ace.require("ace/autocomplete/util");
+
+    var gmodApiCallbacks = {};
+    var requestId = 0;
+    var gmodApiCompleter = {
+        getCompletions: function(editor, session, pos, prefix, callback) {
+            var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF\.]/;
+            var line = editor.session.getLine(pos.row);
+            var codeprefix = acutil.retrievePrecedingIdentifier(line, pos.column, ID_REGEX);
+
+            if (codeprefix.length === 0) { callback(null, []); return }
+
+            if ("gace" in window) {
+                var creqid = "request" + (requestId++);
+                gmodApiCallbacks[creqid] = callback;
+                gace.QueryGModApi(creqid, codeprefix);
+            }
+        }
+    }
+    langTools.addCompleter(gmodApiCompleter);
+
+    function ParseGModQueryResponse(requestid, values) {
+        gmodApiCallbacks[requestid](null, values);
+        delete gmodApiCallbacks[requestid];
+    }
+
+    var emptySessionContent = editor.getSession().getValue();
+    var emptySession = ace.createEditSession(editor.getSession().getValue(), "ace/mode/rust");
 
     editor.setSession(emptySession);
-    editor.setReadOnly(true);
 
     editor.on("change", function(e) {
         if ("gace" in window) {
@@ -177,6 +204,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 // If closed session is current session, lets clear it by making new empty session
                 if (editor.getSession() == sessions[id]) {
                     editor.setSession(emptySession);
+                    editor.getSession().setValue(editor.getSession().getValue());
                     editor.setReadOnly(true);
                     sessionId = null;
                 }
