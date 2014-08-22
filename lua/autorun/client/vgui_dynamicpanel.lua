@@ -40,9 +40,10 @@ function PANEL:GetById(id)
 end
 
 function PANEL:AddRaw(id, pnl)
-	self:StorePanelId(id, pnl)
-
-	pnl.DynPanelId = id
+	if id then
+		self:StorePanelId(id, pnl)
+		pnl.DynPanelId = id
+	end
 
 	self:Add(pnl)
 
@@ -74,15 +75,15 @@ local function ripairs(t)
 end
 
 function PANEL:PerformLayout()
-	-- First set all children to basically invisible. We re-set properly configured children later
-	--[[for _,child in pairs(self:GetChildren()) do
-		child:SetPos(0, 0)
-		child:SetSize(0, 0)
-	end]]
+
+	if self.TargetWide and self:GetWide() ~= self.TargetWide then
+		self:SetWide(self.TargetWide)
+	end
 
 	local par_width, par_height = self:GetSize()
 
 	local off_left, off_right, off_top, off_bottom = 0, 0, 0, 0
+
 
 	-- TOP and BOTTOM are first because they are prioritized over LEFT and RIGHT
 	-- So ex. a TOP bar is shown over a LEFT sidebar 
@@ -120,22 +121,45 @@ function PANEL:PerformLayout()
 		end
 	end
 
-	--print(self.DynPanelId, off_left, off_right, off_top, off_bottom)
-
 	if IsValid(self.DockedPanels[FILL]) then
 		local pnl = self.DockedPanels[FILL]
 
 		pnl:StretchToParent(off_left, off_top, off_right, off_bottom)
 		pnl:InvalidateLayout()
-		--pnl:SetSize((par_width - off_right)-off_left, (par_height - off_bottom)-off_top)
-		--print("pos: ", pnl:GetPos())
-		--print("size: ", pnl:GetSize())
 	end
+end
+
+function PANEL:AddDivider(dockpos)
+	if dockpos ~= LEFT and
+		dockpos ~= RIGHT and
+		dockpos ~= TOP and
+		dockpos ~= BOTTOM then
+		return
+	end
+
+	-- We need to reverse dockpos
+	if dockpos == LEFT then
+		dockpos = RIGHT
+	elseif dockpos == RIGHT then
+		dockpos = LEFT
+	elseif dockpos == TOP then
+		dockpos = BOTTOM
+	elseif dockpos == BOTTOM then
+		dockpos = TOP
+	end
+
+	local bar = vgui.Create("DDynPanelDividerBar")
+	bar:Setup(dockpos)
+
+	bar:SetSize(8, 8)
+
+	self:AddDocked(nil, bar, dockpos)
 end
 
 function PANEL:AddSubPanel(id, dockpos)
 	local v = vgui.Create("DDynPanel")
 	self:AddDocked(id, v, dockpos)
+	v:AddDivider(dockpos)
 	return v
 end
 
@@ -144,4 +168,48 @@ function PANEL:OnChildRemoved(child)
 	self:RemovePanelId(child.DynPanelId)
 end
 
+function PANEL:OnCursorMoved( x, y )
+	if (self.Dragging ~= self) then return end
+	self.DragPos = x - self.HoldPos[1]
+	self.TargetWide = self.DragPos
+	self:InvalidateLayout(true)
+end
+
+function PANEL:OnMouseReleased( mcode )
+	if (mcode == MOUSE_LEFT) then
+		self:SetCursor("none")
+		self.Dragging = false
+		self:MouseCapture(false)
+	end
+end
+
 derma.DefineControl( "DDynPanel", "", PANEL, "DPanel" )
+
+local PANEL = {}
+
+function PANEL:Init()
+	self:SetPaintBackground( false )
+end
+
+function PANEL:Setup(docking)
+	if docking == LEFT or docking == RIGHT then
+		self:SetCursor("sizewe")
+	else
+		self:SetCursor("sizens")
+	end
+end
+
+function PANEL:OnMousePressed( mcode )
+	if ( mcode == MOUSE_LEFT ) then
+		self:GetParent().Dragging =  self:GetParent()
+		self:GetParent().HoldPos = {self:CursorPos()}
+		self:GetParent():MouseCapture(true)
+	end
+end
+
+function PANEL:Paint(w, h)
+	surface.SetMaterial(Material("phoenix_storms/metalfloor_2-3.vmt"))
+	surface.DrawTexturedRect(0, 0, w, h)
+end
+
+derma.DefineControl( "DDynPanelDividerBar", "", PANEL, "DPanel" )

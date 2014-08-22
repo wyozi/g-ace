@@ -35,6 +35,7 @@ function gace.CreateEditor()
 	gace.Frame = frame
 
 	frame.BasePanel = vgui.Create("DDynPanel", frame)
+	frame.BasePanel.DynPanelId = "Base"
 	frame.BasePanel:Dock(FILL)
 
 	gace.AddBasePanels(frame)
