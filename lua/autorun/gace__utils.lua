@@ -101,6 +101,7 @@ end)
 -- Hook system used by gace extensions.
 
 local hooks = {}
+gace.Hooks = hooks
 
 function gace.CallHook(name, ...)
 	if not hooks[name] then return end
@@ -112,10 +113,13 @@ function gace.CallHook(name, ...)
 end
 function gace.AddHook(name, id, fn)
 	if not hooks[name] then hooks[name] = {} end
-	for _,hk in pairs(hooks[name]) do
+
+	-- If hook id already exists, let's replace that hook with our new one
+	local old_hook_key
+	for k,hk in pairs(hooks[name]) do
 		if hk.id == id then
-			table.RemoveByValue(hooks[name], hk)
+			old_hook_key = k
 		end
 	end
-	table.insert(hooks[name], {id=id, fn=fn})
+	hooks[name][old_hook_key or (#hooks[name]+1)] = {id=id, fn=fn}
 end

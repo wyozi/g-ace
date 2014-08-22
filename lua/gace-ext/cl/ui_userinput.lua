@@ -1,6 +1,5 @@
 gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
-	local inputpanel = vgui.Create("DPanel", frame)
-	inputpanel:Dock(BOTTOM)
+	local inputpanel = vgui.Create("DPanel")
 	inputpanel:Hide()
 
 	do
