@@ -2,9 +2,11 @@
 gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	local sb = basepnl:GetById("SideBar")
 
+	local consolepanel = sb:AddSubPanel("ConsolePanel", BOTTOM)
+
 	local console = vgui.Create("RichText")
 	console:SetTall(150)
-	sb:AddDocked("Console", console, BOTTOM)
+	consolepanel:AddDocked("Console", console, FILL)
 end)
 
 -- TODO make these smoother/lighter

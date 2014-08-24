@@ -76,8 +76,16 @@ end
 
 function PANEL:PerformLayout()
 
-	if self.TargetWide and self:GetWide() ~= self.TargetWide then
-		self:SetWide(self.TargetWide)
+	if self.TargetDividerSize then
+		if self.DividerDock == LEFT or self.DividerDock == RIGHT then
+			if self:GetWide() ~= self.TargetDividerSize then
+				self:SetWide(self.TargetDividerSize)
+			end
+		else
+			if self:GetTall() ~= self.TargetDividerSize then
+				self:SetTall(self.TargetDividerSize)
+			end
+		end
 	end
 
 	local par_width, par_height = self:GetSize()
@@ -161,7 +169,15 @@ function PANEL:AddDivider(dockpos)
 
 	bar:SetSize(8, 8)
 
+	self.Divider = bar
+	self.DividerDock = dockpos
+
 	self:AddDocked(nil, bar, dockpos)
+
+	if self.DynPanelId then
+		local size = cookie.GetNumber("GAceDividerSize_" .. self.DynPanelId)
+		if size then self.TargetDividerSize = size end
+	end
 end
 
 function PANEL:AddSubPanel(id, dockpos)
@@ -178,8 +194,19 @@ end
 
 function PANEL:OnCursorMoved( x, y )
 	if (self.Dragging ~= self) then return end
-	self.DragPos = x - self.HoldPos[1]
-	self.TargetWide = self.DragPos
+
+	local mpx, mpy = input.GetCursorPos()
+	if self.DividerDock == LEFT then
+		self.DragPos = mpx - self.StartDragPos[1]
+	elseif self.DividerDock == RIGHT then
+		self.DragPos = -(mpx - self.StartDragPos[1])
+	elseif self.DividerDock == TOP then
+		self.DragPos = mpy - self.StartDragPos[2]
+	elseif self.DividerDock == RIGHT then
+		self.DragPos = -(mpy - self.StartDragPos[2])
+	end
+
+	self.TargetDividerSize = self.InitialDividerSize - self.DragPos
 	self:InvalidateLayout(true)
 end
 
@@ -188,6 +215,10 @@ function PANEL:OnMouseReleased( mcode )
 		self:SetCursor("none")
 		self.Dragging = false
 		self:MouseCapture(false)
+
+		if self.DynPanelId and self.TargetDividerSize then
+			cookie.Set("GAceDividerSize_" .. self.DynPanelId, tostring(self.TargetDividerSize))
+		end
 	end
 end
 
@@ -205,12 +236,14 @@ function PANEL:Setup(docking)
 	else
 		self:SetCursor("sizens")
 	end
+	self.docking = docking
 end
 
 function PANEL:OnMousePressed( mcode )
 	if ( mcode == MOUSE_LEFT ) then
 		self:GetParent().Dragging =  self:GetParent()
-		self:GetParent().HoldPos = {self:CursorPos()}
+		self:GetParent().InitialDividerSize = (self.docking == LEFT or self.docking == RIGHT) and self:GetParent():GetWide() or self:GetParent():GetTall()
+		self:GetParent().StartDragPos = {input.GetCursorPos()}
 		self:GetParent():MouseCapture(true)
 	end
 end
