@@ -1,4 +1,4 @@
-require("luagit")
+pcall(require, "luagit")
 local luagit_available = git ~= nil
 
 function gace.Git_MakeStatusResponse(ply, path)
