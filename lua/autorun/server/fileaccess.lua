@@ -33,14 +33,14 @@ end
 
 -- Calls to v.ffunc should be passed through this function. It validates that everything is correct and filters
 --  unwanted things
-function gace.ValidateFFunc(type, files, folders)
-	if not type then return type, files, folders end
-	if gace_hide_dotfiles:GetBool() then
+function gace.ValidateFFunc(ftype, files, folders)
+	if not ftype then return ftype, files, folders end
+	if type(files) == "folder" and gace_hide_dotfiles:GetBool() then
 		folders = gace.Filter(folders, function(v, k)
 			return not v:GetFile():StartWith(".")
 		end)
 	end
-	return type, files, folders
+	return ftype, files, folders
 end
 
 function gace.MakeRecursiveListResponse(ply, path)
@@ -210,35 +210,48 @@ function gace.MakeFindResponse(ply, path, phrase)
 
 	local matches = {}
 
-	for _,file in pairs(files) do
-		local fpath = pathobj + file:GetFile()
-		if gace.TestAccess(vfolder.access, ply, fpath, "find") then
-			local type, content = gace.ValidateFFunc(vfolder.ffunc(fpath))
+	local function IterateVFolder(pathobj, files, folders)
+		for _,folder in pairs(folders) do
+			local fpath = pathobj + folder:GetFile()
+			if gace.TestAccess(vfolder.access, ply, fpath, "find") then
+				local type, files, folders = gace.ValidateFFunc(vfolder.ffunc(fpath))
+				IterateVFolder(fpath, files, folders)
+			end
+		end
 
-			-- Go line by line. Might be slow but works for our purpose and keeps code clean
-			for i,line in pairs(content:Split("\n")) do
-				local curcolumn = 1
+		for _,file in pairs(files) do
+			local fpath = pathobj + file:GetFile()
+			if gace.TestAccess(vfolder.access, ply, fpath, "find") then
+				local type, content = gace.ValidateFFunc(vfolder.ffunc(fpath))
 
-				local function search()
-					local findindex = string.find(line, phrase, curcolumn, true)
-					if not findindex then return false end
+				-- Go line by line. Might be slow but works for our purpose and keeps code clean
+				for i,line in pairs(content:Split("\n")) do
+					local curcolumn = 1
 
-					table.insert(matches, {
-						path = fpath:ToString(),
-						row = (i-1),
-						col = (findindex-1),
-						line = line
-					})
+					local function search()
+						local findindex = string.find(line, phrase, curcolumn, true)
+						if not findindex then return false end
 
-					curcolumn = findindex+1
+						table.insert(matches, {
+							path = fpath:ToString(),
+							row = (i-1),
+							col = (findindex-1),
+							line = line
+						})
 
-					return true
+						curcolumn = findindex+1
+
+						return true
+					end
+
+					while search() do end
 				end
-
-				while search() do end
 			end
 		end
 	end
+
+	IterateVFolder(pathobj, files, folders)
+	
 	
 	return {ret="Success", matches=matches}
 end
