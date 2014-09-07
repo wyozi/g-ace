@@ -103,7 +103,15 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 		if parnode.ChildNodes then parnode.ChildNodes:Remove() parnode.ChildNodes=nil end
 
 		if node.fol then
-			for foldnm,fold in pairs(node.fol) do
+			local sorted_fol = {}
+			for k,v in pairs(node.fol) do
+				table.insert(sorted_fol, {k=k, v=v})
+			end
+			table.sort(sorted_fol, function(a,b) return a.k < b.k end)
+
+			for _, v in pairs(sorted_fol) do
+				local foldnm, fold = v.k, v.v
+
 				local node = parnode:AddNode(foldnm)
 				ft.AddFolderNodeOptions(node, filetree)
 				ft.AddTreeNodeOptions(node, filetree)
@@ -125,7 +133,15 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 			end
 		end
 		if node.fil then
-			for _,fil in pairs(node.fil) do
+			local sorted_fil = {}
+			for k,v in pairs(node.fil) do
+				table.insert(sorted_fil, {k=k, v=v})
+			end
+			table.sort(sorted_fil, function(a,b) return a.v < b.v end)
+
+			for _,v in pairs(sorted_fil) do
+				local fil = v.v
+
 				local filnode = parnode:AddNode(fil)
 				filnode.Path = ft.NodeToPath(filnode)
 
