@@ -6,6 +6,13 @@
 gace.Sessions = {}
 gace.OpenedSessionId = nil
 
+local session_meta = {}
+session_meta.__index = session_meta
+
+session_meta.GetExtensionlessName = function(self)
+	return string.StripExtension(gace.Path(self.Id):GetFile())
+end
+
 function gace.IsSessionOpen()
 	return gace.OpenedSessionId ~= nil
 end
@@ -28,6 +35,9 @@ end
 
 function gace.CreateSession(id, tbl)
 	local t = {}
+	t.Id = id
+
+	setmetatable(t, session_meta)
 
 	if tbl then
 		if tbl.content then t.Content = tbl.content end
