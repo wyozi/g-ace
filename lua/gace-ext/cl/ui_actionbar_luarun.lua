@@ -1,5 +1,5 @@
 gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
-	comps:AddComponent{ text = "Run on", width = 40 }
+	comps:AddCategory("Run on", Color(142, 68, 173))
 
 	comps:AddComponent {
 		text = "Self",
@@ -61,4 +61,6 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun", function(comps)
 									gace.IsSessionOpen()
 							end
 	}
+
+	comps:AddCategoryEnd()
 end)

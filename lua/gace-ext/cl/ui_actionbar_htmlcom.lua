@@ -1,6 +1,6 @@
 gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(comps)
 	
-	comps:AddComponent { text = "Editor", width = 35 }
+	comps:AddCategory("Editor", Color(230, 126, 34))
 	comps:AddComponent {
 		text = "Settings",
 		fn = function()
@@ -60,4 +60,6 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 			menu:Open()
 		end
 	}
+
+	comps:AddCategoryEnd()
 end)

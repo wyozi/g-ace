@@ -1,4 +1,5 @@
 gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
+	comps:AddCategory("Git", Color(52, 152, 219))
 	comps:AddComponent {
 		text = function()
 			local sess = gace.GetOpenSession()
@@ -67,4 +68,5 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 			return sess and (not sess.git or sess.git.enabled ~= false)
 		end
 	}
+	comps:AddCategoryEnd()
 end)

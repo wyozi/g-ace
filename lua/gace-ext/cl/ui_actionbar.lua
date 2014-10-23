@@ -1,5 +1,11 @@
 
 local comp_meta = {
+	AddCategory = function(self, title, clr)
+		table.insert(self, {text = title, width = #title*15, cat = true, color = clr or Color(255, 127, 0), toggle = true})
+	end,
+	AddCategoryEnd = function(self)
+		table.insert(self, {cat = true, nullcat = true})
+	end,
 	AddComponent = function(self, data)
 		table.insert(self, data)
 	end
@@ -13,13 +19,46 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 	gace.CallHook("AddActionBarComponents", comps)
 
 	local x = 10
+	local cur_cat
+
 	for _,v in pairs(comps) do
-		local is_label = not v.fn
+		local is_cat = v.cat == true
+		if is_cat then
+			-- comp containing nullcat is a meta component to end a category
+			if v.nullcat then
+				cur_cat = nil
+				x = x + 6
+				continue
+			end
+			cur_cat = v
+		end
+
+		local is_label = not v.fn and not is_cat
+
+		local width = (v.width or 60)
+
+		if cur_cat then
+			local comp = vgui.Create("DPanel", frame)
+			local curcatclr = cur_cat.color
+			comp.Paint = function(s, w, h)
+				surface.SetDrawColor(curcatclr.r, curcatclr.g, curcatclr.b, 80)
+				surface.DrawRect(0, 0, w, h)
+			end
+			comp:SetPos(x-2, 0)
+			comp:SetSize(width+4, 24)
+		end
 
 		local comp = vgui.Create(is_label and "DLabel" or "GAceButton", frame)
-		comp:SetPos(x, 2)
-		comp:SetSize(v.width or 60, 20)
-		x = x + (v.width or 60)+2
+		if is_cat then
+			comp:SetPos(x, 0)
+			comp:SetSize(width, 24)
+
+			comp:SetColorOverride("tab_bg", v.color)
+		else
+			comp:SetPos(x, 2)
+			comp:SetSize(width, 20)
+		end
+		x = x + width+2
 
 		comp:SetText(type(v.text) == "function" and v.text() or v.text)
 
