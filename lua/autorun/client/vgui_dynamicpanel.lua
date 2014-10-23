@@ -226,10 +226,6 @@ derma.DefineControl( "DDynPanel", "", PANEL, "DPanel" )
 
 local PANEL = {}
 
-function PANEL:Init()
-	self:SetPaintBackground( false )
-end
-
 function PANEL:Setup(docking)
 	if docking == LEFT or docking == RIGHT then
 		self:SetCursor("sizewe")
@@ -249,8 +245,8 @@ function PANEL:OnMousePressed( mcode )
 end
 
 function PANEL:Paint(w, h)
-	surface.SetMaterial(Material("phoenix_storms/metalfloor_2-3.vmt"))
-	surface.DrawTexturedRect(0, 0, w, h)
+	surface.SetDrawColor(0, 0, 0, 90)
+	surface.DrawRect(0, 0, w, h)
 end
 
 derma.DefineControl( "DDynPanelDividerBar", "", PANEL, "DPanel" )
