@@ -1,6 +1,11 @@
 -- Small utility functions
 -- Note: name has two underscores because we want to be sure we're loaded before any other gace related files
 
+include("libs/middleclass.lua")
+include("utils/cache.lua")
+include("utils/cache_simple.lua")
+include("utils/cachesync_filesystem.lua")
+
 function gace.Map(tbl, fn)
 	local t = {}
 	for k,v in pairs(tbl) do
