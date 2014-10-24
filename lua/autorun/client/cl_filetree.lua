@@ -54,7 +54,12 @@ function ft.AddFolderNodeOptions(node, filetree)
 	local oldthink = node.Think
 	node.Think = function(self)
 		-- Used to retain expanded status if the node is recreated
-		self.treetable.expanded = self.m_bExpanded
+		local meta = gace.FileNodeTreeMeta
+		if meta then
+			local entry = meta[ft.NodeToPath(self)] or {}
+			entry.expanded = self.m_bExpanded
+			meta[ft.NodeToPath(self)] = entry 
+		end
 
 		oldthink(self)
 	end
@@ -98,6 +103,12 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 		gace.FileNodeTree = root
 	end
 
+	local metainfo_cache = gace.FileNodeTreeMeta
+	if not metainfo_cache then
+		metainfo_cache = {}
+		gace.FileNodeTreeMeta = metainfo_cache
+	end
+
 	local function AddTreeNode(node, par)
 		local parnode = par.node
 		if parnode.ChildNodes then parnode.ChildNodes:Remove() parnode.ChildNodes=nil end
@@ -116,11 +127,14 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 				ft.AddFolderNodeOptions(node, filetree)
 				ft.AddTreeNodeOptions(node, filetree)
 
-				local oldnodetable = par.fol[foldnm]
-				if oldnodetable then -- Old node table entry was expanded
-					node:SetExpanded(oldnodetable.expanded or false)
+				local metacache_entry = metainfo_cache[ft.NodeToPath(node)]
+
+				if metacache_entry and metacache_entry.expanded then -- Old node table entry was expanded
+					node:SetExpanded(true)
 				elseif par == gace.FileNodeTree then -- We're top level
 					node:SetExpanded(true)
+				else
+					node:SetExpanded(false)
 				end
 
 				local mytbl = {fol={}, fil={}, node=node}
