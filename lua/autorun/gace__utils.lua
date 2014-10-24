@@ -1,10 +1,14 @@
 -- Small utility functions
 -- Note: name has two underscores because we want to be sure we're loaded before any other gace related files
 
-include("libs/middleclass.lua")
-include("utils/cache.lua")
-include("utils/cache_simple.lua")
-include("utils/cachesync_filesystem.lua")
+local function includeShared(s)
+	AddCSLuaFile(s)
+	include(s)
+end
+includeShared("libs/middleclass.lua")
+includeShared("utils/cache.lua")
+includeShared("utils/cache_simple.lua")
+includeShared("utils/cachesync_filesystem.lua")
 
 function gace.Map(tbl, fn)
 	local t = {}

@@ -1,4 +1,8 @@
+gace.ClientCache = gace.SimpleCache:new()
 
+local filesync = gace.CacheSyncFS:new("gace-clientcache.txt")
+filesync:updateCache(gace.ClientCache)
+gace.ClientCache:addChangeListener(filesync)
 
 function gace.ShowEditor()
 	if gace.Frame:IsVisible() then return end

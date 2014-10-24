@@ -26,5 +26,8 @@ function SimpleCache:set(key, val, is_raw_set)
 		self:notifyChangeListeners(key, val, old_value)
 	end
 end
+function Cache:dumpCache()
+	return self.cache
+end
 
 gace.SimpleCache = SimpleCache
