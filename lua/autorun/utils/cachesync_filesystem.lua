@@ -13,7 +13,7 @@ function CacheSyncFS:onChange(cache, key, val, oldValue)
 end
 
 function CacheSyncFS:updateCache(cache)
-	local table = util.JSONToTable(file.Read(self.filename))
+	local table = util.JSONToTable(file.Read(self.filename) or "{}")
 
 	for k,v in pairs(table) do
 		cache:set(k, v, true)
