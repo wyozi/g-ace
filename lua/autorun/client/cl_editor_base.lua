@@ -45,6 +45,7 @@ function gace.CreateEditor()
 	gace.AddBasePanels(frame)
 
 	gace.CallHook("AddPanels", frame, frame.BasePanel)
+	gace.CallHook("PostEditorCreated")
 end
 function gace.OpenEditor()
 	-- If instance of Frame exists, just show it
@@ -58,6 +59,9 @@ end
 
 concommand.Add("gace-open", gace.OpenEditor)
 concommand.Add("gace-reopen", function()
-	if IsValid(gace.Frame) then gace.Frame:Remove() end
+	if IsValid(gace.Frame) then
+		gace.Frame:Remove()
+		gace.CallHook("ClearGAceVariables")
+	end
 	gace.OpenEditor()
 end)

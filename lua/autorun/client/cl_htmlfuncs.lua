@@ -73,6 +73,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 
 				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
 			end)
+
+			gace.CallHook("OnSessionSaved", path)
 		end
 
 		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then

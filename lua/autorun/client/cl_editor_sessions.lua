@@ -5,6 +5,10 @@
 
 gace.Sessions = {}
 gace.OpenedSessionId = nil
+gace.AddHook("ClearGAceVariables", "ClearSessions", function()
+	gace.Sessions = {}
+	gace.OpenedSessionId = nil
+end)
 
 local session_meta = {}
 session_meta.__index = session_meta
@@ -96,6 +100,8 @@ function gace.CloseSession(id)
 	if gace.GetSessionId() == id then
 		gace.OpenedSessionId = nil
 	end
+
+	gace.Sessions[id] = nil
 
 	gace.CallHook("OnSessionClosed", id)
 end
