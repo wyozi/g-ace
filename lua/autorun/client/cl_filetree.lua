@@ -131,8 +131,6 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 
 				if metacache_entry and metacache_entry.expanded then -- Old node table entry was expanded
 					node:SetExpanded(true)
-				elseif par == gace.FileNodeTree then -- We're top level
-					node:SetExpanded(true)
 				else
 					node:SetExpanded(false)
 				end
