@@ -8,7 +8,7 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	console:SetTall(150)
 	consolepanel:AddDocked("Console", console, FILL)
 
-	local consoleinput = vgui.Create("DTextEntry")
+	local consoleinput = vgui.Create("GAceInput")
 	consoleinput.OnEnter = function()
 		gace.Log(Color(0, 255, 0), "> ", Color(255, 255, 255), consoleinput:GetText())
 		consoleinput:SetText("")

@@ -3,13 +3,14 @@ gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
 	inputpanel:Hide()
 
 	do
-		local input = vgui.Create("DTextEntry", inputpanel)
+		local input = vgui.Create("GAceInput", inputpanel)
 		input:Dock(FILL)
 		inputpanel.Input = input
 
 		input.PaintOver = function(self, w, h)
 			if self:GetText() == "" then
-				draw.SimpleText(inputpanel.QueryString or "bla bla bla", "DermaDefault", 4, h/2, Color(0, 0, 0, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				local fgcolor = gace.UIColors["tab_fg"]
+				draw.SimpleText(inputpanel.QueryString or "bla bla bla", "DermaDefault", 4, h/2, Color(fgcolor.r, fgcolor.g, fgcolor.b, 127), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			end
 		end
 
