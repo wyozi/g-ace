@@ -1,7 +1,10 @@
 gace = gace or {}
 
+local debug_cvar = CreateConVar("gace_debug", "0")
 function gace.Debug(...)
-	--MsgN("GACE DEBUG: ", ...)
+	if debug_cvar:GetBool() then
+		MsgN("GACE DEBUG: ", ...)
+	end
 end
 
 -- Testing
