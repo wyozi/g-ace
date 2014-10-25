@@ -10,7 +10,7 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 
 	local consoleinput = vgui.Create("GAceInput")
 	consoleinput.OnEnter = function()
-		gace.Log(Color(0, 255, 0), "> ", Color(255, 255, 255), consoleinput:GetText())
+		gace.Log(Color(0, 255, 0), "> ", gace.UIColors["tab_fg"], consoleinput:GetText())
 		consoleinput:SetText("")
 		consoleinput:RequestFocus()
 	end
@@ -27,18 +27,26 @@ gace.AddHook("LogMessage", "Console_OverrideOldLogSystem", function(...)
 	local console = gace.GetPanel("Console")
 
 	local function setclr(r, g, b)
+		if type(r) == "table" then
+			g = r.g
+			b = r.b
+			r = r.r
+		end
 		console:InsertColorChange(r,g,b,255)
 	end
 	local function append(txt)
 		console:AppendText(txt)
 	end
+
+	local fgcolor = gace.UIColors["tab_fg"]
+
 	setclr(100,100,100)	append(			"[")
-	setclr(255,255,255)	append(os.date(	"%H"))
-	setclr(255,255,255)	append(			":")
-	setclr(255,255,255)	append(os.date(	"%M"))
+	setclr(fgcolor)	append(os.date(	"%H"))
+	setclr(fgcolor)	append(			":")
+	setclr(fgcolor)	append(os.date(	"%M"))
 	setclr(100,100,100)	append(			"] ")
 	
-	setclr(255, 255, 255)
+	setclr(fgcolor)
 	for _,v in pairs({...}) do
 		if type(v) == "table" then
 			setclr(v.r, v.g, v.b)

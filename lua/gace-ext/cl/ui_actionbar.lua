@@ -74,7 +74,7 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 			local curcatclr = cur_cat.color
 			comp.Paint = function(s, w, h)
 				if IsInvis(v) then return end
-				surface.SetDrawColor(curcatclr.r, curcatclr.g, curcatclr.b, 80)
+				surface.SetDrawColor(curcatclr.r, curcatclr.g, curcatclr.b, 160)
 				surface.DrawRect(0, 0, w, h)
 			end
 			comp.Think = function(s)
