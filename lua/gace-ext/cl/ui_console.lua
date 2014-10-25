@@ -7,6 +7,14 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	local console = vgui.Create("RichText")
 	console:SetTall(150)
 	consolepanel:AddDocked("Console", console, FILL)
+
+	local consoleinput = vgui.Create("DTextEntry")
+	consoleinput.OnEnter = function()
+		gace.Log(Color(0, 255, 0), "> ", Color(255, 255, 255), consoleinput:GetText())
+		consoleinput:SetText("")
+		consoleinput:RequestFocus()
+	end
+	consolepanel:AddDocked("ConsoleInput", consoleinput, BOTTOM)
 end)
 
 -- TODO make these smoother/lighter
