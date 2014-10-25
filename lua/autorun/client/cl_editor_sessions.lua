@@ -17,6 +17,10 @@ session_meta.GetExtensionlessName = function(self)
 	return string.StripExtension(gace.Path(self.Id):GetFile())
 end
 
+session_meta.IsSaved = function(self)
+	return self.SavedContent == self.Content
+end
+
 function gace.IsSessionOpen()
 	return gace.OpenedSessionId ~= nil
 end
@@ -71,10 +75,13 @@ function gace.OpenSession(id, data)
 		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true)
 
 		if (data and data.content) then
-			sess.SavedContent = data.content
+			sess.Content = data.content
+			if not data.mark_unsaved then
+				sess.SavedContent = data.content
+			end
 		end
 
-		if data and data.callback then callback() end
+		if data and data.callback then data.callback() end
 	else
 		gace.SetHTMLSession(id, "Fetching latest sources from server.")
 
@@ -84,10 +91,12 @@ function gace.OpenSession(id, data)
 			end
 
 			sess.Content = payload.content
-			sess.SavedContent = sess.Content
+			if not data or not data.mark_unsaved then
+				sess.SavedContent = sess.Content
+			end
 			gace.SetHTMLSession(id, sess.Content)
 
-			if data and data.callback then callback() end
+			if data and data.callback then data.callback() end
 		end)
 	end
 
