@@ -31,6 +31,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 			menu:Open()
 		end
 	}
+	--[[ Doesn't work properly, but  is not really needed either
 	comps:AddComponent {
 		text = "Mode",
 		fn = function()
@@ -60,6 +61,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 			menu:Open()
 		end
 	}
+	]]
 
 	comps:AddCategoryEnd()
 end)
