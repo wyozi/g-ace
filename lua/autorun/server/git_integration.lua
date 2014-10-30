@@ -90,11 +90,11 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 	local repo = git.Open(abspath)
 	local status = repo:Status()
 
-	PrintTable(status)
+	--PrintTable(status)
 
 	local fcount = 0
 	for _,t in pairs(status.UntrackedFiles) do
-		repo:Add(t.Path)
+		repo:Add(t)
 		fcount = fcount + 1
 	end
 	for _,t in pairs(status.WorkDirChanges) do

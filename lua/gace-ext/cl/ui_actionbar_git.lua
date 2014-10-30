@@ -40,12 +40,12 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				end)
 			end)]]
 			menu:AddOption("Commit all changes", function()
-				gace.AskForInput("Enter a commit message", function(nm)
+				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
 					gace.SendRequest("git-commitall", {path=gitpath, msg=nm}, function(_, _, pl)
 						if pl.ret == "Success" then
-							gace.AppendToConsole(gace.LOG_SUCCESS, "Committed to branch ", pl.branch, ". Files changed: ", pl.fcount)
+							gace.Log("Committed to branch ", pl.branch, ". Files changed: ", pl.fcount)
 						else
-							gace.AppendToConsole(gace.LOG_ERROR, "Commit failed: ", pl.err)
+							gace.Log(gace.LOG_ERROR, "Commit failed: ", pl.err)
 						end
 					end)
 				end)
@@ -53,9 +53,9 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 			menu:AddOption("Push to upstream", function()
 				gace.SendRequest("git-push", {path=gitpath}, function(_, _, pl)
 					if pl.ret == "Success" then
-						gace.AppendToConsole(gace.LOG_SUCCESS, "Push succesful")
+						gace.Log("Push succesful")
 					else
-						gace.AppendToConsole(gace.LOG_ERROR, "Commit failed: ", pl.err)
+						gace.Log(gace.LOG_ERROR, "Commit failed: ", pl.err)
 					end
 				end)
 			end)
