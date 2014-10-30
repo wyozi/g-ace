@@ -3,23 +3,27 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 	comps:AddComponent {
 		text = function()
 			local sess = gace.GetOpenSession()
-			local is_on = sess and sess.git and sess.git.enabled
+			local is_on = sess and sess.VFolder.git and sess.VFolder.git.enabled
 			return string.format("Git mode: %s", is_on and "On" or "Off")
 		end,
 		width = 90,
 		fn = function()
 			local sess = gace.GetOpenSession()
-			local gitpath = gace.Path(gace.GetSessionId()):GetVFolder()
+			local vfolder = sess.VFolder
 
-			if not sess.git then
-				gace.SendRequest("git-status", {path=gitpath}, function(_, _, pl)
+			local git = vfolder.git
+
+			if not git then
+				gace.SendRequest("git-status", {path=vfolder.Name}, function(_, _, pl)
 					if pl.err then
 						gace.Log(gace.LOG_ERROR, "Failed to start git: ", pl.err)
-						sess.git = {enabled = false}
+						git = {enabled = false}
+						vfolder.git = git
 					elseif pl.ret == "Success" then
-						sess.git = {enabled = pl.git_enabled}
-						if sess.git.enabled then
-							sess.git.branch = pl.git_branch
+						git = {enabled = pl.git_enabled}
+						vfolder.git = git
+						if git.enabled then
+							git.branch = pl.git_branch
 						end
 					end
 				end)
@@ -30,12 +34,12 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 			local menu = DermaMenu()
 
 			menu:AddOption("Git information:", function() end):SetIcon("icon16/information.png")
-			menu:AddOption("Branch: " .. sess.git.branch, function() end):SetIcon("icon16/arrow_branch.png")
+			menu:AddOption("Branch: " .. git.branch, function() end):SetIcon("icon16/arrow_branch.png")
 			menu:AddSpacer()
 			--[[menu:AddOption("Print diff", function()
 				gace.SendRequest("git-diff", {path=gitpath}, function(_, _, pl)
 					if pl.ret == "Success" then
-						gace.OpenSession("git-diff_" .. gace.Path(sess.id):GetFile() .. "_" .. os.time(), pl.diff)
+						gace.OpenSession("git-diff_" .. gace.Path(id):GetFile() .. "_" .. os.time(), pl.diff)
 					end
 				end)
 			end)]]
@@ -65,7 +69,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 		end,
 		enabled = function()
 			local sess = gace.GetOpenSession()
-			return sess and (not sess.git or sess.git.enabled ~= false)
+			return sess and (not sess.VFolder.git or sess.VFolder.git.enabled ~= false)
 		end
 	}
 	comps:AddCategoryEnd()

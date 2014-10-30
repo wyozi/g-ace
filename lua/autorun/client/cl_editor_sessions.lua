@@ -5,8 +5,13 @@
 
 gace.Sessions = {}
 gace.OpenedSessionId = nil
+
+-- A VFolder specific cache thing. Can be used for eg git integration which is per vfolder
+gace.VFolders = {}
+
 gace.AddHook("ClearGAceVariables", "ClearSessions", function()
 	gace.Sessions = {}
+	gace.VFolders = {}
 	gace.OpenedSessionId = nil
 end)
 
@@ -52,6 +57,11 @@ function gace.CreateSession(id, tbl)
 	end
 
 	gace.Sessions[id] = t
+
+	local vfolder = gace.Path(id):GetVFolder()
+	gace.VFolders[vfolder] = gace.VFolders[vfolder] or {Name = vfolder}
+
+	t.VFolder = gace.VFolders[vfolder]
 
 	return t
 end
