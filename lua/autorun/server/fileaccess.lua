@@ -152,6 +152,8 @@ function gace.MakeSaveResponse(ply, path, content)
 	local ret, err = vfolder.svfunc(pathobj, content)
 	if not ret then return {err=err} end
 
+	gace.CallHook("PostSave", ply, path)
+
 	return {ret="Success"}
 end
 

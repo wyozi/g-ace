@@ -1,6 +1,9 @@
 pcall(require, "luagit")
 local luagit_available = git ~= nil
 
+-- Stores VFolders that are git enabled
+gace.ValidGitVFolders = gace.ValidGitVFolders or {}
+
 function gace.Git_MakeStatusResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
@@ -21,7 +24,9 @@ function gace.Git_MakeStatusResponse(ply, path)
 		return {err="No runcmdfunc in vfolder"}
 	end
 
-	local abspath = vfolder.getabspathfunc(pathobj)
+	gace.ValidGitVFolders[pathobj:GetVFolder()] = true
+
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
 	local tbl = {ret="Success"}
 	if not git.IsRepository(abspath) then
@@ -34,6 +39,9 @@ function gace.Git_MakeStatusResponse(ply, path)
 		repo:Free()
 
 		tbl.git_branch = status.Branch
+
+		-- we want to send this after player receives git updates
+		timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(pathobj:GetVFolder())) end)
 	end
 
 	return tbl
@@ -83,26 +91,15 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 		return {err="No runcmdfunc in vfolder"}
 	end
 
-	local abspath = vfolder.getabspathfunc(pathobj)
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
 	local tbl = {ret="Success"}
 
 	local repo = git.Open(abspath)
-	local status = repo:Status()
 
-	--PrintTable(status)
-
-	local fcount = 0
-	for _,t in pairs(status.UntrackedFiles) do
-		repo:Add(t)
-		fcount = fcount + 1
-	end
-	for _,t in pairs(status.WorkDirChanges) do
-		repo:Add(t.Path)
-		fcount = fcount + 1
-	end
-	for _,t in pairs(status.IndexChanges) do
-		fcount = fcount + 1
+	local addindex, err = repo:AddPathSpecToIndex("**")
+	if addindex == false then
+		return {err="AddToIndex error: " .. tostring(err)}
 	end
 
 	local ret, err = repo:Commit(cmsg)
@@ -110,10 +107,12 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 	repo:Free()
 
 	if not ret then
-		return {err=err}
+		return {err="Commit error: " .. tostring(err)}
 	end
 
-	local tbl = {ret="Success", branch=status.Branch, fcount=fcount}
+	timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(pathobj:GetVFolder())) end)
+
+	local tbl = {ret="Success"}
 	return tbl
 end
 function gace.Git_MakePushResponse(ply, path, cmsg)
@@ -136,7 +135,7 @@ function gace.Git_MakePushResponse(ply, path, cmsg)
 		return {err="No runcmdfunc in vfolder"}
 	end
 
-	local abspath = vfolder.getabspathfunc(pathobj)
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
 	local repo = git.Open(abspath)
 	local ret, err = repo:Push()
@@ -145,3 +144,38 @@ function gace.Git_MakePushResponse(ply, path, cmsg)
 	if ret then return {ret="Success"} end
 	return {err=err}
 end
+
+function gace.GitBroadcastFolderStatus(ply, folderpathobj)
+	local _, vfolder = gace.ParsePath(folderpathobj:ToString())
+
+	local abspath = vfolder.getabspathfunc(gace.Path(folderpathobj:GetVFolder())) -- root folder's abs path
+	local repo = git.Open(abspath)
+
+	local payload = {}
+
+	-- Get all files in the parent folder
+	local listresp = gace.MakeListResponse(ply, folderpathobj:ToString())
+	if listresp.files then
+		for _,file in pairs(listresp.files) do
+			local relative_path = folderpathobj:Add(file)
+			local status, err = repo:FileStatus(relative_path:WithoutVFolder():ToString())
+			if status == false then MsgN(err) end
+
+			if status == nil then status = "empty" end -- If nil the table entry is removed
+
+			payload[relative_path:ToString()] = status
+		end
+	end
+	repo:Free()
+
+	gace.Send(ply, 0, "git_updstatus", payload)
+end
+
+gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)
+	local pathobj, vfolder = gace.ParsePath(path)
+	local vfoldername = pathobj:GetVFolder()
+
+	if not gace.ValidGitVFolders[vfoldername] then return end
+
+	gace.GitBroadcastFolderStatus(ply, pathobj:WithoutFile())
+end)

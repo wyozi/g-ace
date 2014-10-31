@@ -45,9 +45,9 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 			end)]]
 			menu:AddOption("Commit all changes", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
-					gace.SendRequest("git-commitall", {path=gitpath, msg=nm}, function(_, _, pl)
+					gace.SendRequest("git-commitall", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
 						if pl.ret == "Success" then
-							gace.Log("Committed to branch ", pl.branch, ". Files changed: ", pl.fcount)
+							gace.Log("Commit succesful")
 						else
 							gace.Log(gace.LOG_ERROR, "Commit failed: ", pl.err)
 						end
@@ -55,7 +55,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				end)
 			end)
 			menu:AddOption("Push to upstream", function()
-				gace.SendRequest("git-push", {path=gitpath}, function(_, _, pl)
+				gace.SendRequest("git-push", {path=gace.GetSessionId()}, function(_, _, pl)
 					if pl.ret == "Success" then
 						gace.Log("Push succesful")
 					else
@@ -73,4 +73,23 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 		end
 	}
 	comps:AddCategoryEnd()
+end)
+
+gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
+	local pathobj = gace.Path(gace.filetree.NodeToPath(node))
+	local vfolder = gace.VFolders[pathobj:GetVFolder()]
+	if vfolder and vfolder.git and vfolder.git.enabled then
+		--PrintTable(vfolder)
+		local filestatuses = vfolder.git.filestatuses
+		local img = "icon16/page_green.png"
+		if filestatuses and filestatuses[pathobj:WithoutVFolder():ToString()] then
+			local status = filestatuses[pathobj:WithoutVFolder():ToString()]
+			if status == "modified" then
+				img = "icon16/page_red.png"
+			end
+		end
+		node.Icon:SetImage(img)
+	else
+		node.Icon:SetImage("icon16/page.png")
+	end
 end)

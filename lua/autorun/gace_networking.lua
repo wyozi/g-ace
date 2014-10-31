@@ -19,6 +19,10 @@ net.Receive("gace_fileacc", function(len, cl)
 	local cbtbl = gace.RequestCallbacks[reqid]
 
 	gace.Debug("Received fileacc ", op, " with reqid: ", reqid, " resolving to req cb tbl: ", cbtbl)
+	if gace.IsDebug() then
+		gace.Debug("Payload: ")
+		PrintTable(payload)
+	end
 
 	if cbtbl then
 		cbtbl.fn(reqid, op, payload)

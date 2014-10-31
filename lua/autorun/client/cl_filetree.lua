@@ -61,6 +61,8 @@ function ft.AddFolderNodeOptions(node, filetree)
 			meta[ft.NodeToPath(self)] = entry 
 		end
 
+		gace.CallHook("FileTreeFolderNodeThink", self)
+
 		oldthink(self)
 	end
 
@@ -78,6 +80,15 @@ function ft.AddFileNodeOptions(node, filetree)
 		gace.CallHook("FileTreeContextMenu", node, menu, "file")
 		menu:Open()
 	end
+
+	local oldthink = node.Think
+	node.Think = function(self)
+		-- Used to update the icon based on git status
+		gace.CallHook("FileTreeFileNodeThink", self)
+
+		oldthink(self)
+	end
+
 	node.Icon:SetImage("icon16/page.png")
 
 	gace.CallHook("OnFileTreeNodeCreated", node, filetree, "file")
