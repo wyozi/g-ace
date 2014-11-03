@@ -106,8 +106,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
             var codepostfix = acutil.retrieveFollowingIdentifier(line, pos.column, ID_REGEX).join("");
 
             var codeLibCall = codeprefix + codepostfix;
-            console.log(codeLibCall);
-            
+
             if ("gace" in window) {
                 gace.OpenDocumentationFor(codeLibCall);
             }
