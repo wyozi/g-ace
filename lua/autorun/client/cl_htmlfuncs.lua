@@ -159,6 +159,9 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 			i = i + 1
 		end
 	end)
+	html:AddFunction("gace", "OpenDocumentationFor", function(str)
+		gace.ext.OpenDocumentationFor(str)
+	end)
 
 	-- General editor related functions (such as updating theme)
 	html:AddFunction("gace", "EditorReady", function()

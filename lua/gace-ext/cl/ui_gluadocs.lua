@@ -10,6 +10,8 @@ gace.AddHook("AddPanels", "Editor_AddDocsSideBar", function(frame, basepnl)
 	docshtml.Loaded = false
 
 	pnl.SetOpened = function(self, b)
+		if self.IsOpened == b then return end
+
 		if b and not docshtml.Loaded then
 			docshtml:OpenURL("http://samuelmaddock.github.io/glua-docs/")
 			docshtml.Loaded = true
@@ -22,6 +24,8 @@ gace.AddHook("AddPanels", "Editor_AddDocsSideBar", function(frame, basepnl)
 		return b
 	end
 	pnl:SetOpened(false)
+
+	pnl.HTML = docshtml
 
 	sb:AddDocked("DocsHTMLPanel", pnl, FILL)
 end)
@@ -43,3 +47,19 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GLuaDocsCommand", function(com
 	}
 	comps:AddCategoryEnd()
 end)
+
+function gace.ext.OpenDocumentationFor(str)
+	local docshtml = gace.GetPanel("DocsHTMLPanel")
+	if docshtml then
+		docshtml:SetOpened(true)
+
+		-- TODO jsencode?
+		docshtml.HTML:QueueJavascript([[
+			var el = document.querySelector("input[type='search']");
+			el=angular.element(el);
+
+			el.val("]] .. str .. [[");
+			el.triggerHandler("change");
+		]])
+	end
+end
