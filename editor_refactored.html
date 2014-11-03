@@ -95,6 +95,27 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     });
 
     editor.commands.addCommand({
+        name: 'Open documentation',
+        bindKey: {win: 'Ctrl-Q',  mac: 'Command-Q'},
+        exec: function(editor) {
+            var pos = editor.getCursorPosition();
+
+            var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF\.]/;
+            var line = editor.session.getLine(pos.row);
+            var codeprefix = acutil.retrievePrecedingIdentifier(line, pos.column, ID_REGEX);
+            var codepostfix = acutil.retrieveFollowingIdentifier(line, pos.column, ID_REGEX).join("");
+
+            var codeLibCall = codeprefix + codepostfix;
+
+            if (codeLibCall.length === 0) { return; }
+
+            if ("gace" in window && "OpenDocumentationFor" in gace) {
+                gace.OpenDocumentationFor(codeLibCall);
+            }
+        }
+    });
+
+    editor.commands.addCommand({
         name: 'Save',
         bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
         exec: function(editor) {
