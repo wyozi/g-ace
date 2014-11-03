@@ -77,13 +77,15 @@ end
 function PANEL:PerformLayout()
 
 	if self.TargetDividerSize then
+		local targetsize = not self:IsVisible() and 0 or self.TargetDividerSize
+
 		if self.DividerDock == LEFT or self.DividerDock == RIGHT then
-			if self:GetWide() ~= self.TargetDividerSize then
-				self:SetWide(self.TargetDividerSize)
+			if self:GetWide() ~= targetsize then
+				self:SetWide(targetsize)
 			end
 		else
-			if self:GetTall() ~= self.TargetDividerSize then
-				self:SetTall(self.TargetDividerSize)
+			if self:GetTall() ~= targetsize then
+				self:SetTall(targetsize)
 			end
 		end
 	end

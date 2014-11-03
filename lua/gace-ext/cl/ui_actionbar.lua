@@ -1,7 +1,7 @@
 
 local comp_meta = {
-	AddCategory = function(self, title, clr)
-		table.insert(self, {text = title, width = #title*15, iscat = true, color = clr or Color(255, 127, 0), toggle = true})
+	AddCategory = function(self, title, clr, width)
+		table.insert(self, {text = title, width = (width) or (#title*15), iscat = true, color = clr or Color(255, 127, 0), toggle = true})
 	end,
 	AddCategoryEnd = function(self)
 		table.insert(self, {iscat = true, nullcat = true})
