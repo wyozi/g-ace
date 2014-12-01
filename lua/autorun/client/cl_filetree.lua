@@ -43,7 +43,7 @@ end
 function ft.AddFolderNodeOptions(node, filetree)
 
 	-- Override expander's doclick to get rid of the annoying slide animation
-	node.Expander.DoClick = function() node:SetExpanded( !node.m_bExpanded, true ) end
+	node.Expander.DoClick = function() node:SetExpanded(not node.m_bExpanded, true) end
 
 	node.DoRightClick = function()
 		local menu = DermaMenu()
@@ -58,7 +58,7 @@ function ft.AddFolderNodeOptions(node, filetree)
 		if meta then
 			local entry = meta[ft.NodeToPath(self)] or {}
 			entry.expanded = self.m_bExpanded
-			meta[ft.NodeToPath(self)] = entry 
+			meta[ft.NodeToPath(self)] = entry
 		end
 
 		gace.CallHook("FileTreeFolderNodeThink", self)
@@ -89,7 +89,8 @@ function ft.AddFileNodeOptions(node, filetree)
 		oldthink(self)
 	end
 
-	node.Icon:SetImage("icon16/page.png")
+	node.Icon.DefaultImage = "icon16/page_white.png"
+	node.Icon:SetImage(node.Icon.DefaultImage)
 
 	gace.CallHook("OnFileTreeNodeCreated", node, filetree, "file")
 end

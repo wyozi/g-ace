@@ -74,22 +74,3 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 	}
 	comps:AddCategoryEnd()
 end)
-
-gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
-	local pathobj = gace.Path(gace.filetree.NodeToPath(node))
-	local vfolder = gace.VFolders[pathobj:GetVFolder()]
-	if vfolder and vfolder.git and vfolder.git.enabled then
-		--PrintTable(vfolder)
-		local filestatuses = vfolder.git.filestatuses
-		local img = "icon16/page_green.png"
-		if filestatuses and filestatuses[pathobj:WithoutVFolder():ToString()] then
-			local status = filestatuses[pathobj:WithoutVFolder():ToString()]
-			if status == "modified" then
-				img = "icon16/page_red.png"
-			end
-		end
-		node.Icon:SetImage(img)
-	else
-		node.Icon:SetImage("icon16/page.png")
-	end
-end)
