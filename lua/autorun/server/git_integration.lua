@@ -71,8 +71,10 @@ function gace.Git_MakeLogResponse(ply, path)
 	if not repo then return {err="Unable to open repo"} end
 
 	local tbl = {ret="Success"}
+
+	local log, err = repo:Log()
+	if not log then return {err = err} end
 	
-	local log = repo:Log()
 	tbl.log = log
 
 	repo:Free()
