@@ -71,6 +71,21 @@ function gace.Git_MakeDiffResponse(ply, path)
 
 	return {ret="Success", diff=msg}
 end
+
+-- Source: somewhere on internet
+local function GetServerIP()
+	local hostip = GetConVarString( "hostip" )
+	hostip = tonumber( hostip )
+
+	local ip = {}
+	ip[ 1 ] = bit.rshift( bit.band( hostip, 0xFF000000 ), 24 )
+	ip[ 2 ] = bit.rshift( bit.band( hostip, 0x00FF0000 ), 16 )
+	ip[ 3 ] = bit.rshift( bit.band( hostip, 0x0000FF00 ), 8 )
+	ip[ 4 ] = bit.band( hostip, 0x000000FF )
+
+	return table.concat( ip, "." )
+end
+
 function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
@@ -102,7 +117,12 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 		return {err="AddToIndex error: " .. tostring(err)}
 	end
 
-	local ret, err = repo:Commit(cmsg)
+	local cname, cemail = "", ""
+	if ply:IsValid() then
+		cname = ply:Nick()
+		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
+	end
+	local ret, err = repo:Commit(cmsg, cname, cemail)
 
 	repo:Free()
 
