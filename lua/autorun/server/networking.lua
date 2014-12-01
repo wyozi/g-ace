@@ -41,8 +41,8 @@ function gace.HandleNetworking(ply, reqid, op, payload)
 	-- Git integration
 	if op == "git-status" then
 		responder_func(ply, reqid, op, gace.Git_MakeStatusResponse(ply, payload.path))
-	elseif op == "git-diff" then
-		responder_func(ply, reqid, op, gace.Git_MakeDiffResponse(ply, payload.path))
+	elseif op == "git-log" then
+		responder_func(ply, reqid, op, gace.Git_MakeLogResponse(ply, payload.path))
 	elseif op == "git-push" then
 		responder_func(ply, reqid, op, gace.Git_MakePushResponse(ply, payload.path))
 	elseif op == "git-commitall" then

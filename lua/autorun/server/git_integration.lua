@@ -46,16 +46,15 @@ function gace.Git_MakeStatusResponse(ply, path)
 
 	return tbl
 end
-
-function gace.Git_MakeDiffResponse(ply, path)
+function gace.Git_MakeLogResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
 
 	if pathobj:IsRoot() then
-		return {err="Can't git-diff root"}
+		return {err="Can't git-status root"}
 	end
 
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-diff") then
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-status") then
 		return {err="No access"}
 	end
 
@@ -66,10 +65,19 @@ function gace.Git_MakeDiffResponse(ply, path)
 	if not vfolder.getabspathfunc then
 		return {err="No runcmdfunc in vfolder"}
 	end
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
-	local ret, msg = vfolder.runcmdfunc(pathobj, "git diff")
+	local repo = git.Open(abspath)
+	if not repo then return {err="Unable to open repo"} end
 
-	return {ret="Success", diff=msg}
+	local tbl = {ret="Success"}
+	
+	local log = repo:Log()
+	tbl.log = log
+
+	repo:Free()
+
+	return tbl
 end
 
 -- Source: somewhere on internet

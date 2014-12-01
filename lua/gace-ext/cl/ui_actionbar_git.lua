@@ -51,6 +51,22 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 					content = document
 				})
 			end):SetIcon("icon16/printer.png")
+			menu:AddOption("Show log", function()
+				gace.SendRequest("git-log", {path=gace.GetSessionId()}, function(_, _, pl)
+					if pl.ret == "Success" then
+						local document = "";
+						for _,entry in pairs(pl.log) do
+							document = document .. string.format("%s %-32s %s \n", entry.Ref:Trim(), entry.Message:Trim(), entry.Author:Trim())
+						end
+
+						gace.OpenSession("git_log_" .. gace.Path(sess.Id):GetVFolder(), {
+							content = document
+						})
+					else
+						gace.Log(gace.LOG_ERROR, "Git log failed: ", pl.err)
+					end
+				end)
+			end):SetIcon("icon16/printer.png")
 			menu:AddOption("Commit all changes", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
 					gace.SendRequest("git-commitall", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
