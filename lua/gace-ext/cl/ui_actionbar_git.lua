@@ -3,8 +3,11 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 	comps:AddComponent {
 		text = function()
 			local sess = gace.GetOpenSession()
-			local is_on = sess and sess.VFolder.git and sess.VFolder.git.enabled
-			return string.format("Git mode: %s", is_on and "On" or "Off")
+			if sess and sess.VFolder.git then
+				return string.format("Git mode: %s", (sess.VFolder.git.enabled) and "On" or "Off")
+			end
+
+			return "Enable Git"
 		end,
 		width = 90,
 		fn = function()
@@ -33,16 +36,21 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 
 			local menu = DermaMenu()
 
-			menu:AddOption("Git information:", function() end):SetIcon("icon16/information.png")
 			menu:AddOption("Branch: " .. git.branch, function() end):SetIcon("icon16/arrow_branch.png")
 			menu:AddSpacer()
-			--[[menu:AddOption("Print diff", function()
-				gace.SendRequest("git-diff", {path=gitpath}, function(_, _, pl)
-					if pl.ret == "Success" then
-						gace.OpenSession("git-diff_" .. gace.Path(id):GetFile() .. "_" .. os.time(), pl.diff)
+			menu:AddOption("Show status", function()
+				local document = "Branch: " .. git.branch .. "\n\n";
+
+				if git.filestatuses then
+					for name,status in pairs(git.filestatuses) do
+						document = document .. name .. " = " .. status .. "\n";
 					end
-				end)
-			end)]]
+				end
+
+				gace.OpenSession("git_status_" .. gace.Path(sess.Id):GetVFolder(), {
+					content = document
+				})
+			end):SetIcon("icon16/printer.png")
 			menu:AddOption("Commit all changes", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
 					gace.SendRequest("git-commitall", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
