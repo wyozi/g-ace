@@ -1,10 +1,6 @@
 
 gace.RequestCallbacks = gace.RequestCallbacks or {}
 
-function gace.AddRequestCallback(reqid, fn, manual_del)
-	gace.RequestCallbacks[reqid] = {fn=fn, manual_del = manual_del}
-end
-
 function gace.GenReqId(id)
 	return util.CRC(id .. os.time() .. math.random())
 end
@@ -24,32 +20,26 @@ net.Receive("gace_fileacc", function(len, cl)
 		PrintTable(payload)
 	end
 
-	if cbtbl then
-		cbtbl.fn(reqid, op, payload)
-		if not cbtbl.manual_del or payload.mp_final then
-			gace.RequestCallbacks[reqid] = nil
-		end
-		return
-	end
+	local netmsg = gace.NetMessageIn(reqid, op, payload)
 
 	if SERVER then
-		gace.HandleNetworking(cl, reqid, op, payload)
-	else
-		gace.HandleNetworking(reqid, op, payload)
+		netmsg:SetSender(cl)
 	end
+
+	gace.CallHook("HandleNetMessage", netmsg)
 end)
 
-function gace.Send(target, reqid, op, payload)
+function gace.SendNetMessage(netmsg)
 	net.Start("gace_fileacc")
 
-	gace.Debug("Sending gace msg ", op, " with reqid ", reqid)
+	gace.Debug("Sending gace netmsg ", netmsg:GetOpcode(), " with reqid ", netmsg:GetReqId())
 
-	net.WriteString(reqid)
-	net.WriteString(op)
-	net.WriteTable(payload)
+	net.WriteString(netmsg:GetReqId())
+	net.WriteString(netmsg:GetOpcode())
+	net.WriteTable(netmsg:GetPayload())
 
 	if SERVER then
-		net.Send(target)
+		net.Send(netmsg:GetTarget())
 	else
 		net.SendToServer()
 	end

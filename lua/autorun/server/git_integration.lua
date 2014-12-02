@@ -74,7 +74,7 @@ function gace.Git_MakeLogResponse(ply, path)
 
 	local log, err = repo:Log()
 	if not log then return {err = err} end
-	
+
 	tbl.log = log
 
 	repo:Free()
@@ -198,7 +198,7 @@ function gace.GitBroadcastFolderStatus(ply, folderpathobj)
 	end
 	repo:Free()
 
-	gace.Send(ply, 0, "git_updstatus", payload)
+	gace.NetMessageOut(0, "git_updstatus", payload):Send(ply)
 end
 
 gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)
@@ -208,4 +208,38 @@ gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)
 	if not gace.ValidGitVFolders[vfoldername] then return end
 
 	gace.GitBroadcastFolderStatus(ply, pathobj:WithoutFile())
+end)
+
+
+gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
+	local ply = netmsg:GetSender()
+	local op = netmsg:GetOpcode()
+	local reqid = netmsg:GetReqId()
+	local payload = netmsg:GetPayload()
+
+	local responder_func = function(ply, reqid, op, payload)
+		if payload.multipart then
+			for _,part in pairs(payload.parts) do
+				netmsg:CreateResponsePacket(op, part):Send()
+			end
+			return
+		end
+		netmsg:CreateResponsePacket(op, payload):Send()
+	end
+
+	-- If reqid is zero or empty, the client (most likely) doesnt care about response, so we dont send anything
+	if reqid == "0" or reqid == "" then
+		responder_func = function() end
+	end
+
+	-- Git integration
+	if op == "git-status" then
+		responder_func(ply, reqid, op, gace.Git_MakeStatusResponse(ply, payload.path))
+	elseif op == "git-log" then
+		responder_func(ply, reqid, op, gace.Git_MakeLogResponse(ply, payload.path))
+	elseif op == "git-push" then
+		responder_func(ply, reqid, op, gace.Git_MakePushResponse(ply, payload.path))
+	elseif op == "git-commitall" then
+		responder_func(ply, reqid, op, gace.Git_MakeCommitAllResponse(ply, payload.path, payload.msg))
+	end
 end)

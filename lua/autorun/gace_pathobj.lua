@@ -1,4 +1,6 @@
+-- A wrapper object for GAce virtual filesystem path
 
+-- TODO refactor functions from inside path_meta to "path_meta.Func = function()...end" format to improve clarity
 local path_meta = {
 	Set = function(self, str)
 		table.Empty(self.Parts)

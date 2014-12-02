@@ -1,22 +1,22 @@
 function gace.SendRequest(op, payload, cb)
-	local reqid = 0
-	if cb then
-		reqid = gace.GenReqId(op)
-		gace.AddRequestCallback(reqid, cb)
-	end
-	gace.Send(nil, reqid, op, payload)
+	local reqid = cb and gace.GenReqId(op) or 0
+
+	local netmsg = gace.NetMessageOut(reqid, op, payload)
+	if cb then netmsg:ListenToResponse(cb) end
+	netmsg:Send()
 end
 
 function gace.SendMultiPartRequest(op, payload, cb)
-	local reqid = 0
-	if cb then
-		reqid = gace.GenReqId(op)
-		gace.AddRequestCallback(reqid, cb, true)
-	end
-	gace.Send(nil, reqid, op, payload)
+	-- TODO add the actual multipartness lol
+	local reqid = cb and gace.GenReqId(op) or 0
+
+	local netmsg = gace.NetMessageOut(reqid, op, payload)
+	if cb then netmsg:ListenToResponse(cb) end
+	netmsg:Send()
 end
 
 function gace.HandleNetworking(reqid, op, payload)
+
 	if op == "colsetfile" then
 		gace.SetCollabFile(payload)
 	elseif op == "git_updstatus" then
