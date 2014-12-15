@@ -66,9 +66,12 @@ function gace.MakeRecursiveListResponse(ply, path)
 		if not gace.TestAccess(v.access, ply, ipath, "ls") then return false, "No access" end
 		if type ~= "folder" then return false, "Not a folder" end
 
-		if depth >= 5 then
+		if depth >= 3 then
 			parent.fil = parent.fil or {}
-			table.insert(parent.fil, "ERR: TOO DEEP")
+
+			-- This folder is deep; let's fetch it only if we need it
+			parent.pendingListing = true
+
 			return
 		end
 

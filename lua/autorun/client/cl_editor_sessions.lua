@@ -23,6 +23,8 @@ session_meta.GetExtensionlessName = function(self)
 end
 
 session_meta.IsSaved = function(self)
+	-- TODO optimize; this gets called like a thousand times from all around the code.
+	-- Maybe use a simple boolean flag instead of full string check?
 	return self.SavedContent == self.Content
 end
 

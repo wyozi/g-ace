@@ -61,10 +61,21 @@ function ft.AddFolderNodeOptions(node, filetree)
 			meta[ft.NodeToPath(self)] = entry
 		end
 
+		if self.m_bExpanded and node.treetable.pendingListing then
+			gace.Log("Listing recfolder ", ft.NodeToPath(self))
+
+			ft.RefreshPath(filetree, ft.NodeToPath(self))
+
+			node.treetable.pendingListing = false
+		end
+
 		gace.CallHook("FileTreeFolderNodeThink", self)
 
 		oldthink(self)
 	end
+
+	node.Icon.DefaultImage = "icon16/folder.png"
+	node.Icon:SetImage(node.Icon.DefaultImage)
 
 	gace.CallHook("OnFileTreeNodeCreated", node, filetree, "folder")
 end
@@ -135,21 +146,25 @@ function ft.RefreshPathUsingTree(filetree, path, tree)
 			for _, v in pairs(sorted_fol) do
 				local foldnm, fold = v.k, v.v
 
-				local node = parnode:AddNode(foldnm)
-				ft.AddFolderNodeOptions(node, filetree)
-				ft.AddTreeNodeOptions(node, filetree)
+				local folnode = parnode:AddNode(foldnm)
+				ft.AddFolderNodeOptions(folnode, filetree)
+				ft.AddTreeNodeOptions(folnode, filetree)
 
-				local metacache_entry = metainfo_cache[ft.NodeToPath(node)]
+				local metacache_entry = metainfo_cache[ft.NodeToPath(folnode)]
 
-				if metacache_entry and metacache_entry.expanded then -- Old node table entry was expanded
-					node:SetExpanded(true)
+				if metacache_entry and metacache_entry.expanded then -- Old folnode table entry was expanded
+					folnode:SetExpanded(true)
 				else
-					node:SetExpanded(false)
+					folnode:SetExpanded(false)
 				end
 
-				local mytbl = {fol={}, fil={}, node=node}
-				node.treetable = mytbl
+				local mytbl = {fol={}, fil={}, node=folnode, pendingListing = fold.pendingListing}
+				folnode.treetable = mytbl
 				par.fol[foldnm] = mytbl
+
+				if fold.pendingListing then
+					fold.fil = {"LOADING"}
+				end
 
 				AddTreeNode(fold, mytbl)
 
