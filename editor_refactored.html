@@ -3,7 +3,7 @@
 <head>
 <title>ACE in Action</title>
 <style type="text/css" media="screen">
-    #editor { 
+    #editor {
         position: absolute;
         top: 0;
         right: 0;
@@ -21,10 +21,10 @@
 <body>
 
 <div id="editor">
-  ______          ______                    
- /      \        /      \                   
-|  $$$$$$\      |  $$$$$$\ _______  ______  
-| $$ __\$$______| $$__| $$/       \/      \ 
+  ______          ______
+ /      \        /      \
+|  $$$$$$\      |  $$$$$$\ _______  ______
+| $$ __\$$______| $$__| $$/       \/      \
 | $$|    |      | $$    $|  $$$$$$|  $$$$$$\
 | $$ \$$$$\$$$$$| $$$$$$$| $$     | $$    $$
 | $$__| $$      | $$  | $| $$_____| $$$$$$$$
@@ -33,7 +33,7 @@
 
 Select a file or press Ctrl-n from the filetree to start hacking!
 </div>
-    
+
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
 <script src="ace/ext-settings_menu.js"></script>
@@ -48,7 +48,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     var langTools = ace.require("ace/ext/language_tools");
     ace.require('ace/ext/settings_menu').init(editor);
     ace.require('ace/ext/keybinding_menu').init(editor);
-    
+
     var Search = ace.require("ace/search").Search;
 
     // Enable autocomplete etc
@@ -168,7 +168,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 console.log("G-Ace Goto failed: " + res[2] + " can't be converted to number");
         },
         readOnly: true
-    }); 
+    });
 
     // Weirdest hack EU. We need to throw an error in here, or typing right curly brackets won't work
     editor.commands.addCommand({
@@ -223,7 +223,6 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 // If closed session is current session, lets clear it by making new empty session
                 if (editor.getSession() == sessions[id]) {
                     editor.setSession(emptySession);
-                    editor.getSession().setValue(editor.getSession().getValue());
                     editor.setReadOnly(true);
                     sessionId = null;
                 }
