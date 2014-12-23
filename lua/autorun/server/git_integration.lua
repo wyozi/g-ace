@@ -35,8 +35,10 @@ function gace.Git_MakeStatusResponse(ply, path)
 		tbl.git_enabled = true
 
 		local repo = git.Open(abspath)
-		local status = repo:Status()
+		local status, err = repo:Status()
 		repo:Free()
+
+		if not status then return {err = err} end
 
 		tbl.git_branch = status.Branch
 
