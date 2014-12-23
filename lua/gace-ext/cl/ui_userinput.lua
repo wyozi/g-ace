@@ -24,7 +24,7 @@ gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
 	basepnl:AddDocked("InputPanel", inputpanel, BOTTOM)
 end)
 
-function gace.ext.ShowTextInputPrompt(query, callback)
+function gace.ext.ShowTextInputPrompt(query, callback, default)
 	local inputpanel = gace.GetPanel("InputPanel")
 
 	inputpanel.InputCallback = callback
@@ -34,4 +34,14 @@ function gace.ext.ShowTextInputPrompt(query, callback)
 	inputpanel.Input:RequestFocus()
 
 	inputpanel:Show()
+end
+
+function gace.ext.ShowYesNoCancelPrompt(query, callback)
+	local function curry(str) return function() callback(str) end end
+	Derma_Query(query, "Confirmation", "Yes", curry("yes"), "No", curry("no"), "Cancel", curry("cancel"))
+end
+
+function gace.ext.ShowYesCancelPrompt(query, callback)
+	local function curry(str) return function() callback(str) end end
+	Derma_Query(query, "Confirmation", "Yes", curry("yes"), "Cancel", curry("cancel"))
 end

@@ -16,20 +16,40 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(node, me
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		gace.ext.ShowTextInputPrompt("Filename", function(nm)
-			local folderpath = ft.NodeToPath(node, true)
-			local filname = folderpath .. "/" .. nm
+		local path = ft.NodeToPath(node)
+		local folderpath = ft.NodeToPath(node, true)
 
-			local oldpath = ft.NodeToPath(node)
-			gace.Fetch(oldpath, function(_, _, payload)
-				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
+		local function DoRename(tab_was_open)
+			gace.ext.ShowTextInputPrompt("Filename", function(nm)
+				local newpath = folderpath .. "/" .. nm
 
-				gace.Delete(oldpath)
-				gace.Save(filname, payload.content)
+				gace.Fetch(path, function(_, _, payload)
+					if payload.err then return MsgN("Failed to fetch: ", payload.err) end
 
-				ft.RefreshPath(filetree, folderpath)
+					if tab_was_open then gace.CloseSession(path) end
+
+					gace.Delete(path)
+					gace.Save(newpath, payload.content)
+
+					ft.RefreshPath(filetree, folderpath)
+
+					-- TODO does reopening tab need a delay?
+					if tab_was_open then gace.OpenSession(newpath) end
+				end)
+			end, node:GetText())
+		end
+
+		local sess = gace.GetSession(path)
+		if sess and not sess:IsSaved() then
+			gace.ext.ShowYesCancelPrompt("Rename file without saving? Unsaved contents will be lost.", function(ret)
+				if ret == "yes" then
+					DoRename(true)
+				end
 			end)
-		end, node:GetText())
+		else
+			DoRename(sess ~= nil)
+		end
+
 	end):SetIcon("icon16/page_edit.png")
 
 	local csubmenu, csmpnl = menu:AddSubMenu("Delete", function() end)
