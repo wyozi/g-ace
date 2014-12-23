@@ -24,7 +24,7 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached)
 			"]] .. id ..[[",
 			{]] .. table.concat(js_table, ", ") .. [[}
 		);]])
-	
+
 end
 
 gace.AvailableThemes = {
