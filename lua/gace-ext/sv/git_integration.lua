@@ -129,6 +129,21 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 		return {err="AddToIndex error: " .. tostring(err)}
 	end
 
+	-- We need to get all the changed paths to update git statuses in all folders that changed
+	local changed_paths = {}
+
+	local status, err = repo:Status()
+	if not status then
+		repo:Free() -- TODO this is ugly
+		return {err="Status error: " .. err}
+	end
+
+	-- All we care about is changes in index
+	for _,change in pairs(status.IndexChanges) do
+		table.insert(changed_paths, change.Path)
+	end
+
+	-- Create a git identity for the commit
 	local cname, cemail = "", ""
 	if ply:IsValid() then
 		cname = ply:Nick()
@@ -142,7 +157,12 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 		return {err="Commit error: " .. tostring(err)}
 	end
 
-	timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(pathobj:GetVFolder())) end)
+	timer.Simple(0, function()
+		for _,cp in pairs(changed_paths) do
+			local gpath = gace.Path(pathobj:GetVFolder()) + gace.Path(cp):WithoutFile()
+			gace.GitBroadcastFolderStatus(ply, gpath)
+		end
+	end)
 
 	local tbl = {ret="Success"}
 	return tbl
