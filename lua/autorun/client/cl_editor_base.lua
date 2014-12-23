@@ -6,7 +6,8 @@ filesync:updateCache(gace.ClientCache)
 gace.ClientCache:addChangeListener(filesync)
 
 gace.DefaultEditorOptions = {
-	editor_url = "http://wyozi.github.io/g-ace/editor_refactored.html"
+	editor_url = "http://wyozi.github.io/g-ace/editor_refactored.html",
+	root_path = ""
 }
 
 function gace.GetOption(opt)
@@ -77,7 +78,7 @@ function gace.OpenEditor(opts)
 	end
 end
 
-concommand.Add("gace-open", gace.OpenEditor)
+concommand.Add("gace-open", function() gace.OpenEditor() end)
 concommand.Add("gace-reopen", function()
 	gace.OpenEditor({
 		force_recreate = true

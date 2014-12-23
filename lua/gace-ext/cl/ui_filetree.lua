@@ -15,7 +15,7 @@ gace.AddHook("AddPanels", "Editor_AddFileTree", function(frame, basepnl)
 	end
 
 	-- Requests the server to update the whole filetree immediately
-	gace.filetree.RefreshPath(filetree, "")
+	gace.filetree.RefreshPath(filetree, gace.GetOption("root_path"))
 
 	-- Stores filetree meta to local filecache every 10seconds
 	timer.Create("GAceFiletreeMetaPersistance", 10, 0, function()
@@ -23,4 +23,4 @@ gace.AddHook("AddPanels", "Editor_AddFileTree", function(frame, basepnl)
 	end)
 
 	sb:AddDocked("FileTree", filetree, FILL)
-end) 
+end)
