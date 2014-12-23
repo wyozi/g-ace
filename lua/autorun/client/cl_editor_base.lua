@@ -1,8 +1,20 @@
+-- TODO all this cache stuff probably shouldnt be here
 gace.ClientCache = gace.SimpleCache:new()
 
 local filesync = gace.CacheSyncFS:new("gace-clientcache.txt")
 filesync:updateCache(gace.ClientCache)
 gace.ClientCache:addChangeListener(filesync)
+
+gace.DefaultEditorOptions = {
+	editor_url = "http://wyozi.github.io/g-ace/editor_refactored.html"
+}
+
+function gace.GetOption(opt)
+	if gace.EditorOptions and gace.EditorOptions[opt] then
+		return gace.EditorOptions[opt]
+	end
+	return gace.DefaultEditorOptions[opt]
+end
 
 function gace.ShowEditor()
 	if gace.Frame:IsVisible() then return end
@@ -24,7 +36,8 @@ function gace.AddBasePanels(frame)
 
 		gace.CallHook("SetupHTMLPanel", html)
 
-		html:OpenURL("http://wyozi.github.io/g-ace/editor_refactored.html?refresh=" .. os.time())
+		local url = string.format("%s?refresh=%d", gace.GetOption("editor_url"), os.time())
+		html:OpenURL(url)
 	end
 
 	-- Tabs
@@ -47,11 +60,18 @@ function gace.CreateEditor()
 	gace.CallHook("AddPanels", frame, frame.BasePanel)
 	gace.CallHook("PostEditorCreated")
 end
-function gace.OpenEditor()
+function gace.OpenEditor(opts)
+	gace.EditorOptions = opts
+
 	-- If instance of Frame exists, just show it
-	if IsValid(gace.Frame) then
+	if IsValid(gace.Frame) and not gace.GetOption("force_recreate") then
 		gace.ShowEditor()
 	else
+		if IsValid(gace.Frame) then
+			gace.Frame:Remove()
+			gace.CallHook("ClearGAceVariables")
+		end
+
 		gace.CreateEditor()
 		gace.Frame:MakePopup()
 	end
@@ -59,9 +79,7 @@ end
 
 concommand.Add("gace-open", gace.OpenEditor)
 concommand.Add("gace-reopen", function()
-	if IsValid(gace.Frame) then
-		gace.Frame:Remove()
-		gace.CallHook("ClearGAceVariables")
-	end
-	gace.OpenEditor()
+	gace.OpenEditor({
+		force_recreate = true
+	})
 end)
