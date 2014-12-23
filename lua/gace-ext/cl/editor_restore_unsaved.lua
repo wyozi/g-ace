@@ -31,10 +31,7 @@ gace.AddHook("PostEditorCreated", "RestoreUnsavedFiles", function()
         -- TODO check if root folder exists in current editor
 
         for id,content in pairs(unsaved_files_cache) do
-            gace.OpenSession(id, {content=content})
-
-            -- We don't want the file to appear to be already saved
-            gace.GetSession(id).SavedContent = nil
+            gace.OpenSession(id, {content=content, mark_unsaved = true})
         end
     end)
 end)
