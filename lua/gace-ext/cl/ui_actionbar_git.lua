@@ -50,7 +50,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				gace.OpenSession("git_status_" .. gace.Path(sess.Id):GetVFolder(), {
 					content = document
 				})
-			end):SetIcon("icon16/printer.png")
+			end):SetIcon("icon16/book.png")
 			menu:AddOption("Show log", function()
 				gace.SendRequest("git-log", {path=gace.GetSessionId()}, function(_, _, pl)
 					if pl.ret == "Success" then
@@ -66,8 +66,20 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 						gace.Log(gace.LOG_ERROR, "Git log failed: ", pl.err)
 					end
 				end)
-			end):SetIcon("icon16/printer.png")
-			menu:AddOption("Commit all changes", function()
+			end):SetIcon("icon16/book_addresses.png")
+
+			menu:AddOption("Commit added files", function()
+				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
+					gace.SendRequest("git-commit", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
+						if pl.ret == "Success" then
+							gace.Log("Commit succesful")
+						else
+							gace.Log(gace.LOG_ERROR, "Commit failed: ", pl.err)
+						end
+					end)
+				end)
+			end):SetIcon("icon16/book_go.png")
+			menu:AddOption("Add all and commit", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
 					gace.SendRequest("git-commitall", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
 						if pl.ret == "Success" then
@@ -77,7 +89,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 						end
 					end)
 				end)
-			end)
+			end):SetIcon("icon16/book_go.png")
 			menu:AddOption("Push to upstream", function()
 				gace.SendRequest("git-push", {path=gace.GetSessionId()}, function(_, _, pl)
 					if pl.ret == "Success" then
@@ -86,7 +98,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 						gace.Log(gace.LOG_ERROR, "Commit failed: ", pl.err)
 					end
 				end)
-			end)
+			end):SetIcon("icon16/book_previous.png")
 
 			menu:Open()
 

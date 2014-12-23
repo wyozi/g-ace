@@ -98,7 +98,7 @@ local function GetServerIP()
 	return table.concat( ip, "." )
 end
 
-function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
+function gace.Git_MakeAddResponse(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	if not pathobj then return {err=vfolder} end
 
@@ -120,7 +120,97 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 
 	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
-	local tbl = {ret="Success"}
+	local repo = git.Open(abspath)
+
+	local addindex, err = repo:AddPathSpecToIndex(pathobj:WithoutVFolder():ToString())
+	if addindex == false then
+		return {err=err}
+	end
+
+	return {ret="Success"}
+end
+function gace.Git_MakeCommitResponse(ply, path)
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
+
+	if pathobj:IsRoot() then
+		return {err="Can't git-commitall root"}
+	end
+
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-commitall") then
+		return {err="No access"}
+	end
+
+	if not luagit_available then
+		return {err="No luagit available"}
+	end
+
+	if not vfolder.getabspathfunc then
+		return {err="No runcmdfunc in vfolder"}
+	end
+
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
+
+	local repo = git.Open(abspath)
+
+	-- We need to get all the changed paths to update git statuses in all folders that changed
+	local changed_paths = {}
+
+	local status, err = repo:Status()
+	if not status then
+		repo:Free() -- TODO this is ugly
+		return {err="Status error: " .. err}
+	end
+
+	-- All we care about is changes in index
+	for _,change in pairs(status.IndexChanges) do
+		table.insert(changed_paths, change.Path)
+	end
+
+	-- Create a git identity for the commit
+	local cname, cemail = "", ""
+	if ply:IsValid() then
+		cname = ply:Nick()
+		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
+	end
+	local ret, err = repo:Commit(cmsg, cname, cemail)
+
+	repo:Free()
+
+	if not ret then
+		return {err="Commit error: " .. tostring(err)}
+	end
+
+	timer.Simple(0, function()
+		for _,cp in pairs(changed_paths) do
+			local gpath = gace.Path(pathobj:GetVFolder()) + gace.Path(cp):WithoutFile()
+			gace.GitBroadcastFolderStatus(ply, gpath)
+		end
+	end)
+
+	return {ret="Success"}
+end
+function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
+	local pathobj, vfolder = gace.ParsePath(path)
+	if not pathobj then return {err=vfolder} end
+
+	if pathobj:IsRoot() then
+		return {err="Can't git-commitall root"}
+	end
+
+	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-commitall") then
+		return {err="No access"}
+	end
+
+	if not luagit_available then
+		return {err="No luagit available"}
+	end
+
+	if not vfolder.getabspathfunc then
+		return {err="No runcmdfunc in vfolder"}
+	end
+
+	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
 
 	local repo = git.Open(abspath)
 
@@ -164,8 +254,7 @@ function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
 		end
 	end)
 
-	local tbl = {ret="Success"}
-	return tbl
+	return {ret="Success"}
 end
 function gace.Git_MakePushResponse(ply, path, cmsg)
 	local pathobj, vfolder = gace.ParsePath(path)
@@ -261,6 +350,10 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 		responder_func(ply, reqid, op, gace.Git_MakeLogResponse(ply, payload.path))
 	elseif op == "git-push" then
 		responder_func(ply, reqid, op, gace.Git_MakePushResponse(ply, payload.path))
+	elseif op == "git-add" then
+		responder_func(ply, reqid, op, gace.Git_MakeAddResponse(ply, payload.path))
+	elseif op == "git-commit" then
+		responder_func(ply, reqid, op, gace.Git_MakeCommitResponse(ply, payload.path, payload.msg))
 	elseif op == "git-commitall" then
 		responder_func(ply, reqid, op, gace.Git_MakeCommitAllResponse(ply, payload.path, payload.msg))
 	end
