@@ -1,10 +1,7 @@
-local class = Middleclass
-
-local Cache = gace.Cache
-local SimpleCache = class("SimpleCache", Cache)
+local SimpleCache = Middleclass("SimpleCache", Cache)
 
 function SimpleCache:initialize()
-	Cache.initialize(self)
+	self.class.super.initialize(self)
 
 	self.cache = {}
 end

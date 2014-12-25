@@ -1,6 +1,4 @@
-local class = Middleclass
-
-local Cache = class("Cache")
+local Cache = Middleclass("Cache")
 
 function Cache:initialize()
 	self.changeListeners = {}
@@ -52,4 +50,4 @@ function Cache:notifyChangeListeners(key, val, oldValue)
 	end
 end
 
-gace.Cache = Cache	
+gace.Cache = Cache

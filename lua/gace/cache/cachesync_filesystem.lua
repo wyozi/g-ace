@@ -1,6 +1,4 @@
-local class = Middleclass
-
-local CacheSyncFS = class("CacheSyncFS")
+local CacheSyncFS = Middleclass("CacheSyncFS")
 
 function CacheSyncFS:initialize(filename)
 	self.filename = filename
