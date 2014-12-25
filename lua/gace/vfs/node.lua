@@ -58,3 +58,7 @@ function Node:delete()
     end
     return par:deleteChildNode(self)
 end
+
+function Node:__tostring()
+    return string.format("%s (%s)", self:path(), self.class.name)
+end
