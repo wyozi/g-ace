@@ -4,7 +4,7 @@ gace.VFS.SimpleName = {
     setName = function(self, name)
         self._name = name
     end,
-    name = function(self)
+    getName = function(self)
         return self._name or ""
     end
 }

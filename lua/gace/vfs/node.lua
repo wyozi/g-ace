@@ -5,9 +5,9 @@ local Node = gace.VFS.Node
 Node:include(gace.EventEmitter)
 
 function Node:displayName()
-    return self:name()
+    return self:getName()
 end
-function Node:name()
+function Node:getName()
     return ""
 end
 
