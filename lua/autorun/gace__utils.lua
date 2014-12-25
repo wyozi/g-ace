@@ -1,15 +1,6 @@
 -- Small utility functions
 -- Note: name has two underscores because we want to be sure we're loaded before any other gace related files
 
-local function includeShared(s)
-	AddCSLuaFile(s)
-	include(s)
-end
-includeShared("libs/middleclass.lua")
-includeShared("utils/cache.lua")
-includeShared("utils/cache_simple.lua")
-includeShared("utils/cachesync_filesystem.lua")
-
 function gace.Map(tbl, fn)
 	local t = {}
 	for k,v in pairs(tbl) do
@@ -97,7 +88,7 @@ gat("Utils", function(t)
 	t.assertDeepEquals({1, 2, 3}, {1, 2, 3}, "single-dim table equality")
 	t.assertDeepEquals({1, {2, 3}}, {1, {2, 3}}, "multi-dim table equality")
 	t.assertDeepEquals({a={b={c="hi"}}}, {a={b={c="hi"}}}, "string-key table equality")
-	
+
 	t.assertEquals(gace.TableKeys({"a", "b"}), {1, 2}, "simple TableKeys")
 	t.assertEquals(gace.TableKeys({"a", c="b"}), {1, "c"}, "string-key TableKeys")
 
