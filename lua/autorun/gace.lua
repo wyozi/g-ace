@@ -13,6 +13,11 @@ local function load(file, type)
     end
 end
 
+-- TODO move somewhere else
+function gace.Error(str)
+    ErrorNoHalt(str)
+end
+
 -- Load libraries
 load("gace/_libs/middleclass.lua", "shared")
 
