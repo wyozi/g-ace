@@ -1,7 +1,0 @@
-Note: this is not up to date documentation, but notes made during development of vfs
-
-class Node
-    abstract String getName()
-
-    Node getParent()
-    String path()

@@ -1,6 +1,8 @@
 gace = gace or {}
 
 local function load(file, type)
+    type = type or "shared"
+
     local _server = type == "server" or type == "shared"
     local _client = type == "client" or type == "shared"
 
@@ -20,11 +22,21 @@ end
 
 -- Load libraries
 load("gace/_libs/middleclass.lua", "shared")
+load("gace/_libs/andthen.lua", "shared")
 
 -- Load GAce files
-load("gace/cache/cache.lua", "shared")
-load("gace/cache/cache_simple.lua", "shared")
-load("gace/cache/cachesync_filesystem.lua", "shared")
+load("gace/cache/cache.lua")
+load("gace/cache/cache_simple.lua")
+load("gace/cache/cachesync_filesystem.lua")
+
+load("gace/util/eventemitter.lua")
+load("gace/util/path.lua")
+
+load("gace/vfs/_vfs.lua")
+load("gace/vfs/node.lua")
+load("gace/vfs/file.lua")
+
+load("gace/vfs/memory/memoryfile.lua")
 
 -- Load GAce testing lib and tests
 load("gace-tests/_gacetests.lua", "shared")
