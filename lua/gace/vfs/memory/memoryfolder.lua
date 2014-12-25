@@ -24,11 +24,15 @@ end
 function MemoryFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
         if type == "file" then
-            self._entries[name] = gace.VFS.MemoryFile:new(name)
+            local created = gace.VFS.MemoryFile:new(name)
+            self._entries[name] = created
+            created:setParent(self)
             resolver:resolve()
             -- TODO call events
         elseif type == "folder" then
-            self._entries[name] = gace.VFS.MemoryFolder:new(name)
+            local created = gace.VFS.MemoryFolder:new(name)
+            self._entries[name] = created
+            created:setParent(self)
             resolver:resolve()
             -- TODO call events
         else

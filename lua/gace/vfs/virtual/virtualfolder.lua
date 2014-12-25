@@ -24,11 +24,15 @@ end
 function VirtualFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
         if type == "file" then
-            self._entries[name] = gace.VFS.MemoryFile:new(name)
+            local created = gace.VFS.VirtualFile:new(name)
+            self._entries[name] = created
+            created:setParent(self)
             resolver:resolve()
             -- TODO call events
         elseif type == "folder" then
-            self._entries[name] = gace.VFS.VirtualFolder:new(name)
+            local created = gace.VFS.VirtualFolder:new(name)
+            self._entries[name] = created
+            created:setParent(self)
             resolver:resolve()
             -- TODO call events
         else
@@ -37,9 +41,12 @@ function VirtualFolder:createChildNode(name, type, opts)
     end)
 end
 
-function VirtualFolder:addVirtualFolder(name, vfolder)
+function VirtualFolder:addVirtualFolder(vfolder)
     return Promise(function(resolver)
+        local name = vfolder:getName()
+        
         self._entries[name] = vfolder
+        vfolder:setParent(self)
         resolver:resolve()
     end)
 end

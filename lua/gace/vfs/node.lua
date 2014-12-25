@@ -8,7 +8,7 @@ function Node:displayName()
     return self:getName()
 end
 function Node:getName()
-    return ""
+    gace.Error(string.format("%s#%s is not implemented", self.class.name, "getName"))
 end
 
 function Node:type()
@@ -23,7 +23,10 @@ function Node:hasCapability(cap)
 end
 
 function Node:parent()
-    return self.parent
+    return self._parent
+end
+function Node:setParent(par)
+    self._parent = par
 end
 
 function Node:path()
