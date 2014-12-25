@@ -29,13 +29,13 @@ function MemoryFile:write(data, options)
     end)
 end
 
-function File:size()
+function MemoryFile:size()
     return Promise(function(resolver)
         resolver:resolve(string.len(self._contents or ""))
     end)
 end
 
-function File:lastModified()
+function MemoryFile:lastModified()
     return Promise(function(resolver)
         resolver:resolve(self.lastModified)
     end)

@@ -11,7 +11,7 @@ function MemoryFolder:initialize(name)
 end
 
 local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE
-function MemoryFile:capabilities()
+function MemoryFolder:capabilities()
     return caps
 end
 

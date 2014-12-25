@@ -1,7 +1,7 @@
 gace.VFS.File = Middleclass("File", gace.VFS.Node)
 local File = gace.VFS.File
 
-function Node:type()
+function File:type()
     return "file"
 end
 

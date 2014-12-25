@@ -35,8 +35,12 @@ load("gace/util/path.lua")
 load("gace/vfs/_vfs.lua")
 load("gace/vfs/node.lua")
 load("gace/vfs/file.lua")
+load("gace/vfs/folder.lua")
+
+load("gace/vfs/util/simplename.lua")
 
 load("gace/vfs/memory/memoryfile.lua")
+load("gace/vfs/memory/memoryfolder.lua")
 
 -- Load GAce testing lib and tests
 load("gace-tests/_gacetests.lua", "shared")

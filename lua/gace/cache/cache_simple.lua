@@ -1,4 +1,4 @@
-local SimpleCache = Middleclass("SimpleCache", Cache)
+local SimpleCache = Middleclass("SimpleCache", gace.Cache)
 
 function SimpleCache:initialize()
 	self.class.super.initialize(self)
@@ -23,7 +23,7 @@ function SimpleCache:set(key, val, is_raw_set)
 		self:notifyChangeListeners(key, val, old_value)
 	end
 end
-function Cache:dumpCache()
+function SimpleCache:dumpCache()
 	return self.cache
 end
 

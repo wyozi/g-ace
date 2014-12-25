@@ -1,7 +1,7 @@
 gace.VFS.Folder = Middleclass("Folder", gace.VFS.Node)
 local Folder = gace.VFS.Folder
 
-function Node:type()
+function Folder:type()
     return "folder"
 end
 
