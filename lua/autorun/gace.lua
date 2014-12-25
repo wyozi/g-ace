@@ -39,6 +39,9 @@ load("gace/vfs/folder.lua")
 
 load("gace/vfs/util/simplename.lua")
 
+load("gace/vfs/virtual/virtualfile.lua")
+load("gace/vfs/virtual/virtualfolder.lua")
+
 load("gace/vfs/memory/memoryfile.lua")
 load("gace/vfs/memory/memoryfolder.lua")
 
