@@ -4,45 +4,54 @@ local Node = gace.VFS.Node
 -- Add event methods
 Node:include(gace.EventEmitter)
 
-Node.static.CAPABILITY_READ = bit.lshift(1, 0)
-Node.static.CAPABILITY_WRITE = bit.lshift(1, 1)
--- If node has representation on filesystem
-Node.static.CAPABILITY_REALFILE = bit.lshift(1, 2)
-
-function Node:getDisplayName()
-    return self:getName()
+function Node:displayName()
+    return self:name()
 end
-function Node:getName()
+function Node:name()
     return ""
 end
 
-function Node:getCapabilities()
-    gace.Error(string.format("%s#%s is not implemented", self.class.name, "getCapabilities"))
-end
-function Node:hasCapability(cap)
-    return bit.band(self:getCapabilities(), cap) == cap
+function Node:type()
+    gace.Error(string.format("%s#%s is not implemented", self.class.name, "type"))
 end
 
-function Node:getParent()
+function Node:capabilities()
+    gace.Error(string.format("%s#%s is not implemented", self.class.name, "capabilities"))
+end
+function Node:hasCapability(cap)
+    return bit.band(self:capabilities(), cap) == cap
+end
+
+function Node:parent()
     return self.parent
 end
 
 function Node:path()
     local components = {self:getName()}
 
-    local par = self:getParent()
+    local par = self:parent()
     while par do
         table.insert(components, 1, par:getName())
-        par = par:getParent()
+        par = par:parent()
     end
 
     return table.concat(components, "/")
 end
 --- If node has CAPABILITY_REALFILE, returns absolute path to the real node
 function Node:realPath()
-    if not self:hasCapability(Node.CAPABILITY_REALFILE) then
+    if not self:hasCapability(gace.VFS.Capability.REALFILE) then
         gace.Error(string.format("%s has no CAPABILITY_REALFILE!", self.class.name))
         return
     end
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "realPath"))
+end
+
+function Node:delete()
+    local par = self:parent()
+    if not par then
+        return Promise(function(resolver)
+            resolver:reject("Unable to delete a node with no parent")
+        end)
+    end
+    return par:deleteChildNode(self)
 end
