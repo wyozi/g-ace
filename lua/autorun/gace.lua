@@ -45,5 +45,8 @@ load("gace/vfs/virtual/virtualfolder.lua")
 load("gace/vfs/memory/memoryfile.lua")
 load("gace/vfs/memory/memoryfolder.lua")
 
+load("gace/vfs/real-data/realdatafile.lua")
+load("gace/vfs/real-data/realdatafolder.lua")
+
 -- Load GAce testing lib and tests
 load("gace-tests/_gacetests.lua", "shared")

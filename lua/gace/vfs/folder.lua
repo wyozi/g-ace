@@ -13,6 +13,6 @@ function Folder:createChildNode(name, type, opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "createChildNode"))
 end
 
-function Folder:deleteChildNode(name, opts)
+function Folder:deleteChildNode(node, opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "deleteChildNode"))
 end

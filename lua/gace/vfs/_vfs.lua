@@ -8,8 +8,9 @@ gace.VFS.Capability = {
 }
 
 gace.VFS.ReturnCode = {
-    SUCCESS      = 0,
-    ERROR        = -1, -- generic
-    NOT_FOUND    = -2,
-    INVALID_TYPE = -3
+    SUCCESS        = 0,
+    ERROR          = 1, -- generic
+    NOT_FOUND      = 2,
+    INVALID_TYPE   = 3,
+    ALREADY_EXISTS = 4
 }
