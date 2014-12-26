@@ -18,10 +18,10 @@ function RealDataFolder:capabilities()
 end
 
 function RealDataFolder:fsLocalPath()
-    return gace.NormalizePath(string.format("%s/%s", self._fsPath, self._localPath))
+    return gace.path.normalize(string.format("%s/%s", self._fsPath, self._localPath))
 end
 function RealDataFolder:fsLocalChildPath(child)
-    return gace.NormalizePath(self:fsLocalPath() .. "/" .. child)
+    return gace.path.normalize(self:fsLocalPath() .. "/" .. child)
 end
 
 function RealDataFolder:listEntries(opts)
@@ -34,7 +34,7 @@ function RealDataFolder:listEntries(opts)
 
         for _,v in pairs(directories) do
             -- TODO node should not be created here
-            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.NormalizePath(self._localPath .. "/" .. v))
+            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.path.normalize(self._localPath .. "/" .. v))
             node:setParent(self)
             table.insert(entries, node)
         end
@@ -69,7 +69,7 @@ function RealDataFolder:createChildNode(name, type, opts)
         elseif type == "folder" then
             file.CreateDir(localPath)
 
-            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.NormalizePath(self._localPath .. "/" .. v))
+            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.path.normalize(self._localPath .. "/" .. v))
             node:setParent(self)
 
             resolver:resolve(node)

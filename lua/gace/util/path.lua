@@ -1,4 +1,6 @@
-function gace.NormalizePath(path)
+gace.path = {}
+
+function gace.path.normalize(path)
     local finalPathComps = {}
 
     local comps = path:Split("/")
@@ -14,8 +16,8 @@ function gace.NormalizePath(path)
     return table.concat(finalPathComps, "/")
 end
 
-local validator_pattern = "[^%a%d_- %.]"
-function gace.ValidatePathComponent(comp)
+local validator_pattern = "[^%a%d_- %./]"
+function gace.path.validate(comp)
     if string.find(comp, validator_pattern) then
         return false
     end
