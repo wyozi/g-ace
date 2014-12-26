@@ -55,22 +55,46 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 
 	-- File access
 	if op == "ls" then
+		local max_depth = 3
+
+		local function traverseFolder(folderNode, par_tbl, rec)
+			rec = rec or 0
+
+			local p = Promise(function() end)
+
+			folderNode:listEntries():then_(function(entries)
+				local subpromises = {}
+				for _,e in pairs(entries) do
+					if e:type() == "file" then
+						table.insert(par_tbl.fil, e:getName())
+					elseif e:type() == "folder" then
+						local foltbl = {fol={}, fil={}}
+						par_tbl.fol[e:getName()] = foltbl
+
+						if rec < max_depth then
+							table.insert(subpromises, traverseFolder(e, foltbl, rec+1))
+						else
+							foltbl.pendingListing = true
+						end
+					end
+				end
+				p:_resolve(subpromises)
+			end):catch(function(e) p:_reject(e) end)
+
+			return p:all()
+		end
+
 		local normpath = gace.path.normalize(payload.path)
-		gace.fs.ls(ply, normpath, {recursive = true}):then_(function(entries)
+		gace.fs.resolve(normpath):then_(function(node)
 			local tree = {fol={}, fil={}}
 
-			for _,e in pairs(entries) do
-				if e:type() == "folder" then
-					tree.fol[e:getName()] = {}
-				elseif e:type() == "file" then
-					table.insert(tree.fil, e:getName())
-				end
-			end
-
-			local ret = {ret="Success", type="filetree", path=normpath, tree=tree}
-			responder_func(ply, reqid, op, ret)
+			traverseFolder(node, tree):then_(function()
+				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=normpath, tree=tree})
+			end):catch(function(e)
+				responder_func(ply, reqid, op, {err=e})
+			end)
 		end):catch(function(e)
-			responder_func(ply, reqid, op, {err = e})
+			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "fetch" then
 		responder_func(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
