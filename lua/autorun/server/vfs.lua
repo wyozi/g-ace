@@ -138,7 +138,16 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "rm" then
-		responder_func(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+		gace.fs.resolve(normpath):then_(function(node)
+			if node:type() ~= "file" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+
+			return node:delete()
+		end):then_(function(childNode)
+			responder_func(ply, reqid, op, {ret="Success"})
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "find" then
 		responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
 	end
