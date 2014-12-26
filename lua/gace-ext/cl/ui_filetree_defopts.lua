@@ -80,7 +80,11 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, 
 	menu:AddOption("Create Folder", function()
 		gace.ext.ShowTextInputPrompt("Folder name", function(nm)
 			local filname = ft.NodeToPath(node) .. "/" .. nm
-			gace.MkDir(filname, function()
+			gace.MkDir(filname, function(_, _, pl)
+				if pl.err then
+					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
+					return
+				end
 				ft.RefreshPath(filetree, ft.NodeToPath(node))
 			end)
 		end)

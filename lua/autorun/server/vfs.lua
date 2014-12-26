@@ -126,7 +126,17 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "mkdir" then
-		responder_func(ply, reqid, op, gace.MakeMkDirResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+		local par_path, folder_name = gace.path.tail(normpath)
+		gace.fs.resolve(par_path):then_(function(node)
+			if node:type() ~= "folder" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+
+			return node:createChildNode(folder_name, "folder")
+		end):then_(function(childNode)
+			responder_func(ply, reqid, op, {ret="Success"})
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "rm" then
 		responder_func(ply, reqid, op, gace.MakeRmResponse(ply, payload.path))
 	elseif op == "find" then
