@@ -10,6 +10,8 @@ function RealDataFolder:initialize(name, fsPath, localPath)
 
     self._fsPath = fsPath
     self._localPath = localPath or ""
+
+    self._entries = {}
 end
 
 local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE
@@ -24,29 +26,57 @@ function RealDataFolder:fsLocalChildPath(child)
     return gace.path.normalize(self:fsLocalPath() .. "/" .. child)
 end
 
-function RealDataFolder:listEntries(opts)
+function RealDataFolder:refresh()
     return Promise(function(resolver)
         local searchPath = self:fsLocalChildPath("*")
-
         local files, directories = file.Find(searchPath, "DATA")
 
-        local entries = {}
+        -- List of entries that dont exist on filesystem
+        local leftovers = gace.TableKeysToList(self._entries)
+
+        -- Add unsynced file/folder to _entries and emit events
+        local function AddEntry(name, type)
+            table.RemoveByValue(leftovers, name)
+
+            if self._entries[name] then return end
+
+            local node
+
+            if     type == "file"   then  node = gace.VFS.RealDataFile(name)
+            elseif type == "folder" then  node = gace.VFS.RealDataFolder(name, self._fsPath, gace.path.normalize(self._localPath .. "/" .. name))
+            end
+
+            node:setParent(self)
+            self._entries[name] = node
+
+            self:emit("nodeCreated", node)
+
+        end
 
         for _,v in pairs(directories) do
-            -- TODO node should not be created here
-            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.path.normalize(self._localPath .. "/" .. v))
-            node:setParent(self)
-            table.insert(entries, node)
+            AddEntry(v, "folder")
         end
-
         for _,v in pairs(files) do
-            -- TODO node should not be created here
-            local node = gace.VFS.RealDataFile(v)
-            node:setParent(self)
-            table.insert(entries, node)
+            AddEntry(v, "file")
         end
 
-        resolver:resolve(entries)
+        for _,lo in pairs(leftovers) do
+            local node = self._entries[lo]
+            self._entries[lo] = nil
+
+            self:emit("nodeDeleted", node)
+            node:emit("deleted")
+        end
+
+        resolver:resolve()
+    end)
+end
+
+function RealDataFolder:listEntries(opts)
+    return Promise(function(resolver)
+        self:refresh():then_(function()
+            resolver:resolve(self._entries)
+        end)
     end)
 end
 
@@ -61,19 +91,15 @@ function RealDataFolder:createChildNode(name, type, opts)
         if type == "file" then
             file.Write(localPath, "")
 
-            local node = gace.VFS.RealDataFile(localPath)
-            node:setParent(self)
-
-            resolver:resolve(node)
-            -- TODO call events
+            self:refresh():then_(function()
+                resolver:resolve(self._entries[name])
+            end):catch(function(e) resolver:reject(e) end)
         elseif type == "folder" then
             file.CreateDir(localPath)
 
-            local node = gace.VFS.RealDataFolder(v, self._fsPath, gace.path.normalize(self._localPath .. "/" .. v))
-            node:setParent(self)
-
-            resolver:resolve(node)
-            -- TODO call events
+            self:refresh():then_(function()
+                resolver:resolve(self._entries[name])
+            end):catch(function(e) resolver:reject(e) end)
         else
             resolver:reject(gace.VFS.ReturnCode.INVALID_TYPE)
         end
@@ -91,7 +117,8 @@ function RealDataFolder:deleteChildNode(node, opts)
 
         file.Delete(localPath)
 
-        resolver:resolve()
-        -- TODO call events
+        self:refresh():then_(function()
+            resolver:resolve()
+        end)
     end)
 end

@@ -5,6 +5,13 @@ function Folder:type()
     return "folder"
 end
 
+--- Refreshes folder contents.
+-- Mostly used to make sure in-memory entries match what's on filesystem
+-- That means it can be no-op if there's no backing filesystem
+function Folder:refresh()
+    gace.Error(string.format("%s#%s is not implemented", self.class.name, "refresh"))
+end
+
 function Folder:listEntries(opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "listEntries"))
 end

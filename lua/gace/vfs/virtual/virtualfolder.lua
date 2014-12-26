@@ -15,6 +15,8 @@ function VirtualFolder:capabilities()
     return caps
 end
 
+function VirtualFolder:refresh() end
+
 function VirtualFolder:listEntries(opts)
     return Promise(function(resolver)
         resolver:resolve(self._entries)
@@ -44,7 +46,7 @@ end
 function VirtualFolder:addVirtualFolder(vfolder)
     return Promise(function(resolver)
         local name = vfolder:getName()
-        
+
         self._entries[name] = vfolder
         vfolder:setParent(self)
         resolver:resolve()

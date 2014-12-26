@@ -15,6 +15,8 @@ function MemoryFolder:capabilities()
     return caps
 end
 
+function MemoryFolder:refresh() end
+
 function MemoryFolder:listEntries(opts)
     return Promise(function(resolver)
         resolver:resolve(self._entries)
