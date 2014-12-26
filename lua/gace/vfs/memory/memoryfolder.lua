@@ -25,18 +25,22 @@ end
 
 function MemoryFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
+        local ctor
+
         if type == "file" then
-            local created = gace.VFS.MemoryFile:new(name)
-            self._entries[name] = created
-            created:setParent(self)
-            resolver:resolve()
-            -- TODO call events
+            ctor = gace.VFS.MemoryFile
         elseif type == "folder" then
-            local created = gace.VFS.MemoryFolder:new(name)
-            self._entries[name] = created
-            created:setParent(self)
-            resolver:resolve()
-            -- TODO call events
+            ctor = gace.VFS.MemoryFolder
+        end
+
+        if ctor then
+            local node = ctor(name)
+
+            node:setParent(self)
+            self._entries[name] = node
+            self:emit("nodeCreated", node)
+
+            resolver:resolve(node)
         else
             resolver:reject(gace.VFS.ReturnCode.INVALID_TYPE)
         end
@@ -46,7 +50,12 @@ end
 function MemoryFolder:deleteChildNode(name, opts)
     return Promise(function(resolver)
         if self._entries[name] then
-            self._entries[name] = nil -- TODO call events
+            local node = self._entries[name]
+            self._entries[name] = nil
+
+            self:emit("nodeDeleted", node)
+            node:emit("deleted")
+
             resolver:resolve()
         else
             resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
