@@ -1,12 +1,9 @@
 gace.VFS.MemoryFolder = Middleclass("MemoryFolder", gace.VFS.Folder)
 local MemoryFolder = gace.VFS.MemoryFolder
 
-MemoryFolder:include(gace.VFS.SimpleName)
-
 function MemoryFolder:initialize(name)
-    self.class.super.initialize(self)
+    self.class.super.initialize(self, name)
 
-    self:setName(name)
     self._entries = {}
 end
 

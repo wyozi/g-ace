@@ -1,12 +1,9 @@
 gace.VFS.VirtualFile = Middleclass("VirtualFile", gace.VFS.File)
 local VirtualFile = gace.VFS.VirtualFile
 
-VirtualFile:include(gace.VFS.SimpleName)
-
 function VirtualFile:initialize(name)
-    self.class.super.initialize(self)
+    self.class.super.initialize(self, name)
 
-    self:setName(name)
     self.lastModified = os.time()
 end
 

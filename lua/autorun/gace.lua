@@ -37,8 +37,6 @@ load("gace/vfs/node.lua")
 load("gace/vfs/file.lua")
 load("gace/vfs/folder.lua")
 
-load("gace/vfs/util/simplename.lua")
-
 load("gace/vfs/virtual/virtualfile.lua")
 load("gace/vfs/virtual/virtualfolder.lua")
 

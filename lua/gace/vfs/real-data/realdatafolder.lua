@@ -1,12 +1,8 @@
 gace.VFS.RealDataFolder = Middleclass("RealDataFolder", gace.VFS.Folder)
 local RealDataFolder = gace.VFS.RealDataFolder
 
-RealDataFolder:include(gace.VFS.SimpleName)
-
 function RealDataFolder:initialize(name, fsPath, localPath)
-    self.class.super.initialize(self)
-
-    self:setName(name)
+    self.class.super.initialize(self, name)
 
     self._fsPath = fsPath
     self._localPath = localPath or ""

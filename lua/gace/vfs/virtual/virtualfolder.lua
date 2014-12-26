@@ -1,12 +1,9 @@
 gace.VFS.VirtualFolder = Middleclass("VirtualFolder", gace.VFS.Folder)
 local VirtualFolder = gace.VFS.VirtualFolder
 
-VirtualFolder:include(gace.VFS.SimpleName)
-
 function VirtualFolder:initialize(name)
-    self.class.super.initialize(self)
+    self.class.super.initialize(self, name)
 
-    self:setName(name)
     self._entries = {}
 end
 

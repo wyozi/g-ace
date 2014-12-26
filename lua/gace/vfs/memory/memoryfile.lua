@@ -1,12 +1,9 @@
 gace.VFS.MemoryFile = Middleclass("MemoryFile", gace.VFS.File)
 local MemoryFile = gace.VFS.MemoryFile
 
-MemoryFile:include(gace.VFS.SimpleName)
-
 function MemoryFile:initialize(name)
-    self.class.super.initialize(self)
+    self.class.super.initialize(self, name)
 
-    self:setName(name)
     self.lastModified = os.time()
 end
 

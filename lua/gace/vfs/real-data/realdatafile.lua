@@ -1,12 +1,8 @@
 gace.VFS.RealDataFile = Middleclass("RealDataFile", gace.VFS.File)
 local RealDataFile = gace.VFS.RealDataFile
 
-RealDataFile:include(gace.VFS.SimpleName)
-
 function RealDataFile:initialize(name)
-    self.class.super.initialize(self)
-
-    self:setName(name)
+    self.class.super.initialize(self, name)
 end
 
 local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE + gace.VFS.Capability.STAT

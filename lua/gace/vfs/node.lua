@@ -4,11 +4,16 @@ local Node = gace.VFS.Node
 -- Add event methods
 Node:include(gace.EventEmitter)
 
+function Node:initialize(name)
+    self._name = name
+end
+
 function Node:displayName()
     return self:getName()
 end
+
 function Node:getName()
-    gace.Error(string.format("%s#%s is not implemented", self.class.name, "getName"))
+    return self._name
 end
 
 function Node:type()
