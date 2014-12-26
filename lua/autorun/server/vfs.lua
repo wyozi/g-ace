@@ -97,7 +97,18 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "fetch" then
-		responder_func(ply, reqid, op, gace.MakeFetchResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+		gace.fs.resolve(normpath):then_(function(node)
+			if node:type() ~= "file" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+
+			node:read():then_(function(content)
+				responder_func(ply, reqid, op, {ret="Success", type="file", content=content})
+			end):catch(function(e)
+				responder_func(ply, reqid, op, {err=e})
+			end)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "save" then
 		responder_func(ply, reqid, op, gace.MakeSaveResponse(ply, payload.path, payload.content))
 	elseif op == "mkdir" then
