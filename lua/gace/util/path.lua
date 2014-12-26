@@ -7,8 +7,9 @@ function gace.path.normalize(path)
     for _,comp in pairs(comps) do
         comp = comp:Trim()
 
-        local skip = comp == "" or comp == "."
-        if not skip then
+        if comp == ".." then
+            finalPathComps[#finalPathComps] = nil
+        elseif not (comp == "" or comp == ".") then
             table.insert(finalPathComps, comp)
         end
     end
