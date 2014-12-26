@@ -24,6 +24,13 @@ function gace.path.head(path)
     return first, table.concat(comps, "/")
 end
 
+function gace.path.tail(path)
+    local comps = path:Split("/", 2)
+    local last = comps[#comps]
+    table.remove(comps, #comps)
+    return table.concat(comps, "/"), last
+end
+
 local validator_pattern = "[^%a%d_- %./]"
 function gace.path.validate(comp)
     if string.find(comp, validator_pattern) then

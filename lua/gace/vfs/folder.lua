@@ -27,3 +27,20 @@ end
 function Folder:deleteChildNode(node, opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "deleteChildNode"))
 end
+
+--- Creates child node if it doesnt exist. 
+function Folder:verifyChildFileExists(name)
+    return self:child(name):then_(function(node)
+        if node:type() == "file" then
+            return node
+        end
+        error(gace.VFS.ReturnCode.INVALID_TYPE)
+    end):catch(function(e)
+        if e == gace.VFS.ReturnCode.NOT_FOUND then
+            return self:createChildNode(name, "file"):then_(function(node)
+                return node
+            end)
+        end
+        error(e)
+    end)
+end
