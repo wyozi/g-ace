@@ -14,6 +14,17 @@ end
 
 function VirtualFolder:refresh() end
 
+function VirtualFolder:child(name, opts)
+    return Promise(function(resolver)
+        local node = self._entries[name]
+        if node then
+            resolver:resolve(node)
+        else
+            resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+        end
+    end)
+end
+
 function VirtualFolder:listEntries(opts)
     return Promise(function(resolver)
         resolver:resolve(self._entries)

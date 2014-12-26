@@ -12,6 +12,10 @@ function Folder:refresh()
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "refresh"))
 end
 
+function Folder:child(name, opts)
+    gace.Error(string.format("%s#%s is not implemented", self.class.name, "child"))
+end
+
 function Folder:listEntries(opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "listEntries"))
 end

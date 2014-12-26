@@ -1,3 +1,5 @@
+if true then return end
+
 local gace_hide_dotfiles = CreateConVar("g-ace-hide-dotfiles", "1", FCVAR_ARCHIVE)
 
 function gace.TestAccess(access, ply, ...)

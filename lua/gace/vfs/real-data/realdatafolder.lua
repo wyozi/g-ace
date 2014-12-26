@@ -68,6 +68,19 @@ function RealDataFolder:refresh()
     end)
 end
 
+function RealDataFolder:child(name, opts)
+    return Promise(function(resolver)
+        self:refresh():then_(function()
+            local node = self._entries[name]
+            if node then
+                resolver:resolve(node)
+            else
+                resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+            end
+        end)
+    end)
+end
+
 function RealDataFolder:listEntries(opts)
     return Promise(function(resolver)
         self:refresh():then_(function()
