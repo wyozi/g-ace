@@ -19,9 +19,9 @@ function gace.fs.resolve(path, parent)
 
 	if path == "" then return Promise(parent) end
 
-	local folder, rest = gace.path.head(path)
+	local firstChildName, rest = gace.path.head(path)
 
-	return parent:child(folder):then_(function(node)
+	return parent:child(firstChildName):then_(function(node)
 		if rest == "" then
 			return node
 		else

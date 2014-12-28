@@ -34,6 +34,18 @@ function Node:setParent(par)
     self._parent = par
 end
 
+--- Traverses up the inheritance tree and tries to find the initial node that
+-- was created using a constructor
+function Node:findInitialFsNode()
+    local n = self:type() == "folder" and self or self:parent()
+
+    while n and not n:isInitialFsNode() do
+        n = n:parent()
+    end
+
+    return n
+end
+
 function Node:path()
     local components = {self:getName()}
 

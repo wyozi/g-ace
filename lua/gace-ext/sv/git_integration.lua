@@ -1,291 +1,6 @@
 pcall(require, "luagit")
 local luagit_available = git ~= nil
 
--- Stores VFolders that are git enabled
-gace.ValidGitVFolders = gace.ValidGitVFolders or {}
-
-function gace.Git_MakeStatusResponse(ply, path)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-status root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-status") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-
-	gace.ValidGitVFolders[pathobj:GetVFolder()] = true
-
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local tbl = {ret="Success"}
-	if not git.IsRepository(abspath) then
-		tbl.git_enabled = false
-	else
-		tbl.git_enabled = true
-
-		local repo = git.Open(abspath)
-		local status, err = repo:Status()
-		repo:Free()
-
-		if not status then return {err = err} end
-
-		tbl.git_branch = status.Branch
-
-		-- we want to send this after player receives git updates
-		timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(pathobj:GetVFolder())) end)
-	end
-
-	return tbl
-end
-function gace.Git_MakeLogResponse(ply, path)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-status root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-status") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local repo = git.Open(abspath)
-	if not repo then return {err="Unable to open repo"} end
-
-	local tbl = {ret="Success"}
-
-	local log, err = repo:Log()
-	if not log then return {err = err} end
-
-	tbl.log = log
-
-	repo:Free()
-
-	return tbl
-end
-
--- Source: somewhere on internet
-local function GetServerIP()
-	local hostip = GetConVarString( "hostip" )
-	hostip = tonumber( hostip )
-
-	local ip = {}
-	ip[ 1 ] = bit.rshift( bit.band( hostip, 0xFF000000 ), 24 )
-	ip[ 2 ] = bit.rshift( bit.band( hostip, 0x00FF0000 ), 16 )
-	ip[ 3 ] = bit.rshift( bit.band( hostip, 0x0000FF00 ), 8 )
-	ip[ 4 ] = bit.band( hostip, 0x000000FF )
-
-	return table.concat( ip, "." )
-end
-
-function gace.Git_MakeAddResponse(ply, path)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-commitall root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-commitall") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local repo = git.Open(abspath)
-
-	local addindex, err = repo:AddPathSpecToIndex(pathobj:WithoutVFolder():ToString())
-	if addindex == false then
-		return {err=err}
-	end
-
-	return {ret="Success"}
-end
-function gace.Git_MakeCommitResponse(ply, path)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-commitall root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-commitall") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local repo = git.Open(abspath)
-
-	-- We need to get all the changed paths to update git statuses in all folders that changed
-	local changed_paths = {}
-
-	local status, err = repo:Status()
-	if not status then
-		repo:Free() -- TODO this is ugly
-		return {err="Status error: " .. err}
-	end
-
-	-- All we care about is changes in index
-	for _,change in pairs(status.IndexChanges) do
-		table.insert(changed_paths, change.Path)
-	end
-
-	-- Create a git identity for the commit
-	local cname, cemail = "", ""
-	if ply:IsValid() then
-		cname = ply:Nick()
-		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
-	end
-	local ret, err = repo:Commit(cmsg, cname, cemail)
-
-	repo:Free()
-
-	if not ret then
-		return {err="Commit error: " .. tostring(err)}
-	end
-
-	timer.Simple(0, function()
-		for _,cp in pairs(changed_paths) do
-			local gpath = gace.Path(pathobj:GetVFolder()) + gace.Path(cp):WithoutFile()
-			gace.GitBroadcastFolderStatus(ply, gpath)
-		end
-	end)
-
-	return {ret="Success"}
-end
-function gace.Git_MakeCommitAllResponse(ply, path, cmsg)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-commitall root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-commitall") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local repo = git.Open(abspath)
-
-	local addindex, err = repo:AddPathSpecToIndex("**")
-	if addindex == false then
-		return {err="AddToIndex error: " .. tostring(err)}
-	end
-
-	-- We need to get all the changed paths to update git statuses in all folders that changed
-	local changed_paths = {}
-
-	local status, err = repo:Status()
-	if not status then
-		repo:Free() -- TODO this is ugly
-		return {err="Status error: " .. err}
-	end
-
-	-- All we care about is changes in index
-	for _,change in pairs(status.IndexChanges) do
-		table.insert(changed_paths, change.Path)
-	end
-
-	-- Create a git identity for the commit
-	local cname, cemail = "", ""
-	if ply:IsValid() then
-		cname = ply:Nick()
-		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
-	end
-	local ret, err = repo:Commit(cmsg, cname, cemail)
-
-	repo:Free()
-
-	if not ret then
-		return {err="Commit error: " .. tostring(err)}
-	end
-
-	timer.Simple(0, function()
-		for _,cp in pairs(changed_paths) do
-			local gpath = gace.Path(pathobj:GetVFolder()) + gace.Path(cp):WithoutFile()
-			gace.GitBroadcastFolderStatus(ply, gpath)
-		end
-	end)
-
-	return {ret="Success"}
-end
-function gace.Git_MakePushResponse(ply, path, cmsg)
-	local pathobj, vfolder = gace.ParsePath(path)
-	if not pathobj then return {err=vfolder} end
-
-	if pathobj:IsRoot() then
-		return {err="Can't git-push root"}
-	end
-
-	if not gace.TestAccess(vfolder.access, ply, pathobj, "git-push") then
-		return {err="No access"}
-	end
-
-	if not luagit_available then
-		return {err="No luagit available"}
-	end
-
-	if not vfolder.getabspathfunc then
-		return {err="No runcmdfunc in vfolder"}
-	end
-
-	local abspath = vfolder.getabspathfunc(gace.Path(pathobj:GetVFolder()))
-
-	local repo = git.Open(abspath)
-	local ret, err = repo:Push()
-	repo:Free()
-
-	if ret then return {ret="Success"} end
-	return {err=err}
-end
-
 function gace.GitBroadcastFolderStatus(ply, folderpathobj)
 	local _, vfolder = gace.ParsePath(folderpathobj:ToString())
 
@@ -316,11 +31,125 @@ gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)
 	local pathobj, vfolder = gace.ParsePath(path)
 	local vfoldername = pathobj:GetVFolder()
 
-	if not gace.ValidGitVFolders[vfoldername] then return end
-
-	gace.GitBroadcastFolderStatus(ply, pathobj:WithoutFile())
+	--gace.GitBroadcastFolderStatus(ply, pathobj:WithoutFile())
 end)
 
+gace.git = {}
+
+local function onRepo(repoOrPath, fn)
+	if not repoOrPath then
+		return error("No repoOrPath given!")
+	end
+
+	if type(repoOrPath) == "string" then
+		local repo, err = git.Open(repoOrPath)
+		if not repo then return false, err end
+
+		local ret = {fn(repo)}
+		repo:Free()
+
+		return unpack(ret)
+	else
+		return fn(repoOrPath)
+	end
+end
+
+-- Source: somewhere on internet
+local function GetServerIP()
+	local hostip = GetConVarString( "hostip" )
+	hostip = tonumber( hostip )
+
+	local ip = {}
+	ip[ 1 ] = bit.rshift( bit.band( hostip, 0xFF000000 ), 24 )
+	ip[ 2 ] = bit.rshift( bit.band( hostip, 0x00FF0000 ), 16 )
+	ip[ 3 ] = bit.rshift( bit.band( hostip, 0x0000FF00 ), 8 )
+	ip[ 4 ] = bit.band( hostip, 0x000000FF )
+
+	return table.concat( ip, "." )
+end
+
+function gace.git.identity(ply)
+	local cname, cemail = "", ""
+	if ply:IsValid() then
+		cname = ply:Nick()
+		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
+	end
+	return {
+		name = cname,
+		email = cemail
+	}
+end
+
+function gace.git.add(repoOrPath, pathspec)
+	return onRepo(repoOrPath, function(repo)
+		local addindex, err = repo:AddPathSpecToIndex("**")
+
+		local changed_paths = {}
+
+		local status, err = repo:Status()
+		if not status then
+			return false, "Status error: " .. err
+		end
+
+		-- All we care about is changes in index
+		for _,change in pairs(status.IndexChanges) do
+			changed_paths[change.Path] = "m"
+		end
+
+		return changed_paths
+	end)
+end
+function gace.git.commit(repoOrPath, msg, opts)
+	return onRepo(repoOrPath, function(repo)
+		local cname, cemail = "", ""
+		if opts and opts.identity then
+			cname = opts.identity.name
+			cemail = opts.identity.email
+		end
+
+		local ret, err = repo:Commit(msg, cname, cemail)
+		if not ret then
+			return false, err
+		end
+
+		return true
+	end)
+end
+function gace.git.push(repoOrPath, remote, branch)
+	return onRepo(repoOrPath, function(repo)
+		local status, err = repo:Push()
+		if not status then
+			return false, "Status error: " .. err
+		end
+
+		return true
+	end)
+end
+
+function gace.git.is_repo(path)
+	return git.IsRepository(path)
+end
+
+function gace.git.status(repoOrPath)
+	return onRepo(repoOrPath, function(repo)
+		local status, err = repo:Status()
+		if not status then
+			return false, err
+		end
+
+		return status
+	end)
+end
+function gace.git.log(repoOrPath)
+	return onRepo(repoOrPath, function(repo)
+		local log, err = repo:Log()
+		if not log then
+			return false, err
+		end
+
+		return log
+	end)
+end
 
 gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 	local ply = netmsg:GetSender()
@@ -343,87 +172,110 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 		responder_func = function() end
 	end
 
-	-- Git integration
-	if op == "git-status" then
-		local normpath = gace.path.normalize(payload.path)
+	local function GetRealPath(path, need_root)
+		local normpath = gace.path.normalize(path)
 
-		gace.fs.resolve(normpath):then_(function(node)
+		return gace.fs.resolve(normpath):then_(function(node)
+			if need_root then
+				local initialNode = node:findInitialFsNode()
+				if not initialNode then return error("FS Root not found!!") end
+				return initialNode
+			end
+			return node
+		end):then_(function(node)
 			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
 				return error("path does not support REALFILE")
 			end
+			return node:realPath()
+		end)
+	end
 
-			return node:realPath():then_(function(realpath)
-				local tbl = {ret="Success"}
-				if not git.IsRepository(realpath) then
-					tbl.git_enabled = false
-				else
-					tbl.git_enabled = true
+	-- Git integration
+	if op == "git-status" then
+		GetRealPath(payload.path, true):then_(function(realpath)
+			if not gace.git.is_repo(realpath) then
+				return {ret = "Success", git_enabled = false}
+			end
 
-					local repo = git.Open(realpath)
-					local status, err = repo:Status()
-					repo:Free()
+			local ret, err = gace.git.status(realpath)
+			if not ret then return error(err) end
 
-					if not status then return error(err) end
+			-- Awkward place for this..
+			timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(node:path())) end)
 
-					tbl.git_branch = status.Branch
-
-					-- we want to send this after player receives git updates
-					timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(node:path())) end)
-				end
-				responder_func(ply, reqid, op, tbl)
-			end)
+			return {ret = "Success", git_enabled = true, git_branch = ret.Branch}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-log" then
-		local normpath = gace.path.normalize(payload.path)
+		GetRealPath(payload.path, true):then_(function(realpath)
+			local ret, err = gace.git.log(realpath)
+			if not ret then return error(err) end
 
-		gace.fs.resolve(normpath):then_(function(node)
-			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
-				return error("path does not support REALFILE")
-			end
-
-			return node:realPath():then_(function(realpath)
-				local repo = git.Open(realpath)
-				if not repo then return error("Unable to open repo") end
-
-				local log, err = repo:Log()
-				repo:Free()
-
-				if not log then return error(err) end
-
-				responder_func(ply, reqid, op, {ret = "Success", log = log})
-			end)
+			return {ret = "Success", log = ret}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-push" then
-		local normpath = gace.path.normalize(payload.path)
+		GetRealPath(payload.path, true):then_(function(realpath)
+			local ret, err = gace.git.push(realpath)
+			if not ret then return error(err) end
 
-		gace.fs.resolve(normpath):then_(function(node)
-			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
-				return error("path does not support REALFILE")
-			end
-
-			return node:realPath():then_(function(realpath)
-				local repo = git.Open(realpath)
-				if not repo then return error("Unable to open repo") end
-
-				local log, err = repo:Push()
-				repo:Free()
-
-				if not log then return error(err) end
-
-				responder_func(ply, reqid, op, {ret = "Success"})
-			end)
+			return {ret = "Success"}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-add" then
-		responder_func(ply, reqid, op, gace.Git_MakeAddResponse(ply, payload.path))
+		GetRealPath(payload.path, true):then_(function(realpath)
+			-- Need to get realpath of payload.path relative to initial fs node
+			return GetRealPath(payload.path):then_(function(file_realpath)
+				-- This actually works. Nice.
+				local relativePath = file_realpath:Replace(realpath .. "/", "")
+
+				local ret, err = gace.git.add(realpath, relativePath)
+				if not ret then return error(err) end
+
+				return {ret = "Success"}
+			end)
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "git-commit" then
-		responder_func(ply, reqid, op, gace.Git_MakeCommitResponse(ply, payload.path, payload.msg))
+		GetRealPath(payload.path, true):then_(function(realpath)
+			local ret, err = gace.git.commit(realpath, payload.msg, {
+				identity = gace.git.identity(ply)
+			})
+			if not ret then return error(err) end
+
+			return {ret = "Success"}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "git-commitall" then
-		responder_func(ply, reqid, op, gace.Git_MakeCommitAllResponse(ply, payload.path, payload.msg))
+		GetRealPath(payload.path, true):then_(function(realpath)
+			local ret, err = gace.git.add(realpath, "**")
+			if not ret then return error(err) end
+
+			local ret, err = gace.git.commit(realpath, payload.msg, {
+				identity = gace.git.identity(ply)
+			})
+			if not ret then return error(err) end
+
+			return {ret = "Success"}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	end
 end)
