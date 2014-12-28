@@ -6,6 +6,9 @@ gace.Root:addVirtualFolder(mem)
 local dat = gace.VFS.RealDataFolder("dat", "")
 gace.Root:addVirtualFolder(dat)
 
+local gaceio = gace.VFS.RealGIOFolder("gaceio", "./garrysmod")
+gace.Root:addVirtualFolder(gaceio)
+
 gace.fs = {}
 
 function gace.fs.resolve(path, parent)
