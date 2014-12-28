@@ -54,7 +54,8 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     // Enable autocomplete etc
     editor.setOptions({
         enableBasicAutocompletion: true,
-        enableSnippets: true
+        enableSnippets: true,
+        scrollPastEnd : true
     });
 
     var acutil = ace.require("ace/autocomplete/util");
@@ -199,11 +200,16 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 var existedBefore = true;
 
                 if (!this.exists(id)) {
-                    sessions[id] = ace.createEditSession("", "ace/mode/glua");
+                    sessions[id] = ace.createEditSession("", "ace/mode/lua");
                     existedBefore = false;
                 }
 
-                editor.setSession(sessions[id]);
+                var session = sessions[id];
+
+                session.setUseWrapMode(false);
+                session.setUseSoftTabs(false);
+
+                editor.setSession(session);
                 editor.setReadOnly(false);
                 sessionId = id;
 
@@ -214,7 +220,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                     content = data.content;
 
                 if (content)
-                    sessions[id].setValue(content);
+                    session.setValue(content);
                 else if (data.requestDataIfNotCached && !existedBefore)
                     // If we're setting session without passing contents and contents are not cached in html, request newest content from lua
                     gace.RequestSessionContent();
