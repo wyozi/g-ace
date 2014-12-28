@@ -1,11 +1,10 @@
 gace.VFS.RealDataFolder = Middleclass("RealDataFolder", gace.VFS.Folder)
 local RealDataFolder = gace.VFS.RealDataFolder
 
-function RealDataFolder:initialize(name, fsPath, localPath)
+function RealDataFolder:initialize(name, fsPath)
     self.class.super.initialize(self, name)
 
     self._fsPath = fsPath
-    self._localPath = localPath or ""
 
     self._entries = {}
 end
@@ -15,11 +14,8 @@ function RealDataFolder:capabilities()
     return caps
 end
 
-function RealDataFolder:fsLocalPath()
-    return gace.path.normalize(string.format("%s/%s", self._fsPath, self._localPath))
-end
 function RealDataFolder:fsLocalChildPath(child)
-    return gace.path.normalize(self:fsLocalPath() .. "/" .. child)
+    return gace.path.normalize(self._fsPath .. "/" .. child)
 end
 
 function RealDataFolder:refresh()
@@ -39,7 +35,7 @@ function RealDataFolder:refresh()
             local node
 
             if     type == "file"   then  node = gace.VFS.RealDataFile(name)
-            elseif type == "folder" then  node = gace.VFS.RealDataFolder(name, self._fsPath, gace.path.normalize(self._localPath .. "/" .. name))
+            elseif type == "folder" then  node = gace.VFS.RealDataFolder(name, self:fsLocalChildPath(name))
             end
 
             node:setParent(self)
