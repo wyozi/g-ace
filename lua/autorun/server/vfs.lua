@@ -1,17 +1,4 @@
 gace.Root = gace.VFS.VirtualFolder("root", true)
-gace.Root:grantPermission("player:STEAM_0:1:68224691", gace.VFS.Permission.WRITE + gace.VFS.Permission.READ)
-
-local mem = gace.VFS.MemoryFolder("mem")
-gace.Root:addVirtualFolder(mem)
-
-local dat = gace.VFS.RealDataFolder("dat", "")
-gace.Root:addVirtualFolder(dat)
-
-local gaceio = gace.VFS.RealGIOFolder("gaceio", "./garrysmod")
-gace.Root:addVirtualFolder(gaceio)
-
-local gaceio_git = gace.VFS.RealGIOFolder("gaceio_git", "./garrysmod/testgit")
-gace.Root:addVirtualFolder(gaceio_git)
 
 gace.fs = {}
 
