@@ -354,7 +354,6 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 
 			return node:realPath():then_(function(realpath)
 				local tbl = {ret="Success"}
-				MsgN(node:path(), " -> ", realpath)
 				if not git.IsRepository(realpath) then
 					tbl.git_enabled = false
 				else
@@ -377,9 +376,49 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-log" then
-		responder_func(ply, reqid, op, gace.Git_MakeLogResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+
+		gace.fs.resolve(normpath):then_(function(node)
+			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
+				return error("path does not support REALFILE")
+			end
+
+			return node:realPath():then_(function(realpath)
+				local repo = git.Open(realpath)
+				if not repo then return error("Unable to open repo") end
+
+				local log, err = repo:Log()
+				repo:Free()
+
+				if not log then return error(err) end
+
+				responder_func(ply, reqid, op, {ret = "Success", log = log})
+			end)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "git-push" then
-		responder_func(ply, reqid, op, gace.Git_MakePushResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+
+		gace.fs.resolve(normpath):then_(function(node)
+			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
+				return error("path does not support REALFILE")
+			end
+
+			return node:realPath():then_(function(realpath)
+				local repo = git.Open(realpath)
+				if not repo then return error("Unable to open repo") end
+
+				local log, err = repo:Push()
+				repo:Free()
+
+				if not log then return error(err) end
+
+				responder_func(ply, reqid, op, {ret = "Success"})
+			end)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "git-add" then
 		responder_func(ply, reqid, op, gace.Git_MakeAddResponse(ply, payload.path))
 	elseif op == "git-commit" then
