@@ -259,17 +259,6 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     }
     document.addEventListener('DOMContentLoaded', OnReady);
 
-    // If mouse goes outside GAce boundaries, the drag is not cleared because
-    // mouse no longer sends any DOM events about it. We need to clear it ourselves.
-    document.addEventListener('mouseout', function(e) {
-        e = e ? e : window.event;
-        var from = e.relatedTarget || e.toElement;
-        if (!from || from.nodeName == "HTML") {
-            console.log("Left browser");
-            editor.selection.clearSelection();
-        }
-    })
-
 </script>
 </body>
 </html>
