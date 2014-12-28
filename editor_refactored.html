@@ -198,23 +198,15 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         scrollIntoView: "selectionPart"
     })
 
-    // Metastruct's fix to inability to type right brackets
-    var s_id=0;
-    function DisableShortcut(scut) {
-        s_id++;
-        editor.commands.addCommands([{
-            name: "dis"+s_id,
-            bindKey: {
-                win: scut,
-                mac: scut
-            },
-            exec: function(editor, line) {
-                return false;
-            },
-            readOnly: true
-        }]);
-    };
-    DisableShortcut("Ctrl-Alt+0");
+    // Weirdest hack EU. We need to throw an error in here, or typing right curly brackets won't work
+    editor.commands.addCommand({
+        name: 'Add right curly bracket }',
+        bindKey: {win: 'Ctrl-alt-0', mac: 'Ctrl-alt-0'},
+        exec: function(editor) {
+            //return false;
+            throw "dirty hack to make right curly bracket work";
+        }
+    });
 
     var gaceSessions = (function() {
         var sessions = {};
