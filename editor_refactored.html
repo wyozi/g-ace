@@ -16,6 +16,20 @@
         width: 100%;
         height: 25px;
     }
+
+    #statusBar {
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 20px;
+        background-color: rgb(245, 245, 245);
+        color: gray;
+
+        z-index: 9999;
+    }
 </style>
 </head>
 <body>
@@ -33,13 +47,14 @@
 
 Select a file or press Ctrl-n from the filetree to start hacking!
 </div>
+<div id="statusBar"></div>
 
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
 <script src="ace/ext-settings_menu.js"></script>
 <script src="ace/ext-keybinding_menu.js"></script>
+<script src="ace/ext-statusbar.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 
 <script>
     var editor = ace.edit("editor");
@@ -48,6 +63,9 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     var langTools = ace.require("ace/ext/language_tools");
     ace.require('ace/ext/settings_menu').init(editor);
     ace.require('ace/ext/keybinding_menu').init(editor);
+
+    var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
+    var statusBar = new StatusBar(editor, document.getElementById("statusBar"));
 
     var Search = ace.require("ace/search").Search;
 
@@ -259,6 +277,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     }
     document.addEventListener('DOMContentLoaded', OnReady);
 
+    document.getElementById('editor').style.fontSize = '14px';
 </script>
 </body>
 </html>
