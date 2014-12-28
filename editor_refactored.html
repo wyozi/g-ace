@@ -76,6 +76,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         scrollPastEnd : true
     });
 
+    // Add Gmod automcompletions
     var acutil = ace.require("ace/autocomplete/util");
 
     var gmodApiCallbacks = {};
@@ -196,6 +197,24 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         multiSelectAction: "forEach",
         scrollIntoView: "selectionPart"
     })
+
+    // Metastruct's fix to inability to type right brackets
+    var s_id=0;
+    function DisableShortcut(scut) {
+        s_id++;
+        editor.commands.addCommands([{
+            name: "dis"+s_id,
+            bindKey: {
+                win: scut,
+                mac: scut
+            },
+            exec: function(editor, line) {
+                return false;
+            },
+            readOnly: true
+        }]);
+    };
+    DisableShortcut("Ctrl-Alt+0");
 
     var gaceSessions = (function() {
         var sessions = {};
