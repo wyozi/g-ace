@@ -79,7 +79,7 @@ function RealGIOFolder:child(name, opts)
             if node then
                 resolver:resolve(node)
             else
-                resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+                resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
             end
         end)
     end)
@@ -97,7 +97,7 @@ function RealGIOFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
         local localPath = self:fsLocalChildPath(name)
         if gaceio.Exists(localPath) then
-            resolver:reject(gace.VFS.ReturnCode.ALREADY_EXISTS)
+            resolver:reject(gace.VFS.ErrorCode.ALREADY_EXISTS)
             return
         end
 
@@ -122,7 +122,7 @@ function RealGIOFolder:createChildNode(name, type, opts)
                 resolver:resolve(self._entries[name])
             end):catch(function(e) resolver:reject(e) end)
         else
-            resolver:reject(gace.VFS.ReturnCode.INVALID_TYPE)
+            resolver:reject(gace.VFS.ErrorCode.INVALID_TYPE)
         end
     end)
 end
@@ -132,7 +132,7 @@ function RealGIOFolder:deleteChildNode(node, opts)
         local localPath = self:fsLocalChildPath(node:getName())
 
         if not gaceio.Exists(localPath) then
-            resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+            resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
             return
         end
 

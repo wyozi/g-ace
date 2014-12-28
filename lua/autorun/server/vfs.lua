@@ -1,7 +1,10 @@
 gace.Root = gace.VFS.VirtualFolder("root", true)
+gace.Root:grantPermission("players", gace.VFS.Permission.READ)
 
 local mem = gace.VFS.MemoryFolder("mem")
 gace.Root:addVirtualFolder(mem)
+
+mem:revokePermission("players", gace.VFS.Permission.READ)
 
 local dat = gace.VFS.RealDataFolder("dat", "")
 gace.Root:addVirtualFolder(dat)
@@ -32,7 +35,7 @@ end
 
 function gace.fs.ls(auth, path, opts)
 	return gace.fs.resolve(path):then_(function(node)
-		if node:type() ~= "folder" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+		if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 		return node:listEntries()
 	end)
@@ -59,6 +62,16 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		responder_func = function() end
 	end
 
+	local function ResolveNode(path, required_perms)
+		local normpath = gace.path.normalize(path)
+		return gace.fs.resolve(normpath):then_(function(node)
+			if not node:hasPermission(ply, required_perms) then
+				return error(gace.VFS.ErrorCode.ACCESS_DENIED)
+			end
+			return node
+		end)
+	end
+
 	-- File access
 	if op == "ls" then
 		local max_depth = 3
@@ -67,6 +80,16 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			rec = rec or 0
 
 			local p = Promise(function() end)
+
+			if not folderNode:hasPermission(ply, gace.VFS.Permission.READ) then
+				-- We only fail the whole request if the first path node is denied access to
+				if rec == 0 then
+					p:_reject(gace.VFS.ErrorCode.ACCESS_DENIED)
+				else
+					p:_resolve()
+				end
+				return p
+			end
 
 			folderNode:listEntries():then_(function(entries)
 				local subpromises = {}
@@ -90,12 +113,11 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			return p:all()
 		end
 
-		local normpath = gace.path.normalize(payload.path)
-		gace.fs.resolve(normpath):then_(function(node)
+		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
 			local tree = {fol={}, fil={}}
 
 			traverseFolder(node, tree):then_(function()
-				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=normpath, tree=tree})
+				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=node:path(), tree=tree})
 			end):catch(function(e)
 				responder_func(ply, reqid, op, {err=e})
 			end)
@@ -103,9 +125,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "fetch" then
-		local normpath = gace.path.normalize(payload.path)
-		gace.fs.resolve(normpath):then_(function(node)
-			if node:type() ~= "file" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
+			if node:type() ~= "file" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			node:read():then_(function(content)
 				responder_func(ply, reqid, op, {ret="Success", type="file", content=content})
@@ -118,8 +139,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 	elseif op == "save" then
 		local normpath = gace.path.normalize(payload.path)
 		local par_path, file_name = gace.path.tail(normpath)
-		gace.fs.resolve(par_path):then_(function(node)
-			if node:type() ~= "folder" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+		ResolveNode(par_path, gace.VFS.Permission.WRITE):then_(function(node)
+			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			return node:verifyChildFileExists(file_name)
 		end):then_(function(childNode)
@@ -132,10 +153,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "mkdir" then
-		local normpath = gace.path.normalize(payload.path)
-		local par_path, folder_name = gace.path.tail(normpath)
-		gace.fs.resolve(par_path):then_(function(node)
-			if node:type() ~= "folder" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+		ResolveNode(payload.path, gace.VFS.Permission.WRITE):then_(function(node)
+			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			return node:createChildNode(folder_name, "folder")
 		end):then_(function(childNode)
@@ -144,9 +163,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "rm" then
-		local normpath = gace.path.normalize(payload.path)
-		gace.fs.resolve(normpath):then_(function(node)
-			if node:type() ~= "file" then return error(gace.VFS.ReturnCode.INVALID_TYPE) end
+		ResolveNode(payload.path, gace.VFS.Permission.WRITE):then_(function(node)
+			if node:type() ~= "file" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			return node:delete()
 		end):then_(function(childNode)
@@ -155,6 +173,7 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "find" then
-		responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
+		-- TODO implement
+		--responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
 	end
 end)

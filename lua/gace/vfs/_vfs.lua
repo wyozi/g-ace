@@ -8,10 +8,17 @@ gace.VFS.Capability = {
     ROOT     = bit.lshift(1, 4), -- is not included in path() etc
 }
 
-gace.VFS.ReturnCode = {
-    SUCCESS        = 0,
-    ERROR          = 1, -- generic
-    NOT_FOUND      = 2,
-    INVALID_TYPE   = 3,
-    ALREADY_EXISTS = 4
+gace.VFS.Permission = {
+    READ     = bit.lshift(1, 0),
+    WRITE    = bit.lshift(1, 1),
+}
+
+gace.VFS.ServerPermission = gace.VFS.Permission.READ + gace.VFS.Permission.WRITE
+
+gace.VFS.ErrorCode = {
+    ERROR          = "error", -- generic
+    NOT_FOUND      = "not found",
+    INVALID_TYPE   = "invalid type",
+    ALREADY_EXISTS = "already exists",
+    ACCESS_DENIED  = "access denied",
 }

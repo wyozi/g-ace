@@ -20,7 +20,7 @@ function MemoryFolder:child(name, opts)
         if node then
             resolver:resolve(node)
         else
-            resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+            resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
         end
     end)
 end
@@ -50,7 +50,7 @@ function MemoryFolder:createChildNode(name, type, opts)
 
             resolver:resolve(node)
         else
-            resolver:reject(gace.VFS.ReturnCode.INVALID_TYPE)
+            resolver:reject(gace.VFS.ErrorCode.INVALID_TYPE)
         end
     end)
 end
@@ -66,7 +66,7 @@ function MemoryFolder:deleteChildNode(name, opts)
 
             resolver:resolve()
         else
-            resolver:reject(gace.VFS.ReturnCode.NOT_FOUND)
+            resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
         end
     end)
 end

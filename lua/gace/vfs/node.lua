@@ -6,6 +6,9 @@ Node:include(gace.EventEmitter)
 
 function Node:initialize(name)
     self._name = name
+    self._permissions = {
+        ["server"] = gace.VFS.ServerPermission
+    }
 end
 
 function Node:displayName()
@@ -25,6 +28,63 @@ function Node:capabilities()
 end
 function Node:hasCapability(cap)
     return bit.band(self:capabilities(), cap) == cap
+end
+
+function Node:findRelevantPermission(target)
+    local node_names
+
+    if not IsValid(target) then
+        if self._permissions.server then
+            return self._permissions.server
+        end
+    else
+        local group_node = string.format("group:%s", target:GetUserGroup())
+        local player_node = string.format("player:%s", target:SteamID())
+
+        if self._permissions[player_node] then
+            return self._permissions[player_node]
+        end
+        if self._permissions[group_node] then
+            return self._permissions[group_node]
+        end
+        if self._permissions.players then
+            return self._permissions.players
+        end
+    end
+
+    local par = self:parent()
+    if par then return par:findRelevantPermission(target) end
+end
+function Node:hasPermission(target, perm_bit)
+    local perm = self:findRelevantPermission(target)
+    if not perm then return false end
+
+    return bit.band(perm, perm_bit) == perm_bit
+end
+function Node:checkPermission(target, perm_bit)
+    return Promise(function(resolver)
+        if self:hasPermission(target, perm_bit) then
+            resolver:resolve()
+        else
+            resolver:reject()
+        end
+    end)
+end
+function Node:grantPermission(perm_node, perm_bit)
+    self._permissions[perm_node] = bit.bor((self._permissions[perm_node] or 0), perm_bit)
+
+    self:emit("permissionsChanged")
+end
+function Node:revokePermission(perm_node, perm_bit)
+    self._permissions[perm_node] = bit.band((self._permissions[perm_node] or 0), bit.bnot(perm_bit))
+
+    self:emit("permissionsChanged")
+end
+function Node:grantPlayerPermission(ply, perm_bit)
+    self:grantPermission(string.format("player:%s", ply:SteamID()), perm_bit)
+end
+function Node:grantGroupPermission(group, perm_bit)
+    self:grantPermission(string.format("group:%s", group), perm_bit)
 end
 
 function Node:parent()

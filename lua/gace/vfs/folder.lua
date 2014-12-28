@@ -48,9 +48,9 @@ function Folder:verifyChildFileExists(name)
         if node:type() == "file" then
             return node
         end
-        error(gace.VFS.ReturnCode.INVALID_TYPE)
+        error(gace.VFS.ErrorCode.INVALID_TYPE)
     end):catch(function(e)
-        if e == gace.VFS.ReturnCode.NOT_FOUND then
+        if e == gace.VFS.ErrorCode.NOT_FOUND then
             return self:createChildNode(name, "file"):then_(function(node)
                 return node
             end)
