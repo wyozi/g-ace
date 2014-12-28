@@ -53,7 +53,7 @@ function Node:findRelevantPermission(target)
     end
 
     local par = self:parent()
-    if par then return par:findRelevantPermission(target) end
+    if par and not par:hasCapability(gace.VFS.Capability.ROOT) then return par:findRelevantPermission(target) end
 end
 function Node:hasPermission(target, perm_bit)
     local perm = self:findRelevantPermission(target)

@@ -5,7 +5,11 @@ function VirtualFolder:initialize(name, is_root)
     self.class.super.initialize(self, name)
 
     self._entries = {}
+
     self._root = is_root
+    if is_root then
+        self:grantPermission("players", gace.VFS.Permission.READ)
+    end
 end
 
 local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE

@@ -5,8 +5,13 @@ gace.VFS.Capability = {
     WRITE    = bit.lshift(1, 1),
     REALFILE = bit.lshift(1, 2), -- has representation on user filesystem
     STAT     = bit.lshift(1, 3), -- files only; has size()
-    ROOT     = bit.lshift(1, 4), -- is not included in path() etc
+    ROOT     = bit.lshift(1, 4), -- see below
 }
+
+-- Special things about nodes with ROOT capability:
+--  - they don't appear when using node:path()
+--  - they have READ permission by default
+--  - their permissions dont inherit
 
 gace.VFS.Permission = {
     READ     = bit.lshift(1, 0),

@@ -1,10 +1,8 @@
 gace.Root = gace.VFS.VirtualFolder("root", true)
-gace.Root:grantPermission("players", gace.VFS.Permission.READ)
+gace.Root:grantPermission("player:STEAM_0:1:68224691", gace.VFS.Permission.WRITE + gace.VFS.Permission.READ)
 
 local mem = gace.VFS.MemoryFolder("mem")
 gace.Root:addVirtualFolder(mem)
-
-mem:revokePermission("players", gace.VFS.Permission.READ)
 
 local dat = gace.VFS.RealDataFolder("dat", "")
 gace.Root:addVirtualFolder(dat)
@@ -74,7 +72,7 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 
 	-- File access
 	if op == "ls" then
-		local max_depth = 3
+		local max_depth = 2
 
 		local function traverseFolder(folderNode, par_tbl, rec)
 			rec = rec or 0
@@ -116,10 +114,9 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
 			local tree = {fol={}, fil={}}
 
-			traverseFolder(node, tree):then_(function()
-				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=node:path(), tree=tree})
-			end):catch(function(e)
-				responder_func(ply, reqid, op, {err=e})
+			return traverseFolder(node, tree):then_(function()
+				local tree_path = node:hasCapability(gace.VFS.Capability.ROOT) and "" or node:path()
+				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=tree_path, tree=tree})
 			end)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})
@@ -175,5 +172,23 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 	elseif op == "find" then
 		-- TODO implement
 		--responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
+	elseif op == "createvfolder" then
+		local ctor
+		if payload.type == "memory" then ctor = gace.VFS.MemoryFolder
+		elseif payload.type == "real-data" then ctor = gace.VFS.RealDataFolder
+		elseif payload.type == "real-gaceio" then ctor = gace.VFS.RealGIOFolder
+		end
+
+		ResolveNode("", gace.VFS.Permission.WRITE):then_(function(node)
+			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
+			if not ctor then return error("invalid vfolder type") end
+
+			local folder = ctor(payload.path, unpack(payload.args or {}))
+			return node:addVirtualFolder(folder)
+		end):then_(function(childNode)
+			responder_func(ply, reqid, op, {ret="Success"})
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	end
 end)
