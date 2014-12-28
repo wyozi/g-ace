@@ -6,7 +6,7 @@ function RealGIOFolder:initialize(name, fsPath)
         gace.Error("Trying to create RealGIOFolder without gaceio module!")
         return
     end
-    
+
     self.class.super.initialize(self, name)
 
     self._fsPath = fsPath
@@ -14,7 +14,7 @@ function RealGIOFolder:initialize(name, fsPath)
     self._entries = {}
 end
 
-local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE
+local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE + gace.VFS.Capability.REALFILE
 function RealGIOFolder:capabilities()
     return caps
 end
@@ -145,5 +145,11 @@ function RealGIOFolder:deleteChildNode(node, opts)
         self:refresh():then_(function()
             resolver:resolve()
         end)
+    end)
+end
+
+function RealGIOFolder:realPath()
+    return Promise(function(resolver)
+        resolver:resolve(self._fsPath)
     end)
 end

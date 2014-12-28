@@ -10,7 +10,7 @@ function RealGIOFile:initialize(name)
     self.class.super.initialize(self, name)
 end
 
-local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE + gace.VFS.Capability.STAT
+local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE + gace.VFS.Capability.STAT + gace.VFS.Capability.REALFILE
 function RealGIOFile:capabilities()
     return caps
 end
@@ -59,5 +59,11 @@ function RealGIOFile:lastModified()
             return
         end
         resolver:resolve(ret)
+    end)
+end
+
+function RealGIOFile:realPath()
+    return Promise(function(resolver)
+        resolver:resolve(self:parent():fsLocalChildPath(self:getName()))
     end)
 end

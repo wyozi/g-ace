@@ -345,7 +345,37 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 
 	-- Git integration
 	if op == "git-status" then
-		responder_func(ply, reqid, op, gace.Git_MakeStatusResponse(ply, payload.path))
+		local normpath = gace.path.normalize(payload.path)
+
+		gace.fs.resolve(normpath):then_(function(node)
+			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
+				return error("path does not support REALFILE")
+			end
+
+			return node:realPath():then_(function(realpath)
+				local tbl = {ret="Success"}
+				MsgN(node:path(), " -> ", realpath)
+				if not git.IsRepository(realpath) then
+					tbl.git_enabled = false
+				else
+					tbl.git_enabled = true
+
+					local repo = git.Open(realpath)
+					local status, err = repo:Status()
+					repo:Free()
+
+					if not status then return error(err) end
+
+					tbl.git_branch = status.Branch
+
+					-- we want to send this after player receives git updates
+					timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(node:path())) end)
+				end
+				responder_func(ply, reqid, op, tbl)
+			end)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
 	elseif op == "git-log" then
 		responder_func(ply, reqid, op, gace.Git_MakeLogResponse(ply, payload.path))
 	elseif op == "git-push" then

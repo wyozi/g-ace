@@ -45,13 +45,17 @@ function Node:path()
 
     return table.concat(components, "/")
 end
+
 --- If node has CAPABILITY_REALFILE, returns absolute path to the real node
+-- Can be relative to "GarrysMod" or absolute
 function Node:realPath()
-    if not self:hasCapability(gace.VFS.Capability.REALFILE) then
-        gace.Error(string.format("%s has no CAPABILITY_REALFILE!", self.class.name))
-        return
-    end
-    gace.Error(string.format("%s#%s is not implemented", self.class.name, "realPath"))
+    return Promise(function(resolver)
+        if not self:hasCapability(gace.VFS.Capability.REALFILE) then
+            resolver:reject(string.format("%s has no CAPABILITY_REALFILE!", self.class.name))
+            return
+        end
+        resolver:reject(string.format("%s#%s is not implemented", self.class.name, "realPath"))
+    end)
 end
 
 function Node:delete()
