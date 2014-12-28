@@ -1,40 +1,59 @@
 pcall(require, "luagit")
 local luagit_available = git ~= nil
 
-function gace.GitBroadcastFolderStatus(ply, folderpathobj)
-	local _, vfolder = gace.ParsePath(folderpathobj:ToString())
-
-	local abspath = vfolder.getabspathfunc(gace.Path(folderpathobj:GetVFolder())) -- root folder's abs path
-	local repo = git.Open(abspath)
-
-	local payload = {}
-
-	-- Get all files in the parent folder
-	local listresp = gace.MakeListResponse(ply, folderpathobj:ToString())
-	if listresp.files then
-		for _,file in pairs(listresp.files) do
-			local relative_path = folderpathobj:Add(file)
-			local status, err = repo:FileStatus(relative_path:WithoutVFolder():ToString())
-			if status == false then MsgN(err) end
-
-			if status == nil then status = "empty" end -- If nil the table entry is removed
-
-			payload[relative_path:ToString()] = status
+function gace.GitBroadcastRepoStatus(ply, path)
+	gace.git.virt_to_real(path):then_(function(realpath)
+		local status, err = gace.git.status(realpath)
+		if not status then
+			MsgN("gace.GitBroadcastRepoStatus failed for '", path, "': ", err)
+			return
 		end
-	end
-	repo:Free()
 
-	gace.NetMessageOut(0, "git_updstatus", payload):Send(ply)
+		gace.git.virt_to_real(path, false, true):then_(function(fsRootNode)
+			local payload = {}
+
+			--Same file can be in both IndexChganes and WDChanges, but WD takes
+			--priority so it needs to be after
+
+			for _,ic in pairs(status.IndexChanges) do
+				payload[fsRootNode:path() .. "/" .. ic.Path] = "i_" .. ic.Status:sub(1, 1)
+			end
+
+			for _,wdc in pairs(status.WorkDirChanges) do
+				payload[fsRootNode:path() .. "/" .. wdc.Path] = "wd_" .. wdc.Status:sub(1, 1)
+			end
+
+			local vfolder = gace.path.head(path)
+			gace.NetMessageOut(0, "git_updstatus", {vfolder = vfolder, changes = payload}):Send(ply)
+		end)
+
+	end):catch(print)
 end
 
 gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)
-	local pathobj, vfolder = gace.ParsePath(path)
-	local vfoldername = pathobj:GetVFolder()
-
-	--gace.GitBroadcastFolderStatus(ply, pathobj:WithoutFile())
+	gace.GitBroadcastRepoStatus(ply, path)
 end)
 
 gace.git = {}
+
+-- Helper function
+function gace.git.virt_to_real(path, dont_find_root, return_node_instead)
+	local normpath = gace.path.normalize(path)
+
+	return gace.fs.resolve(normpath):then_(function(node)
+		if dont_find_root then return node end
+
+		local initialNode = node:findInitialFsNode()
+		if not initialNode then return error("FS Root not found!!") end
+		return initialNode
+	end):then_(function(node)
+		if not node:hasCapability(gace.VFS.Capability.REALFILE) then
+			return error("path does not support REALFILE")
+		end
+		if return_node_instead then return node end
+		return node:realPath()
+	end)
+end
 
 local function onRepo(repoOrPath, fn)
 	if not repoOrPath then
@@ -172,27 +191,9 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 		responder_func = function() end
 	end
 
-	local function GetRealPath(path, need_root)
-		local normpath = gace.path.normalize(path)
-
-		return gace.fs.resolve(normpath):then_(function(node)
-			if need_root then
-				local initialNode = node:findInitialFsNode()
-				if not initialNode then return error("FS Root not found!!") end
-				return initialNode
-			end
-			return node
-		end):then_(function(node)
-			if not node:hasCapability(gace.VFS.Capability.REALFILE) then
-				return error("path does not support REALFILE")
-			end
-			return node:realPath()
-		end)
-	end
-
 	-- Git integration
 	if op == "git-status" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			if not gace.git.is_repo(realpath) then
 				return {ret = "Success", git_enabled = false}
 			end
@@ -201,7 +202,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			if not ret then return error(err) end
 
 			-- Awkward place for this..
-			timer.Simple(0, function() gace.GitBroadcastFolderStatus(ply, gace.Path(node:path())) end)
+			timer.Simple(0, function() gace.GitBroadcastRepoStatus(ply, payload.path) end)
 
 			return {ret = "Success", git_enabled = true, git_branch = ret.Branch}
 		end):then_(function(tbl)
@@ -210,7 +211,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-log" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			local ret, err = gace.git.log(realpath)
 			if not ret then return error(err) end
 
@@ -221,7 +222,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-push" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			local ret, err = gace.git.push(realpath)
 			if not ret then return error(err) end
 
@@ -232,14 +233,16 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-add" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			-- Need to get realpath of payload.path relative to initial fs node
-			return GetRealPath(payload.path):then_(function(file_realpath)
+			return gace.git.virt_to_real(payload.path, true):then_(function(file_realpath)
 				-- This actually works. Nice.
 				local relativePath = file_realpath:Replace(realpath .. "/", "")
 
 				local ret, err = gace.git.add(realpath, relativePath)
 				if not ret then return error(err) end
+
+				gace.GitBroadcastRepoStatus(ply, payload.path)
 
 				return {ret = "Success"}
 			end)
@@ -249,11 +252,13 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-commit" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			local ret, err = gace.git.commit(realpath, payload.msg, {
 				identity = gace.git.identity(ply)
 			})
 			if not ret then return error(err) end
+
+			gace.GitBroadcastRepoStatus(ply, payload.path)
 
 			return {ret = "Success"}
 		end):then_(function(tbl)
@@ -262,7 +267,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "git-commitall" then
-		GetRealPath(payload.path, true):then_(function(realpath)
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
 			local ret, err = gace.git.add(realpath, "**")
 			if not ret then return error(err) end
 
@@ -270,6 +275,8 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 				identity = gace.git.identity(ply)
 			})
 			if not ret then return error(err) end
+
+			gace.GitBroadcastRepoStatus(ply, payload.path)
 
 			return {ret = "Success"}
 		end):then_(function(tbl)

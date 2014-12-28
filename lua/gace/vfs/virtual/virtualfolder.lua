@@ -1,15 +1,18 @@
 gace.VFS.VirtualFolder = Middleclass("VirtualFolder", gace.VFS.Folder)
 local VirtualFolder = gace.VFS.VirtualFolder
 
-function VirtualFolder:initialize(name)
+function VirtualFolder:initialize(name, is_root)
     self.class.super.initialize(self, name)
 
     self._entries = {}
+    self._root = is_root
 end
 
 local caps = gace.VFS.Capability.READ + gace.VFS.Capability.WRITE
 function VirtualFolder:capabilities()
-    return caps
+    local _caps = caps
+    if self._root then _caps = _caps + gace.VFS.Capability.ROOT end
+    return _caps
 end
 
 function VirtualFolder:refresh() end

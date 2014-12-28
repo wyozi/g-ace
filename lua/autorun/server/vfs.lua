@@ -1,4 +1,4 @@
-gace.Root = gace.VFS.VirtualFolder("root")
+gace.Root = gace.VFS.VirtualFolder("root", true)
 
 local mem = gace.VFS.MemoryFolder("mem")
 gace.Root:addVirtualFolder(mem)
@@ -123,10 +123,10 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 
 			return node:verifyChildFileExists(file_name)
 		end):then_(function(childNode)
-			childNode:write(payload.content):then_(function(content)
+			return childNode:write(payload.content):then_(function(content)
 				responder_func(ply, reqid, op, {ret="Success"})
-			end):catch(function(e)
-				responder_func(ply, reqid, op, {err=e})
+
+				gace.CallHook("PostSave", ply, normpath)
 			end)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})

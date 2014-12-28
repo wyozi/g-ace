@@ -50,7 +50,7 @@ function Node:path()
     local components = {self:getName()}
 
     local par = self:parent()
-    while par do
+    while par and not par:hasCapability(gace.VFS.Capability.ROOT) do
         table.insert(components, 1, par:getName())
         par = par:parent()
     end

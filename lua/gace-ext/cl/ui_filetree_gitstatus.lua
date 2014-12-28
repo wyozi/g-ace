@@ -8,9 +8,12 @@ gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
         local pathstr = pathobj:WithoutVFolder():ToString()
         local status = filestatuses and filestatuses[pathstr]
         if status then
-            if status == "modified" or status == "renamed" then
+            local parts = status:Split("_")
+            local phase, change = parts[1], parts[2]
+
+            if change == "m"--[[odified]] or change == "r"--[[enamed]] then
                 img = "icon16/page_white_edit.png"
-            elseif status == "new" then
+            elseif change == "n"--[[ew]] then
                 img = "icon16/page_white_add.png"
             end
         end
@@ -27,15 +30,17 @@ gace.AddHook("HandleNetMessage", "HandleGitStatusUpdates", function(netmsg)
     local payload = netmsg:GetPayload()
 
     if op == "git_updstatus" then
-        for file,status in pairs(payload) do
+        local vfolder = gace.VFolders[payload.vfolder]
+        if vfolder and vfolder.git then
+            vfolder.git.filestatuses = {}
+        end
+
+        for file,status in pairs(payload.changes) do
             local pathobj = gace.Path(file)
             local vfoldername = pathobj:GetVFolder()
 
-            if status == "empty" then status = nil end
-
             local vfolder = gace.VFolders[vfoldername]
             if vfolder and vfolder.git then
-                vfolder.git.filestatuses = vfolder.git.filestatuses or {}
                 vfolder.git.filestatuses[pathobj:WithoutVFolder():ToString()] = status
             end
         end

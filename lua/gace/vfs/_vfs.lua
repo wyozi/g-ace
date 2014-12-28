@@ -5,6 +5,7 @@ gace.VFS.Capability = {
     WRITE    = bit.lshift(1, 1),
     REALFILE = bit.lshift(1, 2), -- has representation on user filesystem
     STAT     = bit.lshift(1, 3), -- files only; has size()
+    ROOT     = bit.lshift(1, 4), -- is not included in path() etc
 }
 
 gace.VFS.ReturnCode = {
