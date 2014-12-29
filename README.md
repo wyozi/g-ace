@@ -6,7 +6,7 @@ An in-game code editor for Garry's Mod.
 ---
 
 ###Requirements
-  
+
 [LuaDev](http://facepunch.com/showthread.php?t=979552) ([svn](svn://anon:anon@svn.metastruct.org/srvaddons/luadev)) to run code.
 
 [G-Ace IO](https://github.com/wyozi/g-ace-io) ([win](https://github.com/wyozi/g-ace-io/releases/download/0.02/gmsv_gaceio_win32.dll) | [linux](https://github.com/wyozi/g-ace-io/releases/download/0.02/gmsv_gaceio_linux.dll)) to access/handle files outside data folder.
@@ -15,7 +15,7 @@ An in-game code editor for Garry's Mod.
 
 ###Installation
 
-Run _git clone https://github.com/wyozi/g-ace.git_ in garrysmod/addons.
+Run ```git clone https://github.com/wyozi/g-ace.git``` in garrysmod/addons.
 
 ###Setup
 
