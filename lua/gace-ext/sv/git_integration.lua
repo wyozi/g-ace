@@ -47,6 +47,10 @@ function gace.git.virt_to_real(path, dont_find_root, return_node_instead)
 		if not initialNode then return error("FS Root not found!!") end
 		return initialNode
 	end):then_(function(node)
+		-- TODO better git permission handling. atm we assume all git ops need rw
+		if not node:hasPermission(ply, gace.VFS.Permission.READ + gace.VFS.Permission.WRITE) then
+			return error(gace.VFS.ErrorCode.ACCESS_DENIED)
+		end
 		if not node:hasCapability(gace.VFS.Capability.REALFILE) then
 			return error("path does not support REALFILE")
 		end

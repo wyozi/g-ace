@@ -112,10 +112,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
 			if node:type() ~= "file" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
-			node:read():then_(function(content)
+			return node:read():then_(function(content)
 				responder_func(ply, reqid, op, {ret="Success", type="file", content=content})
-			end):catch(function(e)
-				responder_func(ply, reqid, op, {err=e})
 			end)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})

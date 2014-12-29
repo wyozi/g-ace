@@ -16,9 +16,12 @@ gace.VFS.Capability = {
 gace.VFS.Permission = {
     READ     = bit.lshift(1, 0),
     WRITE    = bit.lshift(1, 1),
+    EXECUTE  = bit.lshift(1, 2), -- mostly for running lua
 }
 
-gace.VFS.ServerPermission = gace.VFS.Permission.READ + gace.VFS.Permission.WRITE
+gace.VFS.ServerPermission = gace.VFS.Permission.READ  +
+                            gace.VFS.Permission.WRITE +
+                            gace.VFS.Permission.EXECUTE
 
 gace.VFS.ErrorCode = {
     ERROR          = "error", -- generic
