@@ -31,6 +31,7 @@ load("gace/cache/cachesync_filesystem.lua")
 
 load("gace/util/eventemitter.lua")
 load("gace/util/path.lua")
+load("gace/util/promisehelpers.lua")
 
 load("gace/vfs/_vfs.lua")
 load("gace/vfs/node.lua")

@@ -79,13 +79,15 @@ function RealGIOFolder:refresh()
 end
 
 function RealGIOFolder:child(name, opts)
-    return self:refresh():then_(function()
-        local node = self._entries[name]
-        if node then
-            return node
-        else
-            error(gace.VFS.ErrorCode.NOT_FOUND)
-        end
+    return Promise(function(resolver)
+        self:refresh():then_(function()
+            local node = self._entries[name]
+            if node then
+                resolver:resolve(node)
+            else
+                resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
+            end
+        end)
     end)
 end
 
