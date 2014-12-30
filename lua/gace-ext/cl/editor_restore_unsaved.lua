@@ -13,7 +13,7 @@ gace.AddHook("OnSessionContentUpdated", "RestoreUnsavedFiles", function(id, cont
     gace.ClientCache:set("unsavedfiles", unsaved_files_cache)
 end)
 
-gace.AddHook("OnSessionSaved", "RestoreUnsavedFiles", function(id)
+gace.AddHook("OnRemoteSessionSaved", "RestoreUnsavedFiles", function(id)
     local unsaved_files_cache = gace.ClientCache:getOrSet("unsavedfiles", function() return {} end)
 
     unsaved_files_cache[id] = nil

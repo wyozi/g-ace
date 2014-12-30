@@ -56,7 +56,6 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
-			sess.SavedContent = content
 			gace.Save(path, content, function(_, _, pl)
 				if pl.err then
 					local better_err = pl.err
@@ -66,6 +65,9 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 					return gace.Log(gace.LOG_ERROR, "Unable to save: ", better_err)
 				end
 
+				sess.SavedContent = content
+				gace.CallHook("OnRemoteSessionSaved", path)
+
 				if path ~= initial_osi then
 					gace.CloseSession(initial_osi)
 					gace.OpenSession(path, {content=content})
@@ -74,7 +76,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
 			end)
 
-			gace.CallHook("OnSessionSaved", path)
+			gace.CallHook("OnLocalSessionSaved", path)
 		end
 
 		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
