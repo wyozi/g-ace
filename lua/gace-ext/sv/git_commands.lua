@@ -70,25 +70,37 @@ function gace.git.identity(ply)
 	}
 end
 
-function gace.git.add(repoOrPath, pathspec)
+function gace.git.add_pathspec(repoOrPath, pathspec)
 	return onRepo(repoOrPath, function(repo)
-		local addindex, err = repo:AddPathSpecToIndex("**")
-
-		local changed_paths = {}
-
-		local status, err = repo:Status()
-		if not status then
-			return false, "Status error: " .. err
+		local ret, err = repo:AddPathSpecToIndex(pathspec)
+		if ret == false then
+			return false, err
 		end
 
-		-- All we care about is changes in index
-		for _,change in pairs(status.IndexChanges) do
-			changed_paths[change.Path] = "m"
-		end
-
-		return changed_paths
+		return true
 	end)
 end
+function gace.git.add(repoOrPath, path)
+	return onRepo(repoOrPath, function(repo)
+		local ret, err = repo:AddToIndex(path)
+		if ret == false then
+			return false, err
+		end
+
+		return true
+	end)
+end
+function gace.git.rm(repoOrPath, path)
+	return onRepo(repoOrPath, function(repo)
+		local ret, err = repo:RemoveFromIndex(path)
+		if ret == false then
+			return false, err
+		end
+
+		return true
+	end)
+end
+
 function gace.git.commit(repoOrPath, msg, opts)
 	return onRepo(repoOrPath, function(repo)
 		local cname, cemail = "", ""
@@ -239,8 +251,21 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 		end)
 	elseif op == "git-commitall" then
 		gace.git.virt_to_real(payload.path):then_(function(realpath)
-			local ret, err = gace.git.add(realpath, "**")
+			local ret, err = gace.git.add_pathspec(realpath, "**")
 			if not ret then return error(err) end
+
+			-- To add deleted files, we need to get status
+			local ret, err = gace.git.status(realpath)
+			if not ret then return error(err) end
+
+			-- Go through each one and add manually. Expensive but we dont
+			-- delete stuff that often, do we
+			for _,wdc in pairs(ret.WorkDirChanges) do
+				if wdc.Status == "deleted" then
+					local ret, err = gace.git.rm(realpath, wdc.Path)
+					if not ret then return error(err) end
+				end
+			end
 
 			local ret, err = gace.git.commit(realpath, payload.msg, {
 				identity = gace.git.identity(ply)
