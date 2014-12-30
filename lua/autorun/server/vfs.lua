@@ -87,7 +87,6 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 						if rec < max_depth then
 							local p = traverseFolder(e, foltbl, rec+1)
 							table.insert(subpromises, p)
-							p:then_(print, print)
 						else
 							foltbl.pendingListing = true
 						end
@@ -133,7 +132,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			responder_func(ply, reqid, op, {err=e})
 		end)
 	elseif op == "mkdir" then
-		ResolveNode(payload.path, gace.VFS.Permission.WRITE):then_(function(node)
+		local par_folder, folder_name = gace.path.tail(gace.path.normalize(payload.path))
+		ResolveNode(par_folder, gace.VFS.Permission.WRITE):then_(function(node)
 			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			return node:createChildNode(folder_name, "folder")
