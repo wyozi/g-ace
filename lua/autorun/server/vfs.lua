@@ -102,8 +102,7 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			local tree = {fol={}, fil={}}
 
 			return traverseFolder(node, tree):then_(function()
-				local tree_path = node:hasCapability(gace.VFS.Capability.ROOT) and "" or node:path()
-				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=tree_path, tree=tree})
+				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=node:path(), tree=tree})
 			end)
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})

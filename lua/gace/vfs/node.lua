@@ -107,9 +107,9 @@ function Node:findInitialFsNode()
 end
 
 function Node:path()
-    local components = {self:getName()}
+    local components = {}
 
-    local par = self:parent()
+    local par = self
     while par and not par:hasCapability(gace.VFS.Capability.ROOT) do
         table.insert(components, 1, par:getName())
         par = par:parent()
