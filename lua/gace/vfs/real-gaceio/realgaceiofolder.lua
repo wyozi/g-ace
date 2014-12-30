@@ -22,14 +22,21 @@ end
 function RealGIOFolder:fsLocalChildPath(child)
     -- Ok this is a special case.
     -- Gaceio fsPath is usually "./garrysmod" oslt, which would get stripped by normalizer
-    -- We don't want that, so we only normalize the child
-    return self._fsPath .. "/" .. gace.path.normalize(child)
+    -- We don't want that, so we only normalize the child, except if it's empty
+
+    local normchild = gace.path.normalize(child)
+    return self._fsPath .. (normchild == "" and "" or ("/" .. normchild))
 end
 
 function RealGIOFolder:refresh()
     return Promise(function(resolver)
         local searchPath = self:fsLocalChildPath("")
         local files, folders = gaceio.List(searchPath)
+
+        if not files then
+            resolver:reject(folders)
+            return
+        end
 
         -- List of entries that dont exist on filesystem
         local leftovers = gace.TableKeysToList(self._entries)
@@ -50,7 +57,6 @@ function RealGIOFolder:refresh()
             self._entries[name] = node
 
             self:emit("nodeCreated", node)
-
         end
 
         for _,v in pairs(folders) do
@@ -73,23 +79,19 @@ function RealGIOFolder:refresh()
 end
 
 function RealGIOFolder:child(name, opts)
-    return Promise(function(resolver)
-        self:refresh():then_(function()
-            local node = self._entries[name]
-            if node then
-                resolver:resolve(node)
-            else
-                resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
-            end
-        end)
+    return self:refresh():then_(function()
+        local node = self._entries[name]
+        if node then
+            return node
+        else
+            error(gace.VFS.ErrorCode.NOT_FOUND)
+        end
     end)
 end
 
 function RealGIOFolder:listEntries(opts)
-    return Promise(function(resolver)
-        self:refresh():then_(function()
-            resolver:resolve(self._entries)
-        end)
+    return self:refresh():then_(function()
+        return self._entries
     end)
 end
 

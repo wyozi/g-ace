@@ -33,9 +33,7 @@ function VirtualFolder:child(name, opts)
 end
 
 function VirtualFolder:listEntries(opts)
-    return Promise(function(resolver)
-        resolver:resolve(self._entries)
-    end)
+    return Promise(self._entries)
 end
 
 function VirtualFolder:createChildNode(name, type, opts)
@@ -68,7 +66,7 @@ function VirtualFolder:addVirtualFolder(vfolder)
 
         self._entries[name] = vfolder
         vfolder:setParent(self)
-        resolver:resolve()
+        resolver:resolve(vfolder)
     end)
 end
 

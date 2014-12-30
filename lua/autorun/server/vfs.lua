@@ -64,19 +64,18 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		local function traverseFolder(folderNode, par_tbl, rec)
 			rec = rec or 0
 
-			local p = Promise(function() end)
-
 			if not folderNode:hasPermission(ply, gace.VFS.Permission.READ) then
 				-- We only fail the whole request if the first path node is denied access to
-				if rec == 0 then
-					p:_reject(gace.VFS.ErrorCode.ACCESS_DENIED)
-				else
-					p:_resolve()
-				end
-				return p
+				return Promise(function(resolver)
+					if rec == 0 then
+						resolver:reject(gace.VFS.ErrorCode.ACCESS_DENIED)
+					else
+						resolver:resolve()
+					end
+				end)
 			end
 
-			folderNode:listEntries():then_(function(entries)
+			return folderNode:listEntries():then_(function(entries)
 				local subpromises = {}
 				for _,e in pairs(entries) do
 					if e:type() == "file" then
@@ -86,16 +85,16 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 						par_tbl.fol[e:getName()] = foltbl
 
 						if rec < max_depth then
-							table.insert(subpromises, traverseFolder(e, foltbl, rec+1))
+							local p = traverseFolder(e, foltbl, rec+1)
+							table.insert(subpromises, p)
+							p:then_(print, print)
 						else
 							foltbl.pendingListing = true
 						end
 					end
 				end
-				p:_resolve(subpromises)
-			end):catch(function(e) p:_reject(e) end)
-
-			return p:all()
+				return Promise(subpromises):all()
+			end)
 		end
 
 		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
