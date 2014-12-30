@@ -141,5 +141,5 @@ function Node:delete()
 end
 
 function Node:__tostring()
-    return string.format("%s (%s)", self:path(), self.class.name)
+    return string.format("%s (path:%s) (cls:%s)", self:getName(), self:path(), self.class.name)
 end
