@@ -100,15 +100,15 @@ end)
 
 -- Hook system used by gace extensions.
 
-local hooks = {}
-gace.Hooks = hooks
+gace.Hooks = gace.Hooks or {}
+local hooks = gace.Hooks
 
 function gace.CallHook(name, ...)
 	if not hooks[name] then return end
 	local hks = hooks[name]
 	for i=1,#hks do
-		local val = hks[i].fn(...)
-		if val ~= nil then return val end
+		local vals = {hks[i].fn(...)}
+		if #vals > 0 then return unpack(vals) end
 	end
 end
 function gace.AddHook(name, id, fn)
