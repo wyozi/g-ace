@@ -39,20 +39,26 @@ function Node:findRelevantPermission(target)
         local group_node = string.format("group:%s", target:GetUserGroup())
         local player_node = string.format("player:%s", target:SteamID())
 
+        local permissionField = 0
+
         if self._permissions[player_node] then
-            return self._permissions[player_node]
+            permissionField = bit.bor(permissionField, self._permissions[player_node])
         end
         if self._permissions[group_node] then
-            return self._permissions[group_node]
+            permissionField = bit.bor(permissionField, self._permissions[group_node])
         end
         if self._permissions.superadmins and target:IsSuperAdmin() then
-            return self._permissions.superadmins
+            permissionField = bit.bor(permissionField, self._permissions.superadmins)
         end
         if self._permissions.admins and target:IsAdmin() then
-            return self._permissions.admins
+            permissionField = bit.bor(permissionField, self._permissions.admins)
         end
         if self._permissions.players then
-            return self._permissions.players
+            permissionField = bit.bor(permissionField, self._permissions.players)
+        end
+
+        if permissionField ~= 0 then
+            return permissionField
         end
     end
 
