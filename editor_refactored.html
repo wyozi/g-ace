@@ -54,6 +54,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 <script src="ace/ext-settings_menu.js"></script>
 <script src="ace/ext-keybinding_menu.js"></script>
 <script src="ace/ext-statusbar.js"></script>
+<script src="ace-ext/mode-moon.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
 
 <script>
@@ -208,6 +209,24 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         }
     });
 
+    // whatever
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+
+    function guessModeFromPath(path) {
+        if (path.endsWith(".moon"))
+            return "ace/mode/coffee";
+
+        var mode = ace.require('ace/ext/modelist').getModeForPath(path);
+
+        // We'll assume if ace couldnt figure out the mode, it's Lua
+        if (mode.name != "text") {
+            return mode.mode;
+        }
+        return "ace/mode/lua";
+    }
+
     var gaceSessions = (function() {
         var sessions = {};
         var sessionId = null;
@@ -220,7 +239,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 var existedBefore = true;
 
                 if (!this.exists(id)) {
-                    sessions[id] = ace.createEditSession("", "ace/mode/lua");
+                    sessions[id] = ace.createEditSession("", guessModeFromPath(id));
                     existedBefore = false;
                 }
 
