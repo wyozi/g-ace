@@ -31,8 +31,6 @@ function Node:hasCapability(cap)
 end
 
 function Node:findRelevantPermission(target)
-    local node_names
-
     if not IsValid(target) then
         if self._permissions.server then
             return self._permissions.server
@@ -46,6 +44,12 @@ function Node:findRelevantPermission(target)
         end
         if self._permissions[group_node] then
             return self._permissions[group_node]
+        end
+        if self._permissions.superadmins and target:IsSuperAdmin() then
+            return self._permissions.superadmins
+        end
+        if self._permissions.admins and target:IsAdmin() then
+            return self._permissions.admins
         end
         if self._permissions.players then
             return self._permissions.players
@@ -66,7 +70,7 @@ function Node:checkPermission(target, perm_bit)
         if self:hasPermission(target, perm_bit) then
             resolver:resolve()
         else
-            resolver:reject()
+            resolver:reject(gace.VFS.ErrorCode.ACCESS_DENIED)
         end
     end)
 end

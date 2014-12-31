@@ -1,4 +1,5 @@
 gace.Root = gace.VFS.VirtualFolder("root", true)
+gace.Root:grantPermission("superadmins", gace.VFS.Permission.EXECUTE)
 
 gace.fs = {}
 
