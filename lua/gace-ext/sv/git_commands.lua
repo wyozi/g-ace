@@ -36,7 +36,6 @@ local function onRepo(repoOrPath, fn)
 		if not repo then return false, err end
 
 		local ret = {fn(repo)}
-		repo:Free()
 
 		return unpack(ret)
 	else
@@ -82,7 +81,7 @@ function gace.git.add_pathspec(repoOrPath, pathspec)
 end
 function gace.git.add(repoOrPath, path)
 	return onRepo(repoOrPath, function(repo)
-		local ret, err = repo:AddToIndex(path)
+		local ret, err = repo:AddIndexEntry(path)
 		if ret == false then
 			return false, err
 		end
@@ -92,7 +91,7 @@ function gace.git.add(repoOrPath, path)
 end
 function gace.git.rm(repoOrPath, path)
 	return onRepo(repoOrPath, function(repo)
-		local ret, err = repo:RemoveFromIndex(path)
+		local ret, err = repo:RemoveIndexEntry(path)
 		if ret == false then
 			return false, err
 		end
@@ -260,7 +259,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 
 			-- Go through each one and add manually. Expensive but we dont
 			-- delete stuff that often, do we
-			for _,wdc in pairs(ret.WorkDirChanges) do
+			for _,wdc in pairs(ret.WorkdirChanges) do
 				if wdc.Status == "deleted" then
 					local ret, err = gace.git.rm(realpath, wdc.Path)
 					if not ret then return error(err) end
