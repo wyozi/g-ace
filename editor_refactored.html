@@ -25,8 +25,6 @@
         right: 0;
         bottom: 0;
         height: 20px;
-        background-color: rgb(245, 245, 245);
-        color: gray;
 
         z-index: 9999;
     }
@@ -67,6 +65,11 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
     var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
     var statusBar = new StatusBar(editor, document.getElementById("statusBar"));
+
+    // We should remove the old class, but it gets overridden by the new one so meh
+    editor.renderer.on("themeLoaded", function(e) {
+        document.getElementById("statusBar").classList.add(editor.renderer.theme.cssClass);
+    });
 
     var Search = ace.require("ace/search").Search;
 
@@ -295,7 +298,9 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 
         var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
 
-        gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+        if ("gace" in window) {
+            gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+        }
     });
 
     editor.on("changeMode", function(e) {
