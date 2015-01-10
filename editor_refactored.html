@@ -260,7 +260,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 else
                     content = data.content;
 
-                if (content)
+                if (content !== undefined)
                     session.setValue(content);
                 else if (data.requestDataIfNotCached && !existedBefore)
                     // If we're setting session without passing contents and contents are not cached in html, request newest content from lua
