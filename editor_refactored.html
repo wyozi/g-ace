@@ -240,7 +240,8 @@ Select a file or press Ctrl-n from the filetree to start hacking!
                 var existedBefore = true;
 
                 if (!this.exists(id)) {
-                    sessions[id] = ace.createEditSession("", guessModeFromPath(id));
+                    var mode = (data.mode === undefined ? guessModeFromPath(id) : data.mode);
+                    sessions[id] = ace.createEditSession("", mode);
                     existedBefore = false;
                 }
 
