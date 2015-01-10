@@ -1,6 +1,6 @@
 function gace.RunJavascript(js)
 	local html = gace.GetPanel("Editor")
-	html:RunJavascript(js)
+	html:QueueJavascript(js)
 end
 
 function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
@@ -22,11 +22,8 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 		table.insert(js_table, k .. ": \"" .. tostring(v) .. "\"")
 	end
 
-	gace.RunJavascript([[
-		gaceSessions.setSession(
-			"]] .. id ..[[",
-			{]] .. table.concat(js_table, ", ") .. [[}
-		);]])
+	local js = [[gaceSessions.setSession("]] .. id ..[[",{]] .. table.concat(js_table, ", ") .. [[});]]
+	gace.RunJavascript(js)
 
 end
 
@@ -155,7 +152,6 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				end
 
 				local runjs = [[ParseGModQueryResponse("]] .. requestid .. [[", []] .. table.concat(jstbl, ", ") .. [[])]]
-				MsgN(runjs)
 				gace.RunJavascript(runjs)
 			else
 				return -- No possibilities can be found
