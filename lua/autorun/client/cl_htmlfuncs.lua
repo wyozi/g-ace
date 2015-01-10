@@ -3,11 +3,14 @@ function gace.RunJavascript(js)
 	html:RunJavascript(js)
 end
 
-function gace.SetHTMLSession(id, content, requestDataIfNotCached)
+function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	local js_data = {}
 
 	if requestDataIfNotCached then
 		js_data.requestDataIfNotCached = true
+	end
+	if mode then
+		js_data.mode = mode
 	end
 	if content then
 		content = (util.Base64Encode(content) or ""):Replace("\n", "")

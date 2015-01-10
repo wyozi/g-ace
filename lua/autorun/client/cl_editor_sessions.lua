@@ -84,7 +84,7 @@ function gace.OpenSession(id, data)
 	end
 
 	if sess_exists or (data and data.content) then
-		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true)
+		gace.SetHTMLSession(id, (data and data.content) and data.content or nil, true, (data and data.mode))
 
 		if (data and data.content) then
 			sess.Content = data.content
@@ -106,7 +106,7 @@ function gace.OpenSession(id, data)
 			if not data or not data.mark_unsaved then
 				sess.SavedContent = sess.Content
 			end
-			gace.SetHTMLSession(id, sess.Content)
+			gace.SetHTMLSession(id, sess.Content, nil, (data and data.mode))
 
 			if data and data.callback then data.callback() end
 		end)

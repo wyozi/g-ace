@@ -68,6 +68,21 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				end)
 			end):SetIcon("icon16/book_addresses.png")
 
+			menu:AddOption("Show diff: HEAD-Workdir", function()
+				gace.SendRequest("git-diff-headwd", {path=vfolder.Name}, function(_, _, pl)
+					if pl.ret == "Success" then
+						local document = pl.diff;
+
+						gace.OpenSession("git_diff_headwd_" .. gace.Path(sess.Id):GetVFolder(), {
+							content = document,
+							mode = "ace/mode/diff"
+						})
+					else
+						gace.Log(gace.LOG_ERROR, "Git diff-headwd failed: ", pl.err)
+					end
+				end)
+			end):SetIcon("icon16/arrow_divide.png")
+
 			menu:AddOption("Commit added files", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
 					gace.SendRequest("git-commit", {path=vfolder.Name, msg=nm}, function(_, _, pl)

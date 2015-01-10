@@ -151,6 +151,16 @@ function gace.git.log(repoOrPath)
 		return log
 	end)
 end
+function gace.git.diff_headwd(repoOrPath)
+	return onRepo(repoOrPath, function(repo)
+		local diff, err = repo:DiffHEADToWorkdir()
+		if not diff then
+			return false, err
+		end
+
+		return diff
+	end)
+end
 
 gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 	local ply = netmsg:GetSender()
@@ -198,6 +208,17 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 			if not ret then return error(err) end
 
 			return {ret = "Success", log = ret}
+		end):then_(function(tbl)
+			responder_func(ply, reqid, op, tbl)
+		end):catch(function(e)
+			responder_func(ply, reqid, op, {err=e})
+		end)
+	elseif op == "git-diff-headwd" then
+		gace.git.virt_to_real(payload.path):then_(function(realpath)
+			local ret, err = gace.git.diff_headwd(realpath)
+			if not ret then return error(err) end
+
+			return {ret = "Success", diff = ret}
 		end):then_(function(tbl)
 			responder_func(ply, reqid, op, tbl)
 		end):catch(function(e)
