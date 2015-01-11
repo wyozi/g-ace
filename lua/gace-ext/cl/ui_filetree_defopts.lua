@@ -58,9 +58,14 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 	csmpnl:SetIcon( "icon16/cross.png" )
 
 	csubmenu:AddOption("Are you sure?", function()
-		gace.Delete(path)
-		local folderpath = gace.path.tail(path)
-		ft.RefreshPath(filetree, folderpath)
+		gace.Delete(path, function(_, _, pl)
+			if pl.err then
+				gace.Log(gace.LOG_ERROR, "Failed to delete file: ", pl.err)
+				return
+			end
+			local folderpath = gace.path.tail(path)
+			ft.RefreshPath(filetree, folderpath)
+		end)
 	end):SetIcon("icon16/stop.png")
 end)
 
@@ -92,6 +97,22 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 			end)
 		end)
 	end):SetIcon("icon16/folder_add.png")
+
+	local csubmenu, csmpnl = menu:AddSubMenu("Delete", function() end)
+	csmpnl:SetIcon( "icon16/cross.png" )
+
+	csubmenu:AddOption("Are you sure?", function()
+		gace.Delete(path, function(_, _, pl)
+			if pl.err then
+				gace.Log(gace.LOG_ERROR, "Failed to delete folder: ", pl.err)
+				return
+			end
+			gace.Log(gace.LOG_INFO, "Note: if folder wasn't deleted, make sure it is empty!")
+
+			local folderpath = gace.path.tail(path)
+			ft.RefreshPath(filetree, folderpath)
+		end)
+	end):SetIcon("icon16/stop.png")
 
 	if path == "root" then
 		local csubmenu, csmpnl = menu:AddSubMenu("Create VFolder")

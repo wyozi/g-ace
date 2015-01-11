@@ -145,8 +145,6 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		end)
 	elseif op == "rm" then
 		ResolveNode(payload.path, gace.VFS.Permission.WRITE):then_(function(node)
-			if node:type() ~= "file" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
-
 			return node:delete()
 		end):then_(function(childNode)
 			responder_func(ply, reqid, op, {ret="Success"})
