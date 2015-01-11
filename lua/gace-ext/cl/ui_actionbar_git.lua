@@ -52,7 +52,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				})
 			end):SetIcon("icon16/book.png")
 			menu:AddOption("Show log", function()
-				gace.SendRequest("git-log", {path=gace.GetSessionId()}, function(_, _, pl)
+				gace.SendRequest("git-log", {path=vfolder.Name}, function(_, _, pl)
 					if pl.ret == "Success" then
 						local document = "";
 						for _,entry in pairs(pl.log) do
@@ -68,9 +68,24 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				end)
 			end):SetIcon("icon16/book_addresses.png")
 
+			menu:AddOption("Show diff: HEAD-Workdir", function()
+				gace.SendRequest("git-diff-headwd", {path=vfolder.Name}, function(_, _, pl)
+					if pl.ret == "Success" then
+						local document = pl.diff;
+
+						gace.OpenSession("git_diff_headwd_" .. gace.Path(sess.Id):GetVFolder(), {
+							content = document,
+							mode = "ace/mode/diff"
+						})
+					else
+						gace.Log(gace.LOG_ERROR, "Git diff-headwd failed: ", pl.err)
+					end
+				end)
+			end):SetIcon("icon16/arrow_divide.png")
+
 			menu:AddOption("Commit added files", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
-					gace.SendRequest("git-commit", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
+					gace.SendRequest("git-commit", {path=vfolder.Name, msg=nm}, function(_, _, pl)
 						if pl.ret == "Success" then
 							gace.Log("Commit succesful")
 						else
@@ -81,7 +96,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 			end):SetIcon("icon16/book_go.png")
 			menu:AddOption("Add all and commit", function()
 				gace.ext.ShowTextInputPrompt("Enter a commit message", function(nm)
-					gace.SendRequest("git-commitall", {path=gace.GetSessionId(), msg=nm}, function(_, _, pl)
+					gace.SendRequest("git-commitall", {path=vfolder.Name, msg=nm}, function(_, _, pl)
 						if pl.ret == "Success" then
 							gace.Log("Commit succesful")
 						else
@@ -91,7 +106,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				end)
 			end):SetIcon("icon16/book_go.png")
 			menu:AddOption("Push to upstream", function()
-				gace.SendRequest("git-push", {path=gace.GetSessionId()}, function(_, _, pl)
+				gace.SendRequest("git-push", {path=vfolder.Name}, function(_, _, pl)
 					if pl.ret == "Success" then
 						gace.Log("Push succesful")
 					else

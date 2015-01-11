@@ -1,13 +1,16 @@
 function gace.RunJavascript(js)
 	local html = gace.GetPanel("Editor")
-	html:RunJavascript(js)
+	html:QueueJavascript(js)
 end
 
-function gace.SetHTMLSession(id, content, requestDataIfNotCached)
+function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	local js_data = {}
 
 	if requestDataIfNotCached then
 		js_data.requestDataIfNotCached = true
+	end
+	if mode then
+		js_data.mode = mode
 	end
 	if content then
 		content = (util.Base64Encode(content) or ""):Replace("\n", "")
@@ -19,11 +22,8 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached)
 		table.insert(js_table, k .. ": \"" .. tostring(v) .. "\"")
 	end
 
-	gace.RunJavascript([[
-		gaceSessions.setSession(
-			"]] .. id ..[[",
-			{]] .. table.concat(js_table, ", ") .. [[}
-		);]])
+	local js = [[gaceSessions.setSession("]] .. id ..[[",{]] .. table.concat(js_table, ", ") .. [[});]]
+	gace.RunJavascript(js)
 
 end
 
@@ -56,7 +56,6 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
-			sess.SavedContent = content
 			gace.Save(path, content, function(_, _, pl)
 				if pl.err then
 					local better_err = pl.err
@@ -66,6 +65,9 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 					return gace.Log(gace.LOG_ERROR, "Unable to save: ", better_err)
 				end
 
+				sess.SavedContent = content
+				gace.CallHook("OnRemoteSessionSaved", path)
+
 				if path ~= initial_osi then
 					gace.CloseSession(initial_osi)
 					gace.OpenSession(path, {content=content})
@@ -74,7 +76,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
 			end)
 
-			gace.CallHook("OnSessionSaved", path)
+			gace.CallHook("OnLocalSessionSaved", path)
 		end
 
 		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
@@ -150,7 +152,6 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				end
 
 				local runjs = [[ParseGModQueryResponse("]] .. requestid .. [[", []] .. table.concat(jstbl, ", ") .. [[])]]
-				MsgN(runjs)
 				gace.RunJavascript(runjs)
 			else
 				return -- No possibilities can be found

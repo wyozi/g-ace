@@ -1,0 +1,40 @@
+Note: this is not up to date documentation, but notes made during development of vfs
+
+enum Capability
+    READ = 1 << 0
+    WRITE = 2 << 0
+    REALFILE = 3 << 0
+    STAT = 4 << 0
+
+
+class Node
+    Events: capabilitiesChanged
+
+    String displayName() -- returns name() by default
+    abstract String name()
+
+    abstract Bitfield32 capabilities()
+    Boolean hasCapability()
+
+    Node parent()
+    String path()
+
+    abstract String realPath() -- if hasCapability(CAPABILITY_REALFILE)
+
+    Promise delete() -- calls parent:deleteChildNode()
+
+class File extends Node
+    Events: deleted
+
+    abstract Promise lastModified() -- unix timestamp
+    abstract Promise size()
+
+    abstract Promise read([options])
+    abstract Promise write(data, [options])
+
+
+class Folder extends Node
+
+    abstract Promise listEntries([options])
+    abstract Promise createChildNode(name, type, [options])
+    abstract Promise deleteChildNode(node, [options])

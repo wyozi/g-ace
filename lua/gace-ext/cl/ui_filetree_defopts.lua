@@ -80,11 +80,37 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, 
 	menu:AddOption("Create Folder", function()
 		gace.ext.ShowTextInputPrompt("Folder name", function(nm)
 			local filname = ft.NodeToPath(node) .. "/" .. nm
-			gace.MkDir(filname, function()
+			gace.MkDir(filname, function(_, _, pl)
+				if pl.err then
+					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
+					return
+				end
 				ft.RefreshPath(filetree, ft.NodeToPath(node))
 			end)
 		end)
 	end):SetIcon("icon16/folder_add.png")
+
+	local path = ft.NodeToPath(node)
+	if path == "root" then
+		local csubmenu, csmpnl = menu:AddSubMenu("Create VFolder")
+		csmpnl:SetIcon("icon16/folder_brick.png")
+
+		local types = {"memory", "real-data", "real-gaceio"}
+
+		for _,t in pairs(types) do
+			csubmenu:AddOption(t, function()
+				gace.ext.ShowTextInputPrompt("VFolder name", function(nm)
+					gace.SendRequest("createvfolder", {path = nm, type = t}, function(_, _, pl)
+						if pl.err then
+							gace.Log(gace.LOG_ERROR, "Failed to create vfolder: ", pl.err)
+							return
+						end
+						ft.RefreshPath(filetree, ft.NodeToPath(node, true))
+					end)
+				end)
+			end)
+		end
+	end
 
 	menu:AddOption("Find", function()
 		gace.ext.ShowTextInputPrompt("The phrase to search", function(nm)

@@ -1,12 +1,19 @@
 gace.AddHook("OnSessionContentUpdated", "RestoreUnsavedFiles", function(id, content)
+    -- This hook is called after sess.Content is updated, so we can do this
+    local equal_to_saved = gace.GetSession(id):IsSaved()
+
     local unsaved_files_cache = gace.ClientCache:getOrSet("unsavedfiles", function() return {} end)
 
-    unsaved_files_cache[id] = content
+    if equal_to_saved then
+        unsaved_files_cache[id] = nil
+    else
+        unsaved_files_cache[id] = content
+    end
 
     gace.ClientCache:set("unsavedfiles", unsaved_files_cache)
 end)
 
-gace.AddHook("OnSessionSaved", "RestoreUnsavedFiles", function(id)
+gace.AddHook("OnRemoteSessionSaved", "RestoreUnsavedFiles", function(id)
     local unsaved_files_cache = gace.ClientCache:getOrSet("unsavedfiles", function() return {} end)
 
     unsaved_files_cache[id] = nil

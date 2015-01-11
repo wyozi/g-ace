@@ -34,6 +34,15 @@ function gace.ext.ShowTextInputPrompt(query, callback, default)
 	inputpanel.Input:RequestFocus()
 
 	inputpanel:Show()
+
+	gace.ext.PushESCListener(function()
+		if inputpanel:IsValid() and inputpanel:IsVisible() then
+			inputpanel:Hide()
+			gace.Frame.BasePanel:InvalidateLayout(true)
+		else
+			return false -- this callback is invalid
+		end
+	end)
 end
 
 function gace.ext.ShowYesNoCancelPrompt(query, callback)

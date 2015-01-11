@@ -21,6 +21,17 @@ gace.AddHook("AddPanels", "Editor_AddDocsSideBar", function(frame, basepnl)
 		sb:SetVisible(b)
 		basepnl:PerformLayout() -- to make sure there are no "ghost" panels
 
+		if b then
+			gace.ext.PushESCListener(function()
+				local p = gace.GetPanel("DocsHTMLPanel")
+				if p.IsOpened then
+					p:SetOpened(false)
+				else
+					return false
+				end
+			end)
+		end
+
 		return b
 	end
 	pnl:SetOpened(false)

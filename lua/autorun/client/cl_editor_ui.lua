@@ -15,7 +15,7 @@ function gace.GetFrameDimensions()
 							   cookie.GetNumber("gace-frame-y"),
 							   cookie.GetNumber("gace-frame-w"),
 							   cookie.GetNumber("gace-frame-h")
-	
+
 	if c_w == 0 then c_w = 900 end
 	if c_h == 0 then c_h = 600 end
 
@@ -91,3 +91,9 @@ function gace.GetPanel(id)
 	if not IsValid(gace.Frame) then return end
 	return gace.Frame.BasePanel:GetById(id)
 end
+
+function gace.ResetDimensions()
+	gace.Frame:SetSize(600, 400)
+	gace.Frame:Center()
+end
+concommand.Add("gace-resetdims", gace.ResetDimensions)

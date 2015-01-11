@@ -1,3 +1,4 @@
+-- The code here is bad and you should probably not read it.
 
 local comp_meta = {
 	AddCategory = function(self, title, clr, width)
@@ -20,7 +21,7 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 
 	-- This is also known as a huge hack.
 	-- To make it possible to dynamically collapse/expand action bar elements, the x position delta (from prev element) is stored
-	-- for every single element in the following table. The runtime x can then be computed by summing all previous values together 
+	-- for every single element in the following table. The runtime x can then be computed by summing all previous values together
 	local x_off_cache = {}
 
 	local function GetXPosFor(element)
@@ -33,10 +34,23 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 		end
 		return x
 	end
+
+	-- if vis == nil, toggle
 	local function SetCatVisibility(cat, vis)
+		local v
+
 		for i=1,#x_off_cache do
-			if x_off_cache[i].el.cat == cat then x_off_cache[i].hidden = not vis end
+			if x_off_cache[i].el.cat == cat then
+				if vis == nil then
+					x_off_cache[i].hidden = not x_off_cache[i].hidden
+					v = not x_off_cache[i].hidden
+				else
+					x_off_cache[i].hidden = not vis
+				end
+			end
 		end
+
+		return v
 	end
 	local function IsInvis(el)
 		if el.iscat then return false end
@@ -45,6 +59,8 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 			if x_off_cache[i].el == el then return x_off_cache[i].hidden end
 		end
 	end
+
+	local ab_catvis = gace.ClientCache:get("actionbar_catvis")
 
 	local cur_cat
 
@@ -88,20 +104,30 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 			comp:SetSize(width, 24)
 			comp:SetColorOverride("tab_bg", v.color)
 
-			v.fn = function(_, toggled)
-				SetCatVisibility(v.cat, not toggled)
+			v.fn = function()
+				local set_to = SetCatVisibility(v.cat)
+
+				-- We don't wanna persist functions..
+				if type(v.text) == "string" then
+					local cache = gace.ClientCache:getDynTable("actionbar_catvis", true)
+					cache[v.text] = set_to
+				end
 			end
 		else
 			comp:SetSize(width, 20)
 		end
 
-		table.insert(x_off_cache, {el=v, off=width+2})
+		local is_visible = true
+
+		if is_cat and ab_catvis and ab_catvis[v.text] ~= nil then
+			is_visible = tobool(ab_catvis[v.text])
+		end
+
+		table.insert(x_off_cache, {el=v, off=width+2, hidden = not is_visible})
 
 		if v.text then
 			comp:SetText(type(v.text) == "function" and v.text() or v.text)
 		end
-
-		if v.toggle then comp.ToggleMode = true end
 
 		if is_label then
 			comp.Think = function(self) self:SetColor(gace.UIColors.frame_fg) end
@@ -127,12 +153,17 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 		if v.fn then
 			comp.DoClick = function(self)
 				if not self:GetDisabled() then
-					if self.ToggleMode then
-						self.Toggled = not self.Toggled
-					end
 					v.fn(self, self.Toggled)
 				end
 			end
+		end
+	end
+
+	-- Some categories mightve been hidden already in above code, so we need to
+	-- loop through all cats and see if theyre hidden
+	for i=1,#x_off_cache do
+		if x_off_cache[i].el.iscat and x_off_cache[i].hidden then
+			SetCatVisibility(x_off_cache[i].el, false)
 		end
 	end
 end)

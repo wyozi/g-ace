@@ -26,4 +26,3 @@ end
 function gace.Find(path, phrase, callback)
 	gace.SendRequest("find", {path=path, phrase=phrase}, callback)
 end
-
