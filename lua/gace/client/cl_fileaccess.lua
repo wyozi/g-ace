@@ -1,8 +1,3 @@
-function gace.List(path, callback, recursive)
-	if recursive then return ErrorNoHalt("gace.List is no longer recursive. Use gace.ListTree (and remember multipartness)") end
-	gace.SendRequest("ls", {path=path, recursive=recursive}, callback)
-end
-
 function gace.ListTree(path, callback)
 	gace.SendMultiPartRequest("ls", {path=path, recursive=true}, callback)
 end
@@ -17,6 +12,10 @@ end
 
 function gace.MkDir(path, callback)
 	gace.SendRequest("mkdir", {path=path}, callback)
+end
+
+function gace.Delete(path, callback)
+	gace.SendRequest("rm", {path=path}, callback)
 end
 
 function gace.Delete(path, callback)

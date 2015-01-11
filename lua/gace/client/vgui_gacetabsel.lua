@@ -21,7 +21,10 @@ local VGUI_EDITOR_TAB_SEL = {
 		surface.SetDrawColor(gace.UIColors.tab_bg_active)
 		surface.DrawRect(3, 5, w-6, 5)
 		surface.DrawRect(3, h-10, w-6, 5)
-		
+
+		local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
+		surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end,
 	DoClick = function(self)
 		local menu = DermaMenu()

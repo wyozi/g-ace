@@ -1,7 +1,7 @@
 gace.RegisterCommand("ls", {
     name = "List folder",
     help = "Lists folder contents",
-    use_ipc = true,
+    ipc = "cmd-ls",
     args = {
         {type = "string", name = "folder", take_rest = true}
     },
@@ -14,6 +14,18 @@ gace.RegisterCommand("ls", {
 
     		return node:listEntries()
     	end)
+    end,
+    func_ipc = function(caller, request, promise)
+        promise:then_(function(entries)
+            local enames = {}
+            for _,e in pairs(entries) do
+                enames[e:getName()] = {type=e:type()}
+            end
+
+            request:CreateResponsePacket("cmd-ls", {entries = enames}):Send()
+        end):catch(function(err)
+            request:CreateResponsePacket("cmd-ls", {err = err}):Send()
+        end)
     end,
     func_tostring = function(caller, promise)
         promise:then_(function(entries)

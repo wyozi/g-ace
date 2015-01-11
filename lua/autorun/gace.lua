@@ -24,12 +24,20 @@ end
 load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/andthen.lua", "shared")
 
+-- Load GAce testing lib and tests
+load("gace-tests/_gacetests.lua", "shared")
+
 -- Load GAce files
+load("gace/util/miscutils.lua")
+
 load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
 load("gace/cache/cachesync_filesystem.lua")
 
+load("gace/netmsg/netmsgobj.lua")
+
 load("gace/cmd/commands.lua")
+load("gace/cmd/ipc.lua")
 
 load("gace/vfs-cmds/ls.lua")
 
@@ -48,6 +56,9 @@ load("gace/vfs/virtual/virtualfolder.lua")
 load("gace/vfs/memory/memoryfile.lua")
 load("gace/vfs/memory/memoryfolder.lua")
 
+load("gace/vfs/net/netfile.lua", "client")
+load("gace/vfs/net/netfolder.lua", "client")
+
 load("gace/vfs/real-data/realdatafile.lua")
 load("gace/vfs/real-data/realdatafolder.lua")
 
@@ -55,5 +66,23 @@ load("gace/vfs/real-gaceio/_gaceio.lua", "server")
 load("gace/vfs/real-gaceio/realgaceiofile.lua", "server")
 load("gace/vfs/real-gaceio/realgaceiofolder.lua", "server")
 
--- Load GAce testing lib and tests
-load("gace-tests/_gacetests.lua", "shared")
+load("gace/ext/extloader.lua")
+
+-- Load all client crap
+load("gace/client/cl_collabedit.lua", "client")
+load("gace/client/cl_editor_base.lua", "client")
+load("gace/client/cl_editor_sessions.lua", "client")
+load("gace/client/cl_editor_tabs.lua", "client")
+load("gace/client/cl_editor_ui.lua", "client")
+load("gace/client/cl_fileaccess.lua", "client")
+load("gace/client/cl_filetree.lua", "client")
+load("gace/client/cl_htmlfuncs.lua", "client")
+load("gace/client/cl_networking.lua", "client")
+load("gace/client/vfs.lua", "client")
+load("gace/client/vgui_dynamicpanel.lua", "client")
+load("gace/client/vgui_gacebutton.lua", "client")
+load("gace/client/vgui_gacesplitter.lua", "client")
+load("gace/client/vgui_gacetab.lua", "client")
+load("gace/client/vgui_gacetabsel.lua", "client")
+load("gace/client/vgui_gacetextinput.lua", "client")
+load("gace/client/vgui_gacetree.lua", "client")

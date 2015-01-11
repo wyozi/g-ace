@@ -57,7 +57,19 @@ function gace.CreateCommandCallback(cmd, opts)
             return ErrorNoHalt("invalid argument: " .. err)
         end
 
-        return opts.func(caller, unpack(r)), caller
+        local hookret = gace.CallHook("PreCommandCall", cmd, opts, caller, r)
+        if hookret then
+            return hookret, caller
+        end
+
+        local ret = opts.func(caller, unpack(r))
+
+        local hookret = gace.CallHook("PostCommandCall", cmd, opts, caller, ret, r)
+        if hookret then
+            return hookret, caller
+        end
+
+        return ret, caller
     end
 end
 
@@ -65,7 +77,13 @@ function gace.RegisterCommand(cmd, opts)
     opts.callback = gace.CreateCommandCallback(cmd, opts)
     opts.callback_tostring = function(caller, ...)
         local ret, caller = opts.callback(caller, ...)
-        opts.func_tostring(caller, ret)
+        if opts.func_tostring then
+            opts.func_tostring(caller, ret)
+        end
+    end
+    opts.callback_ipc = function(caller, request, ...)
+        local ret, caller = opts.callback(caller, ...)
+        opts.func_ipc(caller, request, ret)
     end
     gace.cmd.Commands[cmd] = opts
 end
