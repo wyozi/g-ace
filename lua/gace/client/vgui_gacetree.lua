@@ -84,7 +84,7 @@ local VGUI_GACETREE = {
         if self.Items[id] then
             self.Items[id] = nil
         end
-        
+
         self:RelayoutItems()
         self.IsDirty = true
     end,
@@ -225,7 +225,7 @@ local VGUI_GACETREENODE = {
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, self.TextColor or gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
 
         surface.SetDrawColor(255, 255, 255)
 
@@ -238,6 +238,10 @@ local VGUI_GACETREENODE = {
             surface.SetMaterial(mat_file)
         end
         surface.DrawTexturedRect(x + 20, h/2 - 8, 16, 16)
+    end,
+
+    Think = function(self)
+        gace.CallHook("FileTreeFileNodeThink", self)
     end,
 
     SetupNode = function(self, tree, id)
