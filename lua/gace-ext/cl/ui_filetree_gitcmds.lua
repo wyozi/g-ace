@@ -1,11 +1,10 @@
 
-gace.AddHook("FileTreeContextMenu", "FileTree_AddGitCommands", function(node, menu, nodetype)
+gace.AddHook("FileTreeContextMenu", "FileTree_AddGitCommands", function(path, menu, nodetype)
     if nodetype ~= "file" then return end
 
     local ft = gace.filetree -- Shortcut to filetree library
 
     menu:AddOption("Git: Add to index", function()
-        local path = ft.NodeToPath(node)
         gace.SendRequest("git-add", {path=path}, function(_, _, pl)
             if pl.ret == "Success" then
                 gace.Log("Succesfully added " .. path)

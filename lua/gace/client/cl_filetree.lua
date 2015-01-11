@@ -46,8 +46,10 @@ function ft.AddFolderNodeOptions(node, filetree)
 	node.Expander.DoClick = function() node:SetExpanded(not node.m_bExpanded, true) end
 
 	node.DoRightClick = function()
+		local id = ft.NodeToPath(node)
+
 		local menu = DermaMenu()
-		gace.CallHook("FileTreeContextMenu", node, menu, "folder")
+		gace.CallHook("FileTreeContextMenu", id, menu, "folder")
 		menu:Open()
 	end
 
@@ -87,8 +89,10 @@ function ft.AddFileNodeOptions(node, filetree)
 		gace.OpenSession(id)
 	end
 	node.DoRightClick = function()
+		local id = ft.NodeToPath(node)
+
 		local menu = DermaMenu()
-		gace.CallHook("FileTreeContextMenu", node, menu, "file")
+		gace.CallHook("FileTreeContextMenu", id, menu, "file")
 		menu:Open()
 	end
 

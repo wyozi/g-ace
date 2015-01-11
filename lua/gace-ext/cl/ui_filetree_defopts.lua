@@ -1,23 +1,25 @@
 -- Adds default context menu options to filetree entries (aka "Delete", "Rename" etc)
 
-gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(node, menu, nodetype)
+gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, menu, nodetype)
 	if nodetype ~= "file" then return end
 
 	local ft = gace.filetree -- Shortcut to filetree library
 
 	menu:AddOption("Duplicate", function()
 		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
-			local filname = ft.NodeToPath(node, true) .. "/" .. nm
-			gace.Fetch(ft.NodeToPath(node), function(_, _, payload)
+			local folderpath = gace.path.tail(path)
+			local filname = folderpath .. "/" .. nm
+			gace.Fetch(path, function(_, _, payload)
 				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
-				gace.OpenSession(filname, payload.content, {defens=true})
+				gace.OpenSession(filname, {
+					content = payload.content
+				})
 			end)
 		end)
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		local path = ft.NodeToPath(node)
-		local folderpath = ft.NodeToPath(node, true)
+		local folderpath = gace.path.tail(path)
 
 		local function DoRename(tab_was_open)
 			gace.ext.ShowTextInputPrompt("Filename", function(nm)
@@ -56,41 +58,41 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(node, me
 	csmpnl:SetIcon( "icon16/cross.png" )
 
 	csubmenu:AddOption("Are you sure?", function()
-		gace.Delete(ft.NodeToPath(node))
-		ft.RefreshPath(filetree, ft.NodeToPath(node, true))
+		gace.Delete(path)
+		local folderpath = gace.path.tail(path)
+		ft.RefreshPath(filetree, folderpath)
 	end):SetIcon("icon16/stop.png")
 end)
 
-gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, menu, nodetype)
+gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, menu, nodetype)
 	if nodetype ~= "folder" then return end
 
 	local ft = gace.filetree -- Shortcut to filetree library
 
 	menu:AddOption("Refresh", function()
-		ft.RefreshPath(filetree, ft.NodeToPath(node))
+		ft.RefreshPath(filetree, path)
 	end):SetIcon("icon16/arrow_refresh.png")
 
 	menu:AddOption("Create File", function()
 		gace.ext.ShowTextInputPrompt("Filename", function(nm)
-			local filname = ft.NodeToPath(node) .. "/" .. nm
+			local filname = path .. "/" .. nm
 			gace.OpenSession(filname, {content=""})
 		end)
 	end):SetIcon("icon16/page_add.png")
 
 	menu:AddOption("Create Folder", function()
 		gace.ext.ShowTextInputPrompt("Folder name", function(nm)
-			local filname = ft.NodeToPath(node) .. "/" .. nm
+			local filname = path .. "/" .. nm
 			gace.MkDir(filname, function(_, _, pl)
 				if pl.err then
 					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
 					return
 				end
-				ft.RefreshPath(filetree, ft.NodeToPath(node))
+				ft.RefreshPath(filetree, path)
 			end)
 		end)
 	end):SetIcon("icon16/folder_add.png")
 
-	local path = ft.NodeToPath(node)
 	if path == "root" then
 		local csubmenu, csmpnl = menu:AddSubMenu("Create VFolder")
 		csmpnl:SetIcon("icon16/folder_brick.png")
@@ -114,7 +116,6 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(node, 
 
 	menu:AddOption("Find", function()
 		gace.ext.ShowTextInputPrompt("The phrase to search", function(nm)
-			local path = ft.NodeToPath(node)
 			gace.Find(path, nm, function(_, _, pl)
 
 				local resdocument = {}
