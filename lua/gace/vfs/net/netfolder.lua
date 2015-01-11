@@ -18,14 +18,63 @@ end
 
 function NetFolder:refresh()
     return Promise(function(resolver)
-        gace.cmd.ls(LocalPlayer(), self:path()):then_(function(entries)
+        gace.cmd.ls(LocalPlayer(), self:path()):then_(function(pl)
+            local entries = pl.entries
             
+            -- List of entries that dont exist on filesystem
+            local leftovers = gace.TableKeysToList(self._entries)
+
+            -- Add unsynced file/folder to _entries and emit events
+            local function AddEntry(name, type)
+                table.RemoveByValue(leftovers, name)
+
+                if self._entries[name] then return end
+
+                local node
+
+                if     type == "file"   then  node = gace.VFS.NetFile(name)
+                elseif type == "folder" then  node = gace.VFS.NetFolder(name)
+                end
+
+                node:setParent(self)
+                self._entries[name] = node
+
+                self:emit("nodeCreated", node)
+            end
+
+            for nm,e in pairs(entries) do
+                if e.type == "folder" then
+                    AddEntry(nm, "folder")
+                elseif e.type == "file" then
+                    AddEntry(nm, "file")
+                end
+            end
+
+            for _,lo in pairs(leftovers) do
+                local node = self._entries[lo]
+                self._entries[lo] = nil
+
+                self:emit("nodeDeleted", node)
+                node:emit("deleted")
+            end
+
+            PrintTable(self._entries)
+
+            resolver:resolve()
         end):catch(function(e) resolver:reject(e) end)
     end)
 end
 
 function NetFolder:child(name, opts)
     return Promise(function(resolver)
+        self:refresh():then_(function()
+            local node = self._entries[name]
+            if node then
+                resolver:resolve(node)
+            else
+                resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
+            end
+        end):catch(function(e) resolver:reject(e) end)
     end)
 end
 

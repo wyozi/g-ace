@@ -19,10 +19,10 @@ gace.RegisterCommand("ls", {
         promise:then_(function(entries)
             local enames = {}
             for _,e in pairs(entries) do
-                table.insert(enames, e:getName())
+                enames[e:getName()] = {type=e:type()}
             end
 
-            request:CreateResponsePacket("cmd-ls", {enames = enames}):Send()
+            request:CreateResponsePacket("cmd-ls", {entries = enames}):Send()
         end):catch(function(err)
             request:CreateResponsePacket("cmd-ls", {err = err}):Send()
         end)

@@ -77,7 +77,9 @@ function gace.RegisterCommand(cmd, opts)
     opts.callback = gace.CreateCommandCallback(cmd, opts)
     opts.callback_tostring = function(caller, ...)
         local ret, caller = opts.callback(caller, ...)
-        opts.func_tostring(caller, ret)
+        if opts.func_tostring then
+            opts.func_tostring(caller, ret)
+        end
     end
     opts.callback_ipc = function(caller, request, ...)
         local ret, caller = opts.callback(caller, ...)
