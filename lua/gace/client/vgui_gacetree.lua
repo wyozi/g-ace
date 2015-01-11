@@ -191,8 +191,7 @@ derma.DefineControl( "GAceTree", "File/Item tree for G-Ace", VGUI_GACETREE, "DPa
 local mat_folder = Material("icon16/folder.png")
 local mat_file = Material("icon16/page.png")
 
-local mat_collapsed = Material("icon16/arrow_right.png")
-local mat_expanded = Material("icon16/arrow_down.png")
+local mat_arrow = Material("icon16/bullet_go.png")
 
 local VGUI_GACETREENODE = {
     Init = function(self)
@@ -230,8 +229,10 @@ local VGUI_GACETREENODE = {
         surface.SetDrawColor(255, 255, 255)
 
         if self.Item.type == "folder" then
-            surface.SetMaterial(table.HasValue(self.Tree.ExpandedItems, self.NodeId) and mat_expanded or mat_collapsed)
-            surface.DrawTexturedRect(x, h/2 - 8, 16, 16)
+            local is_expanded = table.HasValue(self.Tree.ExpandedItems, self.NodeId)
+
+            surface.SetMaterial(mat_arrow)
+            surface.DrawTexturedRectRotated(x+8, h/2, 16, 16, is_expanded and 270 or 0)
 
             surface.SetMaterial(mat_folder)
         else
