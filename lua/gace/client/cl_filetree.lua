@@ -41,6 +41,10 @@ function ft.RefreshPath(filetree, path)
 			function node:OnRightClick()
 				ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
 			end
+
+			node:Droppable("gace" .. e.type)
+
+			gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
 		end
 
 		ft.FetchedFolders[path] = CurTime()
