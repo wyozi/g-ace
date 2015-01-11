@@ -1,6 +1,12 @@
 gace.cmd = gace.cmd or {}
 gace.cmd.Commands = gace.cmd.Commands or {}
 
+-- Umm
+gace.LOG_ERROR = Color(255, 0, 0)
+gace.LOG_WARN = Color(255, 127, 0)
+gace.LOG_SUCCESS = Color(0, 255, 0)
+gace.LOG_INFO = Color(170, 255, 255)
+
 setmetatable(gace.cmd, {
     __index = function(tbl, key)
         local thecmd = gace.cmd.Commands[key]
@@ -51,12 +57,16 @@ function gace.CreateCommandCallback(cmd, opts)
             return ErrorNoHalt("invalid argument: " .. err)
         end
 
-        return opts.func(caller, unpack(r))
+        return opts.func(caller, unpack(r)), caller
     end
 end
 
 function gace.RegisterCommand(cmd, opts)
     opts.callback = gace.CreateCommandCallback(cmd, opts)
+    opts.callback_tostring = function(caller, ...)
+        local ret, caller = opts.callback(caller, ...)
+        opts.func_tostring(caller, ret)
+    end
     gace.cmd.Commands[cmd] = opts
 end
 
@@ -78,7 +88,7 @@ function gace.ParseArguments(target_args, ...)
         local incr_iarg = true
 
         if not p_arg then
-            if t_arg.read_rest then
+            if t_arg.take_rest then
                 parsed_args[i_target] = parsed_args[i_target] or ""
                 break
             elseif t_arg.default then
@@ -107,7 +117,7 @@ function gace.ParseArguments(target_args, ...)
             p_arg = found_ply
         end
 
-        if t_arg.type == "string" and t.read_rest == true then
+        if t_arg.type == "string" and t_arg.take_rest then
             incr_iarg = false
             p_arg = (parsed_args[i_target] or "") .. p_arg
         end
@@ -127,7 +137,7 @@ gace.RegisterCommand("inexistentcmd", {
     nohelp = true,
     args = {},
     func = function(caller)
-        caller:GAce_Msg(Color(255, 170, 170), "Inexistent command. Use 'help' to see all available commands.")
+        caller:GAce_Msg(gace.LOG_WARN, "Inexistent command. Use 'help' to see all available commands.")
     end,
 })
 gace.RegisterCommand("help", {
@@ -135,19 +145,31 @@ gace.RegisterCommand("help", {
     help = "Shows available commands",
     args = {},
     func = function(caller)
-        caller:GAce_Msg(Color(170, 255, 255), "=== G-Ace Command System Help ===")
+        caller:GAce_Msg(gace.LOG_INFO, "=== G-Ace Command System Help ===")
 
         for name, cmd in pairs(gace.cmd.Commands) do
             if not cmd.nohelp then
-                caller:GAce_Msg(Color(127, 255, 255), string.format("%-12s - %s", name, cmd.help))
+                caller:GAce_Msg(string.format("%-12s - %s", name, cmd.help))
             end
         end
     end,
 })
 
-concommand.Add("gace", function(ply, cmd, args)
-    local gace_cmd = table.remove(args, 1) or "help"
-    local gace_cmdfunc = gace.cmd[gace_cmd] or gace.cmd.inexistentcmd
+if SERVER then
+    local gace_cb = function(ply, cmd, args)
+        local gace_cmd = table.remove(args, 1) or "help"
+        local gace_cmdopts = gace.cmd.Commands[gace_cmd] or gace.cmd.Commands.inexistentcmd
 
-    gace_cmdfunc(ply, unpack(args))
-end)
+        local ret = gace_cmdopts.callback_tostring(ply, unpack(args))
+    end
+    concommand.Add("_gace", gace_cb)
+    concommand.Add("gace", gace_cb)
+
+    concommand.Add("_gacecmd", gace_cb)
+end
+
+if CLIENT then
+    concommand.Add("gace", function(ply, cmd, args, fullline)
+        RunConsoleCommand("_gacecmd", unpack(args))
+    end)
+end

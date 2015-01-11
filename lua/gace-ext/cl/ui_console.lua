@@ -12,17 +12,12 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	consoleinput.OnEnter = function()
 		gace.Log(Color(0, 255, 0), "> ", gace.UIColors["tab_fg"], consoleinput:GetText())
 		LocalPlayer():ConCommand("gace " .. consoleinput:GetText())
-		
+
 		consoleinput:SetText("")
 		consoleinput:RequestFocus()
 	end
 	consolepanel:AddDocked("ConsoleInput", consoleinput, BOTTOM)
 end)
-
--- TODO make these smoother/lighter
-gace.LOG_ERROR = Color(255, 0, 0)
-gace.LOG_WARN = Color(255, 127, 0)
-gace.LOG_SUCCESS = Color(0, 255, 0)
 
 gace.AddHook("LogMessage", "Console_OverrideOldLogSystem", function(...)
 
