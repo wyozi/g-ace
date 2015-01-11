@@ -58,8 +58,6 @@ function NetFolder:refresh()
                 node:emit("deleted")
             end
 
-            PrintTable(self._entries)
-
             resolver:resolve()
         end):catch(function(e) resolver:reject(e) end)
     end)
