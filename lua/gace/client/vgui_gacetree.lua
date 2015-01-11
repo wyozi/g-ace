@@ -216,7 +216,7 @@ local VGUI_GACETREENODE = {
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText((self.NodeId or ""), "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
 
         surface.SetDrawColor(255, 255, 255)
 
@@ -285,7 +285,7 @@ PrintTable(t)
 ]]
 
 --[[
-local t = "root"
-local m = "(.*)/[^/]*$"
+local t = "root/lamo"
+local m = "/?([^/]*)$"
 print(t:match(m))
 ]]
