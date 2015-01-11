@@ -22,7 +22,7 @@ function ft.RefreshPath(filetree, path)
 			filetree:AddItem(fpath, e.type, e)
 
 			local node = filetree:QueryItemComponent(fpath)
-			function node:DoRightClick()
+			function node:OnRightClick()
 				ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
 			end
 		end

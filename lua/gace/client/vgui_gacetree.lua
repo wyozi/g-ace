@@ -87,7 +87,13 @@ local VGUI_GACETREE = {
                     if a_comp and not b_comp then
                         return false
                     end
-                    if a.item.type ~= b.item.type then
+
+                    -- This comparison only works if both a and b are at last component (aka the file/folder node)
+                    if i == #a_comps and i == #b_comps and a.item.type ~= b.item.type then
+                        --print("comparing types:")
+                        --print(a.name, " v ", b.name)
+                        --print(a_comp, " v ", b_comp)
+                        --print(a.item.type, " v ", b.item.type)
                         if a.item.type == "folder" then
                             return true
                         end
@@ -119,16 +125,6 @@ local VGUI_GACETREE = {
                 node.TableConfig = {FillX = true}
                 node.Item = item.item
                 node.UserObject = item.item.userobj
-
-                node.DoClick = function()
-                    if table.HasValue(self.ExpandedItems, item.name) then
-                        table.RemoveByValue(self.ExpandedItems, item.name)
-                    else
-                        table.insert(self.ExpandedItems, item.name)
-                    end
-
-                    self.IsDirty = true
-                end
 
                 self:Add(node)
             end
@@ -189,6 +185,22 @@ local mat_expanded = Material("icon16/arrow_down.png")
 local VGUI_GACETREENODE = {
     Init = function(self)
         self:SetText("")
+    end,
+
+    DoClick = function(self)
+        if table.HasValue(self.Tree.ExpandedItems, self.NodeId) then
+            table.RemoveByValue(self.Tree.ExpandedItems, self.NodeId)
+        else
+            table.insert(self.Tree.ExpandedItems, self.NodeId)
+        end
+
+        self.Tree.IsDirty = true
+
+        if self.OnClick then self:OnClick() end
+    end,
+
+    DoRightClick = function(self)
+        if self.OnRightClick then self:OnRightClick() end
     end,
 
     Paint = function(self, w, h)
