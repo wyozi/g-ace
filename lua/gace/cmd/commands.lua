@@ -68,20 +68,28 @@ function gace.ParseArguments(target_args, ...)
         return false, string.format("Invalid '%s' (#%d): %s", target_args[i].name, i, msg)
     end
 
-    for i=1, #target_args do
-        local t_arg = target_args[i]
-        local p_arg = args[i]
+    local i_target = 1
+    local i_arg = 1
+
+    while i_target <= #target_args do
+        local t_arg = target_args[i_target]
+        local p_arg = args[i_arg]
+
+        local incr_iarg = true
 
         if not p_arg then
-            if t_arg.default then
+            if t_arg.read_rest then
+                parsed_args[i_target] = parsed_args[i_target] or ""
+                break
+            elseif t_arg.default then
                 p_arg = t_arg.default
             else
-                return fail(i, "missing")
+                return fail(i_target, "missing")
             end
         end
 
         if t_arg.type == "player" and type(p_arg) ~= "Player" then
-            if type(p_arg) ~= "string" then return fail(i, "type is not string or player?") end
+            if type(p_arg) ~= "string" then return fail(i_target, "type is not string or player?") end
 
             local low_p_arg = p_arg:lower()
             local found_ply
@@ -93,18 +101,35 @@ function gace.ParseArguments(target_args, ...)
             end
 
             if not found_ply then
-                return fail(i, "player not found")
+                return fail(i_target, "player not found")
             end
 
             p_arg = found_ply
         end
 
-        parsed_args[i] = p_arg
+        if t_arg.type == "string" and t.read_rest == true then
+            incr_iarg = false
+            p_arg = (parsed_args[i_target] or "") .. p_arg
+        end
+
+        parsed_args[i_target] = p_arg
+
+        i_target = i_target + 1
+        if incr_iarg then
+            i_arg = i_arg + 1
+        end
     end
 
     return parsed_args
 end
 
+gace.RegisterCommand("inexistentcmd", {
+    nohelp = true,
+    args = {},
+    func = function(caller)
+        caller:GAce_Msg(Color(255, 170, 170), "Inexistent command. Use 'help' to see all available commands.")
+    end,
+})
 gace.RegisterCommand("help", {
     name = "Help",
     help = "Shows available commands",
@@ -113,14 +138,16 @@ gace.RegisterCommand("help", {
         caller:GAce_Msg(Color(170, 255, 255), "=== G-Ace Command System Help ===")
 
         for name, cmd in pairs(gace.cmd.Commands) do
-            caller:GAce_Msg(Color(127, 255, 255), string.format("%-12s - %s", name, cmd.help))
+            if not cmd.nohelp then
+                caller:GAce_Msg(Color(127, 255, 255), string.format("%-12s - %s", name, cmd.help))
+            end
         end
     end,
 })
 
 concommand.Add("gace", function(ply, cmd, args)
     local gace_cmd = table.remove(args, 1) or "help"
-    local gace_cmdfunc = gace.cmd[gace_cmd] or gace.cmd.help
+    local gace_cmdfunc = gace.cmd[gace_cmd] or gace.cmd.inexistentcmd
 
     gace_cmdfunc(ply, unpack(args))
 end)
