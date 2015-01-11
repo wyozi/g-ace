@@ -4,11 +4,15 @@ gace.filetree = {}
 
 local ft = gace.filetree
 
+ft.FetchedFolders = {}
+
 function ft.OnNodeClick(id, type)
 	if type == "file" then
 		gace.OpenSession(id)
 	else
-		ft.RefreshPath(nil, id)
+		if not ft.FetchedFolders[id] then
+			ft.RefreshPath(nil, id)
+		end
 	end
 end
 
@@ -35,6 +39,8 @@ function ft.RefreshPath(filetree, path)
 				ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
 			end
 		end
+
+		ft.FetchedFolders[path] = CurTime()
 	end):catch(print)
 
 end
