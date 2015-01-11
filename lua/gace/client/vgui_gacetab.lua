@@ -62,6 +62,9 @@ local VGUI_EDITOR_TAB = {
 			end
 		end
 
+		local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
+		surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end,
 	Setup = function(self, id)
 		self:SetText("")
