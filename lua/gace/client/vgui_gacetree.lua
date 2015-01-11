@@ -80,6 +80,15 @@ local VGUI_GACETREE = {
         self.IsDirty = true
     end,
 
+    RemoveItem = function(self, id)
+        if self.Items[id] then
+            self.Items[id] = nil
+        end
+        
+        self:RelayoutItems()
+        self.IsDirty = true
+    end,
+
     QueryItemChildren = function(self, id)
         local id_pattern = id .. "/[^/]*$"
         local ret = {}

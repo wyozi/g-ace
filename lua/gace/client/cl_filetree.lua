@@ -30,6 +30,13 @@ function ft.RefreshPath(filetree, path)
 	gace.cmd.ls(LocalPlayer(), path):then_(function(t)
 		local filetree = gace.GetPanel("FileTree")
 
+		for _, id in pairs(filetree:QueryItemChildren(path)) do
+			local name = id:match("/?([^/]*)$")
+			if not t.entries[name] then
+				filetree:RemoveItem(id)
+			end
+		end
+
 		for ename,e in pairs(t.entries) do
 			local fpath = gace.path.normalize(path .. "/" .. ename)
 			filetree:AddItem(fpath, e.type, e)
