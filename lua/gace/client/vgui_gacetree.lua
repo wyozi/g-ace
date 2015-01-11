@@ -4,24 +4,56 @@ local VGUI_GACETREE = {
         self.ExpandedItems = {}
 
         self.Items = {}
+        self.ItemComponents = {}
+
+        self.IsDirty = true
+    end,
+
+    VerifyHasParent = function(self, id)
+        local parid = id:match("(.*)/[^/]*$")
+        if parid and not self.Items[parid] then
+            self:VerifyHasParent(parid)
+
+            print(id, " is missing parent. Adding ", parid)
+            self.Items[parid] = {}
+        end
     end,
 
     AddItem = function(self, id, item)
+        self:VerifyHasParent(id)
+
         self.Items[id] = {item = item}
         self:RelayoutItems()
+        self.IsDirty = true
+    end,
+
+    QueryItemChildren = function(self, id)
+        local id_pattern = id .. "/[^/]*$"
+        local ret = {}
+        for nm,_ in pairs(self.Items) do
+            if nm:match(id_pattern) then
+                ret[#ret+1] = nm
+            end
+        end
+        return ret
     end,
 
     RelayoutItems = function(self)
-        -- Clear
-        for _,i in pairs(self:GetChildren()) do
-            i:Remove()
+        -- Figure out what items were removed and remove their components
+        for nm,comp in pairs(self.ItemComponents) do
+            if IsValid(comp) and not self.Items[nm] then
+                comp:Remove()
+            end
+        end
+
+        -- Add items to numerically indexed list
+        local items = {}
+        for nm,item in pairs(self.Items) do
+            table.insert(items, {name = nm, val = item})
         end
 
         -- Sort items in order we want them to be in the treeview
-        local sortedItems = {}
-        for nm,item in pairs(self.Items) do table.insert(sortedItems, {name = nm, val = item}) end
-
-        table.sort(sortedItems, function(a, b)
+        table.sort(items, function(a, b)
             if a.name == b.name then -- why does this happen
                 return false
             end
@@ -50,32 +82,48 @@ local VGUI_GACETREE = {
             error("We got outside for loop in GAce Tree sort. '" .. a.name .. "' vs '" .. b.name .. "'")
         end)
 
-        -- Create a component for each
-        for _,item in pairs(sortedItems) do
-            local node = vgui.Create("GAceTreeNode")
-            node:SetupNode(self, item.name)
-            node.TableConfig = {FillX = true}
+        local ordered_children = {}
 
-            node.DoClick = function()
-                if table.HasValue(self.ExpandedItems, item.name) then
-                    table.RemoveByValue(self.ExpandedItems, item.name)
-                else
-                    table.insert(self.ExpandedItems, item.name)
+        -- Verify each item has a component
+        for idx,item in pairs(items) do
+            local itemname = item.name
+            local comp = self.ItemComponents[itemname]
+
+            if not IsValid(comp) then
+                local node = vgui.Create("GAceTreeNode")
+                self.ItemComponents[item.name] = node
+                comp = node
+                node:SetupNode(self, item.name)
+                node.TableConfig = {FillX = true}
+
+                node.DoClick = function()
+                    if table.HasValue(self.ExpandedItems, item.name) then
+                        table.RemoveByValue(self.ExpandedItems, item.name)
+                    else
+                        table.insert(self.ExpandedItems, item.name)
+                    end
+
+                    self.IsDirty = true
                 end
+
+                self:Add(node)
             end
 
-            self:Add(node)
+            table.insert(ordered_children, comp)
         end
 
+        self.OrderedChildren = ordered_children
     end,
 
     Think = function(self)
-        self:PerformLayout()
+        if self.IsDirty then
+            self:PerformLayout()
+        end
     end,
 
     PerformLayout = function(self)
         local y = 0
-        for _,c in pairs(self:GetChildren()) do
+        for _,c in pairs(self.OrderedChildren or {}) do
             if not c:ShouldBeVisible() then
                 c:SetPos(0, -100)
             else
@@ -154,11 +202,12 @@ concommand.Add("gace_testtree", function()
     tree:Dock(TOP)
     scroll:AddItem(tree)
 
+    GACETREE = tree
+
     tree:AddItem("root", "")
     tree:AddItem("root/kappa", "")
     tree:AddItem("root/kappa/potatis", "")
     tree:AddItem("root/kappa/abc", "")
-    tree:AddItem("root/aay", "")
     for i=1,100 do
         tree:AddItem("root/aay/" .. i, "")
     end
@@ -166,6 +215,8 @@ concommand.Add("gace_testtree", function()
     frame:MakePopup()
 end)
 
+--[[
 local t = "root"
 local m = "(.*)/[^/]*$"
 print(t:match(m))
+]]
