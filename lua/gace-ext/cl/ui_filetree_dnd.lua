@@ -18,9 +18,9 @@ gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(mypath, n
 				gace.Save(mypath .. "/" .. fp.NodeId:match("/?([^/]*)$"), payload.content)
 
 				-- Refresh both old and new folders
-				gace.filetree.RefreshPath(filetree, mypath)
+				gace.filetree.RefreshPath(mypath)
 				local oldfolder = gace.path.tail(path)
-				gace.filetree.RefreshPath(filetree, oldfolder)
+				gace.filetree.RefreshPath(oldfolder)
 			end)
 		end
 	end)

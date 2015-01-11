@@ -33,7 +33,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 					gace.Delete(path)
 					gace.Save(newpath, payload.content)
 
-					ft.RefreshPath(filetree, folderpath)
+					ft.RefreshPath(folderpath)
 
 					-- TODO does reopening tab need a delay?
 					if tab_was_open then gace.OpenSession(newpath) end
@@ -64,7 +64,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 				return
 			end
 			local folderpath = gace.path.tail(path)
-			ft.RefreshPath(filetree, folderpath)
+			ft.RefreshPath(folderpath)
 		end)
 	end):SetIcon("icon16/stop.png")
 end)
@@ -75,7 +75,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 	local ft = gace.filetree -- Shortcut to filetree library
 
 	menu:AddOption("Refresh", function()
-		ft.RefreshPath(filetree, path)
+		ft.RefreshPath(path)
 	end):SetIcon("icon16/arrow_refresh.png")
 
 	menu:AddOption("Create File", function()
@@ -93,7 +93,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
 					return
 				end
-				ft.RefreshPath(filetree, path)
+				ft.RefreshPath(path)
 			end)
 		end)
 	end):SetIcon("icon16/folder_add.png")
@@ -110,7 +110,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 			gace.Log(gace.LOG_INFO, "Note: if folder wasn't deleted, make sure it is empty!")
 
 			local folderpath = gace.path.tail(path)
-			ft.RefreshPath(filetree, folderpath)
+			ft.RefreshPath(folderpath)
 		end)
 	end):SetIcon("icon16/stop.png")
 
@@ -128,7 +128,8 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 							gace.Log(gace.LOG_ERROR, "Failed to create vfolder: ", pl.err)
 							return
 						end
-						ft.RefreshPath(filetree, ft.NodeToPath(node, true))
+						local folderpath = gace.path.tail(path)
+						ft.RefreshPath(folderpath)
 					end)
 				end)
 			end)

@@ -73,7 +73,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 					gace.OpenSession(path, {content=content})
 				end
 
-				gace.filetree.RefreshPath(filetree, gace.Path(path):WithoutFile():ToString())
+				gace.filetree.RefreshPath(gace.Path(path):WithoutFile():ToString())
 			end)
 
 			gace.CallHook("OnLocalSessionSaved", path)

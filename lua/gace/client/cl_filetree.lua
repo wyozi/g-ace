@@ -14,7 +14,7 @@ function ft.OnNodeClick(id, type)
 		gace.OpenSession(id)
 	else
 		if not ft.FetchedFolders[id] then
-			ft.RefreshPath(nil, id)
+			ft.RefreshPath(id)
 		end
 	end
 end
@@ -26,7 +26,7 @@ function ft.OnNodeRightClick(id, type)
 end
 
 -- Sends a request to server to send back a tree of the given path
-function ft.RefreshPath(filetree, path)
+function ft.RefreshPath(path)
 	gace.cmd.ls(LocalPlayer(), path):then_(function(t)
 		local filetree = gace.GetPanel("FileTree")
 
