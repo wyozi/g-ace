@@ -1,5 +1,15 @@
 
 local VGUI_GACETREE = {
+	QueryColor = function(self, clrid)
+		local colors = self.Colors
+		local clr = colors and colors[clrid]
+		return clr or gace.UIColors[clrid]
+	end,
+	SetColorOverride = function(self, clrid, clr)
+		self.Colors = self.Colors or {}
+		self.Colors[clrid] = clr
+	end,
+
     Init = function(self)
         self.ExpandedItems = {}
 
@@ -19,10 +29,10 @@ local VGUI_GACETREE = {
         end
     end,
 
-    AddItem = function(self, id, item)
+    AddItem = function(self, id, type, userobj)
         self:VerifyHasParent(id)
 
-        self.Items[id] = {item = item}
+        self.Items[id] = {type = type or "file", userobj = userobj}
         self:RelayoutItems()
         self.IsDirty = true
     end,
@@ -38,6 +48,10 @@ local VGUI_GACETREE = {
         return ret
     end,
 
+    QueryItemComponent = function(self, id)
+        return self.ItemComponents[id]
+    end,
+
     RelayoutItems = function(self)
         -- Figure out what items were removed and remove their components
         for nm,comp in pairs(self.ItemComponents) do
@@ -49,7 +63,7 @@ local VGUI_GACETREE = {
         -- Add items to numerically indexed list
         local items = {}
         for nm,item in pairs(self.Items) do
-            table.insert(items, {name = nm, val = item})
+            table.insert(items, {name = nm, item = item})
         end
 
         -- Sort items in order we want them to be in the treeview
@@ -73,6 +87,14 @@ local VGUI_GACETREE = {
                     if a_comp and not b_comp then
                         return false
                     end
+                    if a.item.type ~= b.item.type then
+                        if a.item.type == "folder" then
+                            return true
+                        end
+                        if b.item.type == "folder" then
+                            return false
+                        end
+                    end
                     --print(a.name, " v ", b.name, " (", a_comp < b_comp, ")")
 
                     return a_comp < b_comp
@@ -95,6 +117,8 @@ local VGUI_GACETREE = {
                 comp = node
                 node:SetupNode(self, item.name)
                 node.TableConfig = {FillX = true}
+                node.Item = item.item
+                node.UserObject = item.item.userobj
 
                 node.DoClick = function()
                     if table.HasValue(self.ExpandedItems, item.name) then
@@ -128,9 +152,9 @@ local VGUI_GACETREE = {
                 c:SetPos(0, -100)
             else
                 c:SetPos(0, y)
-                c:SetSize(self:GetWide(), 25)
+                c:SetSize(self:GetWide(), 22)
 
-                y = y + 25
+                y = y + 22
             end
         end
 
@@ -156,25 +180,40 @@ local VGUI_GACETREE = {
 
 derma.DefineControl( "GAceTree", "File/Item tree for G-Ace", VGUI_GACETREE, "DPanel" )
 
+local mat_folder = Material("icon16/folder.png")
+local mat_file = Material("icon16/page.png")
+
+local mat_collapsed = Material("icon16/arrow_right.png")
+local mat_expanded = Material("icon16/arrow_down.png")
+
 local VGUI_GACETREENODE = {
     Init = function(self)
         self:SetText("")
     end,
 
     Paint = function(self, w, h)
-        surface.SetDrawColor(255, 255, 255)
+		if self.Hovered then
+			surface.SetDrawColor(gace.UIColors.tab_bg_hover)
+		else
+			surface.SetDrawColor(gace.UIColors.tab_bg)
+		end
         surface.DrawRect(0, 0, w, h)
-
-        surface.SetDrawColor(0, 0, 0)
-        surface.DrawOutlinedRect(0, 0, w, h)
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText(self.NodeId or "", "DermaDefaultBold", x+20, h/2, Color(0, 0, 0), nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText(self.NodeId or "", "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
 
-        surface.SetMaterial(Material(table.HasValue(self.Tree.ExpandedItems, self.NodeId) and "icon16/tick.png" or "icon16/cross.png"))
         surface.SetDrawColor(255, 255, 255)
-        surface.DrawTexturedRect(x, h/2 - 8, 16, 16)
+
+        if self.Item.type == "folder" then
+            surface.SetMaterial(table.HasValue(self.Tree.ExpandedItems, self.NodeId) and mat_expanded or mat_collapsed)
+            surface.DrawTexturedRect(x, h/2 - 8, 16, 16)
+
+            surface.SetMaterial(mat_folder)
+        else
+            surface.SetMaterial(mat_file)
+        end
+        surface.DrawTexturedRect(x + 20, h/2 - 8, 16, 16)
     end,
 
     SetupNode = function(self, tree, id)

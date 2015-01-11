@@ -3,11 +3,7 @@ gace.AddHook("AddPanels", "Editor_AddFileTree", function(frame, basepnl)
 
 	gace.FileNodeTree = nil
 
-	local filetree = vgui.Create("DTree")
-	filetree.Paint = function(self, w, h)
-		surface.SetDrawColor(gace.UIColors.frame_bg)
-		surface.DrawRect(0, 0, w, h)
-	end
+	local filetree = vgui.Create("GAceTree")
 
 	local filetreemeta = gace.ClientCache:get("filetreemeta")
 	if filetreemeta then
