@@ -29,7 +29,7 @@ local VGUI_EDITOR_TAB = {
 			menu:SetPos(x, y)
 			return
 		end
-		
+
 		gace.CloseSession(self.SessionId)
 		if callback then callback() end
 	end,
@@ -48,18 +48,11 @@ local VGUI_EDITOR_TAB = {
 		surface.DrawRect(0, 0, w, h)
 
 		draw.SimpleText(self.FileName, "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-	
+
 		local sess = gace.GetSession(self.SessionId)
 		if sess and not sess:IsSaved() then
 			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
-			local lx, ly
-			for x=0,w,5 do
-				local y = h-2-math.sin(CurTime()*2+x)*2
-				if lx then
-					surface.DrawLine(lx, ly, x, y)
-				end
-				lx, ly = x, y
-			end
+			surface.DrawRect(1, 0, w-2, 2)
 		end
 
 	end,
