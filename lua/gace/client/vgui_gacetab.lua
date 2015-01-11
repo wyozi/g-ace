@@ -54,11 +54,11 @@ local VGUI_EDITOR_TAB = {
 			surface.SetDrawColor(HSVToColor(CurTime()*3, 0.5, 0.95))
 			local lx, ly
 			for x=0,w,5 do
-			local y = h-2-math.sin(CurTime()*2+x)*2
-			if lx then
-				surface.DrawLine(lx, ly, x, y)
-			end
-			lx, ly = x, y
+				local y = h-2-math.sin(CurTime()*2+x)*2
+				if lx then
+					surface.DrawLine(lx, ly, x, y)
+				end
+				lx, ly = x, y
 			end
 		end
 
