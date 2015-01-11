@@ -20,7 +20,7 @@ function NetFolder:refresh()
     return Promise(function(resolver)
         gace.cmd.ls(LocalPlayer(), self:path()):then_(function(pl)
             local entries = pl.entries
-            
+
             -- List of entries that dont exist on filesystem
             local leftovers = gace.TableKeysToList(self._entries)
 
@@ -67,21 +67,17 @@ end
 
 function NetFolder:child(name, opts)
     return Promise(function(resolver)
-        self:refresh():then_(function()
-            local node = self._entries[name]
-            if node then
-                resolver:resolve(node)
-            else
-                resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
-            end
-        end):catch(function(e) resolver:reject(e) end)
+        local node = self._entries[name]
+        if node then
+            resolver:resolve(node)
+        else
+            resolver:reject(gace.VFS.ErrorCode.NOT_FOUND)
+        end
     end)
 end
 
 function NetFolder:listEntries(opts)
-    return self:refresh():then_(function()
-        return self._entries
-    end)
+    return Promise(self._entries)
 end
 
 function NetFolder:createChildNode(name, type, opts)
