@@ -58,55 +58,7 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		end)
 	end
 
-	-- File access
-	if op == "ls" then
-		local max_depth = 2
-
-		local function traverseFolder(folderNode, par_tbl, rec)
-			rec = rec or 0
-
-			if not folderNode:hasPermission(ply, gace.VFS.Permission.READ) then
-				-- We only fail the whole request if the first path node is denied access to
-				return Promise(function(resolver)
-					if rec == 0 then
-						resolver:reject(gace.VFS.ErrorCode.ACCESS_DENIED)
-					else
-						resolver:resolve()
-					end
-				end)
-			end
-
-			return folderNode:listEntries():then_(function(entries)
-				local subpromises = {}
-				for _,e in pairs(entries) do
-					if e:type() == "file" then
-						table.insert(par_tbl.fil, e:getName())
-					elseif e:type() == "folder" then
-						local foltbl = {fol={}, fil={}}
-						par_tbl.fol[e:getName()] = foltbl
-
-						if rec < max_depth then
-							local p = traverseFolder(e, foltbl, rec+1)
-							table.insert(subpromises, p)
-						else
-							foltbl.pendingListing = true
-						end
-					end
-				end
-				return Promise(subpromises):all()
-			end)
-		end
-
-		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
-			local tree = {fol={}, fil={}}
-
-			return traverseFolder(node, tree):then_(function()
-				responder_func(ply, reqid, op, {ret="Success", type="filetree", path=node:path(), tree=tree})
-			end)
-		end):catch(function(e)
-			responder_func(ply, reqid, op, {err=e})
-		end)
-	elseif op == "fetch" then
+	if op == "fetch" then
 		ResolveNode(payload.path, gace.VFS.Permission.READ):then_(function(node)
 			if node:type() ~= "file" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
