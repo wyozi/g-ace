@@ -29,6 +29,8 @@ load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
 load("gace/cache/cachesync_filesystem.lua")
 
+load("gace/cmd/commands.lua")
+
 load("gace/util/eventemitter.lua")
 load("gace/util/path.lua")
 load("gace/util/promisehelpers.lua")

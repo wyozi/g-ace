@@ -11,6 +11,8 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	local consoleinput = vgui.Create("GAceInput")
 	consoleinput.OnEnter = function()
 		gace.Log(Color(0, 255, 0), "> ", gace.UIColors["tab_fg"], consoleinput:GetText())
+		LocalPlayer():ConCommand("gace " .. consoleinput:GetText())
+		
 		consoleinput:SetText("")
 		consoleinput:RequestFocus()
 	end
@@ -45,7 +47,7 @@ gace.AddHook("LogMessage", "Console_OverrideOldLogSystem", function(...)
 	setclr(fgcolor)	append(			":")
 	setclr(fgcolor)	append(os.date(	"%M"))
 	setclr(100,100,100)	append(			"] ")
-	
+
 	setclr(fgcolor)
 	for _,v in pairs({...}) do
 		if type(v) == "table" then
