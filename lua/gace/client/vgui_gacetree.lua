@@ -1,3 +1,46 @@
+local function TreeCompSorter(a, b)
+    if a.name == b.name then -- why does this happen
+        return false
+    end
+
+    local a_comps = a.name:Split("/")
+    local b_comps = b.name:Split("/")
+
+    -- We get the deepest common component
+    for i=1, math.max(#a_comps, #b_comps) do
+        local a_comp = a_comps[i]
+        local b_comp = b_comps[i]
+
+        if a_comp ~= b_comp then
+            if b_comp and not a_comp then
+                return true
+            end
+            if a_comp and not b_comp then
+                return false
+            end
+
+            local last_acomp = i == #a_comps
+            local last_bcomp = i == #b_comps
+
+            local acomp_type = last_acomp and a.item.type or "folder"
+            local bcomp_type = last_bcomp and b.item.type or "folder"
+
+            if acomp_type ~= bcomp_type then
+                if acomp_type == "folder" then
+                    return true
+                end
+                if bcomp_type == "folder" then
+                    return false
+                end
+            end
+            --print(a.name, " v ", b.name, " (", a_comp < b_comp, ")")
+
+            return a_comp < b_comp
+        end
+    end
+
+    error("We got outside for loop in GAce Tree sort. '" .. a.name .. "' vs '" .. b.name .. "'")
+end
 
 local VGUI_GACETREE = {
 	QueryColor = function(self, clrid)
@@ -67,48 +110,7 @@ local VGUI_GACETREE = {
         end
 
         -- Sort items in order we want them to be in the treeview
-        table.sort(items, function(a, b)
-            if a.name == b.name then -- why does this happen
-                return false
-            end
-
-            local a_comps = a.name:Split("/")
-            local b_comps = b.name:Split("/")
-
-            -- We get the deepest common component
-            for i=1, math.max(#a_comps, #b_comps) do
-                local a_comp = a_comps[i]
-                local b_comp = b_comps[i]
-
-                if a_comp ~= b_comp then
-                    if b_comp and not a_comp then
-                        return true
-                    end
-                    if a_comp and not b_comp then
-                        return false
-                    end
-
-                    -- This comparison only works if both a and b are at last component (aka the file/folder node)
-                    if i == #a_comps and i == #b_comps and a.item.type ~= b.item.type then
-                        --print("comparing types:")
-                        --print(a.name, " v ", b.name)
-                        --print(a_comp, " v ", b_comp)
-                        --print(a.item.type, " v ", b.item.type)
-                        if a.item.type == "folder" then
-                            return true
-                        end
-                        if b.item.type == "folder" then
-                            return false
-                        end
-                    end
-                    --print(a.name, " v ", b.name, " (", a_comp < b_comp, ")")
-
-                    return a_comp < b_comp
-                end
-            end
-
-            error("We got outside for loop in GAce Tree sort. '" .. a.name .. "' vs '" .. b.name .. "'")
-        end)
+        table.sort(items, TreeCompSorter)
 
         local ordered_children = {}
 
@@ -129,6 +131,7 @@ local VGUI_GACETREE = {
                 self:Add(node)
             end
 
+            comp.Order = idx
             table.insert(ordered_children, comp)
         end
 
@@ -213,7 +216,7 @@ local VGUI_GACETREENODE = {
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText(self.NodeId or "", "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText((self.NodeId or ""), "DermaDefaultBold", x+45, h/2, gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
 
         surface.SetDrawColor(255, 255, 255)
 
@@ -265,6 +268,21 @@ concommand.Add("gace_testtree", function()
 
     frame:MakePopup()
 end)
+--[[
+local t = {
+    {name = "folder", item={type="folder"}},
+    {name = "folder/.git", item={type="folder"}},
+    {name = "folder/.git/hooks", item={type="folder"}},
+    {name = "folder/.git/info", item={type="folder"}},
+    {name = "folder/.git/COMMIT_EDITMSG", item={type="file"}},
+    {name = "folder/.git/index", item={type="file"}},
+    {name = "folder/.git/hooks/applypatch-msg.sample", item={type="file"}},
+}
+
+table.sort(t, TreeCompSorter)
+
+PrintTable(t)
+]]
 
 --[[
 local t = "root"
