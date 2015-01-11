@@ -14,9 +14,9 @@ gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
             local phase, change = parts[1], parts[2]
 
             if change == "m"--[[odified]] or change == "r"--[[enamed]] then
-                node.TextColor = Color(255, 127, 0)
+                node.TextColor = Color(248, 148, 6)
             elseif change == "n"--[[ew]] then
-                node.TextColor = Color(0, 255, 0)
+                node.TextColor = Color(38, 166, 91)
             end
         end
     end
