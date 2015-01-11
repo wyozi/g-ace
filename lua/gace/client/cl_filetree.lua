@@ -5,6 +5,9 @@ gace.filetree = {}
 local ft = gace.filetree
 
 ft.FetchedFolders = {}
+gace.AddHook("ClearGAceVariables", "ClearFetchedFolders", function()
+	ft.FetchedFolders = {}
+end)
 
 function ft.OnNodeClick(id, type)
 	if type == "file" then
