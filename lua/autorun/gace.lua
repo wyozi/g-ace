@@ -26,9 +26,13 @@ load("gace/_libs/andthen.lua", "shared")
 
 -- Load GAce testing lib and tests
 load("gace-tests/_gacetests.lua", "shared")
+load("gace-tests/path.lua", "shared")
+load("gace-tests/pathobj.lua", "shared")
+load("gace-tests/utils.lua", "shared")
 
 -- Load GAce files
 load("gace/util/miscutils.lua")
+load("gace/util/hooks.lua")
 
 load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")

@@ -3,6 +3,8 @@ gace.path = {}
 function gace.path.normalize(path)
     local finalPathComps = {}
 
+    path = path:Replace("\\", "/")
+
     local comps = path:Split("/")
     for _,comp in pairs(comps) do
         comp = comp:Trim()
@@ -31,7 +33,7 @@ function gace.path.tail(path)
     return table.concat(comps, "/"), last
 end
 
-local validator_pattern = "[^%a%d_- %./]"
+local validator_pattern = "[^%a%d%_%- %./]"
 function gace.path.validate(comp)
     if string.find(comp, validator_pattern) then
         return false

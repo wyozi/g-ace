@@ -27,7 +27,10 @@ function gace.RunTests()
 
     local function GetCodeSrc()
         local dtbl = debug.getinfo(4)
-        return string.format("[%s LINE#%-3d] ", dtbl.short_src:Split("autorun/")[2], dtbl.currentline)
+        local path = dtbl.short_src
+        path = path:match(".*lua/(.*)$") or path
+
+        return string.format("[%s LINE#%03d] ", path, dtbl.currentline)
     end
 
     local function pass(msg)
@@ -102,7 +105,7 @@ function gace.RunTests()
             if v.after then v.after() end
         end
 
-        msgc(Color(149, 165, 166), "= Test group ", (fails == startfails) and Color(0, 255, 0) or Color(255, 0, 0), "completed")
+        msgc(Color(149, 165, 166), "= Test group ", (fails == startfails) and Color(0, 255, 0) or Color(255, 0, 0), (fails == startfails) and "passed" or "failed")
     end
 
     msg("")
