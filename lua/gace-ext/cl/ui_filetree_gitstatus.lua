@@ -1,8 +1,6 @@
-gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
+gace.AddHook("FileTreeFileNodePrePaint", "Git_FileNodeIcon", function(node, vars)
     local pathobj = gace.Path(node.NodeId)
     local vfolder = gace.VFolders[pathobj:GetVFolder()]
-
-    node.TextColor = nil
 
     if vfolder and vfolder.git and vfolder.git.enabled then
         local filestatuses = vfolder.git.filestatuses
@@ -14,9 +12,9 @@ gace.AddHook("FileTreeFileNodeThink", "Git_FileNodeIcon", function(node)
             local phase, change = parts[1], parts[2]
 
             if change == "m"--[[odified]] or change == "r"--[[enamed]] then
-                node.TextColor = Color(248, 148, 6)
+                vars.fg = Color(248, 148, 6)
             elseif change == "n"--[[ew]] then
-                node.TextColor = Color(38, 166, 91)
+                vars.fg = Color(38, 166, 91)
             end
         end
     end

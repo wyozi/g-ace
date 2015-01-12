@@ -215,28 +215,41 @@ local VGUI_GACETREENODE = {
     end,
 
     Paint = function(self, w, h)
+        local vars = {
+            bg_hover = gace.UIColors.tab_bg_hover,
+            bg = gace.UIColors.tab_bg,
+
+            fg = gace.UIColors.tab_fg,
+
+            mat_arrow = mat_arrow,
+            mat_folder = mat_folder,
+            mat_file = mat_file
+        }
+
+        gace.CallHook("FileTreeFileNodePrePaint", self, vars)
+
 		if self.Hovered then
-			surface.SetDrawColor(gace.UIColors.tab_bg_hover)
+			surface.SetDrawColor(vars.bg_hover)
 		else
-			surface.SetDrawColor(gace.UIColors.tab_bg)
+			surface.SetDrawColor(vars.bg)
 		end
         surface.DrawRect(0, 0, w, h)
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, self.TextColor or gace.UIColors.tab_fg, nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, vars.fg, nil, TEXT_ALIGN_CENTER)
 
         surface.SetDrawColor(255, 255, 255)
 
         if self.Item.type == "folder" then
             local is_expanded = table.HasValue(self.Tree.ExpandedItems, self.NodeId)
 
-            surface.SetMaterial(mat_arrow)
+            surface.SetMaterial(vars.mat_arrow)
             surface.DrawTexturedRectRotated(x+8, h/2, 16, 16, is_expanded and 270 or 0)
 
-            surface.SetMaterial(mat_folder)
+            surface.SetMaterial(vars.mat_folder)
         else
-            surface.SetMaterial(mat_file)
+            surface.SetMaterial(vars.mat_file)
         end
         surface.DrawTexturedRect(x + 20, h/2 - 8, 16, 16)
     end,
