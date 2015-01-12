@@ -41,6 +41,7 @@ local function TreeCompSorter(a, b)
 
     error("We got outside for loop in GAce Tree sort. '" .. a.name .. "' vs '" .. b.name .. "'")
 end
+gace.GAceTreeSorter = TreeCompSorter
 
 local VGUI_GACETREE = {
 	QueryColor = function(self, clrid)
@@ -295,24 +296,3 @@ concommand.Add("gace_testtree", function()
 
     frame:MakePopup()
 end)
---[[
-local t = {
-    {name = "folder", item={type="folder"}},
-    {name = "folder/.git", item={type="folder"}},
-    {name = "folder/.git/hooks", item={type="folder"}},
-    {name = "folder/.git/info", item={type="folder"}},
-    {name = "folder/.git/COMMIT_EDITMSG", item={type="file"}},
-    {name = "folder/.git/index", item={type="file"}},
-    {name = "folder/.git/hooks/applypatch-msg.sample", item={type="file"}},
-}
-
-table.sort(t, TreeCompSorter)
-
-PrintTable(t)
-]]
-
---[[
-local t = "root/lamo"
-local m = "/?([^/]*)$"
-print(t:match(m))
-]]
