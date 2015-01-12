@@ -104,11 +104,12 @@ gace.Hooks = gace.Hooks or {}
 local hooks = gace.Hooks
 
 function gace.CallHook(name, ...)
-	if not hooks[name] then return end
 	local hks = hooks[name]
+	if not hks then return end
+	
 	for i=1,#hks do
-		local vals = {hks[i].fn(...)}
-		if #vals > 0 then return unpack(vals) end
+		local a, b, c, d, e, f, g = hks[i].fn(...)
+		if a then return a, b, c, d, e, f, g end
 	end
 end
 function gace.AddHook(name, id, fn)
