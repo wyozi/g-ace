@@ -1,22 +1,29 @@
 G-Ace
 =====
 
-An in-game code editor for Garry's Mod.  
+An in-game code editor for Garry's Mod.
+
+![screenshot](http://i.imgur.com/g6PQeBk.png)
 
 ---
 
-###Requirements
+### Requirements
 
 If you want access outside data/ folder: [G-Ace IO](https://github.com/wyozi/g-ace-io)
 
-###Installation
+### Installation
 
 Run ```git clone https://github.com/wyozi/g-ace.git``` in garrysmod/addons.
 
-###Setup
+### Testing
 
-Currently there is no way to create a virtual folder without writing some code.
-A simple [gace-io](https://github.com/wyozi/g-ace-io) folder can be created like this:
+Run ```gace-test``` in console to run the test suite.
+
+### Setup
+
+You can use "Create VFolder" button in GAce to create a temporary vfolder. Command is available to superadmins.
+
+To create a simple over-map-changes persistent [gace-io](https://github.com/wyozi/g-ace-io) folder, run this code on server (eg ```lua/autorun/server```):
 
 ```lua
 local f = gace.VFS.RealGIOFolder("folder", "./garrysmod/addons/gitaddon")
