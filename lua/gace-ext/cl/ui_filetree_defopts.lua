@@ -114,28 +114,6 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 		end)
 	end):SetIcon("icon16/stop.png")
 
-	if path == "root" then
-		local csubmenu, csmpnl = menu:AddSubMenu("Create VFolder")
-		csmpnl:SetIcon("icon16/folder_brick.png")
-
-		local types = {"memory", "real-data", "real-gaceio"}
-
-		for _,t in pairs(types) do
-			csubmenu:AddOption(t, function()
-				gace.ext.ShowTextInputPrompt("VFolder name", function(nm)
-					gace.SendRequest("createvfolder", {path = nm, type = t}, function(_, _, pl)
-						if pl.err then
-							gace.Log(gace.LOG_ERROR, "Failed to create vfolder: ", pl.err)
-							return
-						end
-						local folderpath = gace.path.tail(path)
-						ft.RefreshPath(folderpath)
-					end)
-				end)
-			end)
-		end
-	end
-
 	menu:AddOption("Find", function()
 		gace.ext.ShowTextInputPrompt("The phrase to search", function(nm)
 			gace.Find(path, nm, function(_, _, pl)

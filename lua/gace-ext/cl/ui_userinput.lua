@@ -15,9 +15,12 @@ gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
 		end
 
 		input.OnEnter = function(self)
-			inputpanel.InputCallback(self:GetText())
+			local t = self:GetText()
+
 			inputpanel:Hide()
 			gace.Frame.BasePanel:InvalidateLayout(true)
+			
+			inputpanel.InputCallback(self:GetText())
 		end
 	end
 
@@ -27,7 +30,6 @@ end)
 function gace.ext.ShowTextInputPrompt(query, callback, default)
 	local inputpanel = gace.GetPanel("InputPanel")
 
-	inputpanel.InputCallback = callback
 	inputpanel.QueryString = query or ""
 
 	inputpanel.Input:SetText(default or "")
@@ -39,10 +41,28 @@ function gace.ext.ShowTextInputPrompt(query, callback, default)
 		if inputpanel:IsValid() and inputpanel:IsVisible() then
 			inputpanel:Hide()
 			gace.Frame.BasePanel:InvalidateLayout(true)
+
+			if inputpanel.InputClosedCallback then
+				inputpanel.InputClosedCallback()
+				inputpanel.InputClosedCallback = nil
+			end
 		else
 			return false -- this callback is invalid
 		end
 	end)
+
+	if callback then
+		inputpanel.InputCallback = callback
+	else
+		return Promise(function(resolver)
+			inputpanel.InputCallback = function(text)
+				resolver:resolve(text)
+			end
+			inputpanel.InputClosedCallback = function()
+				resolver:reject("closed")
+			end
+		end)
+	end
 end
 
 function gace.ext.ShowYesNoCancelPrompt(query, callback)

@@ -1,5 +1,10 @@
 gace.Root = gace.VFS.VirtualFolder("root", true)
-gace.Root:grantPermission("superadmins", gace.VFS.Permission.EXECUTE)
+
+local gace_sadmin_defperms = CreateConVar("gace_superadmin_defperms", "1", FCVAR_ARCHIVE, "Should superadmins have all permissions on root folder by default")
+
+if gace_sadmin_defperms:GetBool() then
+	gace.Root:grantPermission("superadmins", gace.VFS.ServerPermission)
+end
 
 gace.fs = {}
 
@@ -117,9 +122,11 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 			if not ctor then return error("invalid vfolder type") end
 
-			local folder = ctor(payload.path, unpack(payload.args or {}))
+			local folder = ctor(payload.name, payload.path)
 			return node:addVirtualFolder(folder)
 		end):then_(function(childNode)
+			childNode:grantPlayerPermission(ply, gace.VFS.ServerPermission)
+
 			responder_func(ply, reqid, op, {ret="Success"})
 		end):catch(function(e)
 			responder_func(ply, reqid, op, {err=e})
