@@ -74,7 +74,7 @@ end
 
 function netmsg_in_meta:CreateResponsePacket(op, payload)
     if not self:GetReqId() or self:GetReqId() == "" then return error("trying to response to packet with no req id") end
-    local netmsg = gace.NetMessageOut(self:GetReqId(), op, payload)
+    local netmsg = gace.NetMessageOut(op, self:GetReqId(), payload)
 
     if SERVER then netmsg:SetTarget(self:GetSender()) end
 
@@ -84,7 +84,7 @@ end
 --[[
 Constructors
 ]]
-gace.NetMessageIn = function(reqid, op, payload)
+gace.NetMessageIn = function(op, reqid, payload)
     reqid = reqid or ""
     payload = payload or {}
     if not op then
@@ -95,7 +95,7 @@ gace.NetMessageIn = function(reqid, op, payload)
     setmetatable(msg, netmsg_in_meta)
     return msg
 end
-gace.NetMessageOut = function(reqid, op, payload)
+gace.NetMessageOut = function(op, reqid, payload)
     reqid = reqid or ""
     payload = payload or {}
     if not op then

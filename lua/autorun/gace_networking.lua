@@ -20,7 +20,7 @@ net.Receive("gace_fileacc", function(len, cl)
 		PrintTable(payload)
 	end
 
-	local netmsg = gace.NetMessageIn(reqid, op, payload)
+	local netmsg = gace.NetMessageIn(op, reqid, payload)
 
 	if SERVER then
 		netmsg:SetSender(cl)

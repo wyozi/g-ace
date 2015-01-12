@@ -11,7 +11,7 @@ if CLIENT then
         return Promise(function(resolver)
             local reqid = IpcReq()
 
-            local netmsg = gace.NetMessageOut(reqid, opts.ipc, {args = r})
+            local netmsg = gace.NetMessageOut(opts.ipc, reqid, {args = r})
         	netmsg:ListenToResponse(function(_, _, pl)
                 if pl.err then
                     resolver:reject(pl.err)
