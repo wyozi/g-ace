@@ -29,6 +29,7 @@ load("gace-tests/_gacetests.lua", "shared")
 load("gace-tests/utils.lua", "shared")
 load("gace-tests/path.lua", "shared")
 load("gace-tests/pathobj.lua", "shared")
+load("gace-tests/netmsgobj.lua", "shared")
 load("gace-tests/ui_gacetree.lua", "shared")
 
 -- Load GAce files
