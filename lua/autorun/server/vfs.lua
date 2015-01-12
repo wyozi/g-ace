@@ -111,25 +111,5 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 	elseif op == "find" then
 		-- TODO implement
 		--responder_func(ply, reqid, op, gace.MakeFindResponse(ply, payload.path, payload.phrase))
-	elseif op == "createvfolder" then
-		local ctor
-		if payload.type == "memory" then ctor = gace.VFS.MemoryFolder
-		elseif payload.type == "real-data" then ctor = gace.VFS.RealDataFolder
-		elseif payload.type == "real-gaceio" then ctor = gace.VFS.RealGIOFolder
-		end
-
-		ResolveNode("", gace.VFS.Permission.WRITE):then_(function(node)
-			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
-			if not ctor then return error("invalid vfolder type") end
-
-			local folder = ctor(payload.name, payload.path)
-			return node:addVirtualFolder(folder)
-		end):then_(function(childNode)
-			childNode:grantPlayerPermission(ply, gace.VFS.ServerPermission)
-
-			responder_func(ply, reqid, op, {ret="Success"})
-		end):catch(function(e)
-			responder_func(ply, reqid, op, {err=e})
-		end)
 	end
 end)

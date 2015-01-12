@@ -49,12 +49,12 @@ function gace.CreateCommandCallback(cmd, opts)
         if not IsValid(caller) then
             caller = server_caller
         elseif type(caller) ~= "Player" then
-            return ErrorNoHalt(tostring(caller) .. " is not player!")
+            return error(tostring(caller) .. " is not player!")
         end
 
         local r, err = gace.ParseArguments(opts.args, ...)
         if not r then
-            return ErrorNoHalt("invalid argument: " .. err)
+            return error("invalid argument: " .. err)
         end
 
         local hookret = gace.CallHook("PreCommandCall", cmd, opts, caller, r)
@@ -106,11 +106,12 @@ function gace.ParseArguments(target_args, ...)
         local incr_iarg = true
 
         if not p_arg then
-            if t_arg.take_rest then
-                parsed_args[i_target] = parsed_args[i_target] or ""
+            if parsed_args[i_target] and t_arg.take_rest then
                 break
             elseif t_arg.default then
                 p_arg = t_arg.default
+            elseif t_arg.optional then
+                break -- TODO I'd rather continue just because, but it is not vanilla lua..
             else
                 return fail(i_target, "missing")
             end
@@ -178,7 +179,10 @@ if SERVER then
         local gace_cmd = table.remove(args, 1) or "help"
         local gace_cmdopts = gace.cmd.Commands[gace_cmd] or gace.cmd.Commands.inexistentcmd
 
-        local ret = gace_cmdopts.callback_tostring(ply, unpack(args))
+        local ret, err = pcall(gace_cmdopts.callback_tostring, ply, unpack(args))
+        if not ret then
+            ply:GAce_Msg(gace.LOG_ERROR, err)
+        end
     end
     concommand.Add("_gace", gace_cb)
     concommand.Add("gace", gace_cb)

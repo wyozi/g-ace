@@ -29,14 +29,12 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AdminCommands", function(comps
                             vfs_path = path
                         end)
                     end):then_(function()
-                        gace.SendRequest("createvfolder", {name = vfs_name, path = vfs_path, type = tnm}, function(_, _, pl)
-                            if pl.err then
-                                gace.Log(gace.LOG_ERROR, "Failed to create vfolder: ", pl.err)
-                                return
-                            end
+                    	return gace.cmd.mkvfolder(LocalPlayer(), tnm, vfs_name, vfs_path):then_(function()
                             gace.filetree.RefreshPath("")
-                        end)
-                    end):catch(print)
+                    	end)
+                    end):catch(function(e)
+                        gace.Log(gace.LOG_ERROR, "VFolder creation err: ", e)
+                    end)
     			end)
     		end
 

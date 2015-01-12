@@ -40,6 +40,7 @@ load("gace/cmd/commands.lua")
 load("gace/cmd/ipc.lua")
 
 load("gace/vfs-cmds/ls.lua")
+load("gace/vfs-cmds/mkvfolder.lua")
 
 load("gace/util/eventemitter.lua")
 load("gace/util/path.lua")
