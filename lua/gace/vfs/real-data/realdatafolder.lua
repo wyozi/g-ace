@@ -87,6 +87,11 @@ end
 
 function RealDataFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
+        if not self:validateChildName(name) then
+            resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
+            return
+        end
+        
         local localPath = self:fsLocalChildPath(name)
         if file.Exists(localPath, "DATA") then
             resolver:reject(gace.VFS.ErrorCode.ALREADY_EXISTS)

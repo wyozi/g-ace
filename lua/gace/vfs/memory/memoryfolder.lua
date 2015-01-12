@@ -33,6 +33,11 @@ end
 
 function MemoryFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
+        if not self:validateChildName(name) then
+            resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
+            return
+        end
+        
         local ctor
 
         if type == "file" then

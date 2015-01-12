@@ -20,6 +20,10 @@ function Folder:listEntries(opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "listEntries"))
 end
 
+function Folder:validateChildName(name)
+    return #name >= 2 and gace.path.validate(name)
+end
+
 function Folder:createChildNode(name, type, opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "createChildNode"))
 end

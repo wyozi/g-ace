@@ -29,4 +29,5 @@ gace.VFS.ErrorCode = {
     INVALID_TYPE   = "invalid type",
     ALREADY_EXISTS = "already exists",
     ACCESS_DENIED  = "access denied",
+    INVALID_NAME  = "invalid name",
 }

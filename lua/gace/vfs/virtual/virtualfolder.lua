@@ -38,6 +38,10 @@ end
 
 function VirtualFolder:createChildNode(name, type, opts)
     return Promise(function(resolver)
+        if not self:validateChildName(name) then
+            resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
+            return
+        end
         local ctor
 
         if type == "file" then
@@ -63,6 +67,11 @@ end
 function VirtualFolder:addVirtualFolder(vfolder)
     return Promise(function(resolver)
         local name = vfolder:getName()
+
+        if not self:validateChildName(name) then
+            resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
+            return
+        end
 
         self._entries[name] = vfolder
         vfolder:setParent(self)
