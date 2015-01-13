@@ -43,6 +43,13 @@ local function TreeCompSorter(a, b)
 end
 gace.GAceTreeSorter = TreeCompSorter
 
+local function last_comp(str)
+    return str:match("/?([^/]*)$")
+end
+local function par_comp(str)
+    return str:match("(.*)/[^/]*$")
+end
+
 local VGUI_GACETREE = {
 	QueryColor = function(self, clrid)
 		local colors = self.Colors
@@ -170,20 +177,27 @@ local VGUI_GACETREE = {
         self:SetTall(y)
     end,
 
-    ShouldIdBeVisible = function(self, id)
-        if not id then return true end -- root?
+    CheckRecursiveVisibility = function(self, id)
+        local parid = par_comp(id)
+        if parid and not self:CheckRecursiveVisibility(parid) then return false end
 
-        local parid = id:match("(.*)/[^/]*$")
-        if not parid then return true end -- on root level
-        if not self:ShouldIdBeVisible(parid) then return false end
+        if self.ExpandedItems[id] == nil then return true end
 
-        for _,ei in pairs(self.ExpandedItems) do
-            if id:match(ei .. "/[^/]*$") then
-                return true
-            end
-        end
+        return self:IsExpanded(id)
+    end,
 
-        return false
+    IsIdVisible = function(self, id)
+        local parid = par_comp(id)
+        if not parid then return true end
+        return self:CheckRecursiveVisibility(parid)
+    end,
+
+    IsExpanded = function(self, id)
+        return self.ExpandedItems[id] == true
+    end,
+
+    SetExpanded = function(self, id, b)
+        self.ExpandedItems[id] = b
     end
 }
 
@@ -200,11 +214,7 @@ local VGUI_GACETREENODE = {
     end,
 
     DoClick = function(self)
-        if table.HasValue(self.Tree.ExpandedItems, self.NodeId) then
-            table.RemoveByValue(self.Tree.ExpandedItems, self.NodeId)
-        else
-            table.insert(self.Tree.ExpandedItems, self.NodeId)
-        end
+        self.Tree:SetExpanded(self.NodeId, not self.Tree:IsExpanded(self.NodeId))
 
         self.Tree.IsDirty = true
 
@@ -238,12 +248,12 @@ local VGUI_GACETREENODE = {
 
         local x = 5 + ((self.Depth or 0) * 15)
 
-        draw.SimpleText((self.NodeId or ""):match("/?([^/]*)$"), "DermaDefaultBold", x+45, h/2, vars.fg, nil, TEXT_ALIGN_CENTER)
+        draw.SimpleText(last_comp(self.NodeId or ""), "DermaDefaultBold", x+45, h/2, vars.fg, nil, TEXT_ALIGN_CENTER)
 
         surface.SetDrawColor(255, 255, 255)
 
         if self.Item.type == "folder" then
-            local is_expanded = table.HasValue(self.Tree.ExpandedItems, self.NodeId)
+            local is_expanded = self.Tree:IsExpanded(self.NodeId)
 
             surface.SetMaterial(vars.mat_arrow)
             surface.DrawTexturedRectRotated(x+8, h/2, 16, 16, is_expanded and 270 or 0)
@@ -267,7 +277,7 @@ local VGUI_GACETREENODE = {
     end,
 
     ShouldBeVisible = function(self)
-        return self.Tree:ShouldIdBeVisible(self.NodeId)
+        return self.Tree:IsIdVisible(self.NodeId)
     end
 }
 derma.DefineControl( "GAceTreeNode", "Tree item for GAceTree", VGUI_GACETREENODE, "DButton" )
