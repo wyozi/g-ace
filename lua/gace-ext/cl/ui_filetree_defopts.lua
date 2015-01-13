@@ -19,7 +19,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		local folderpath = gace.path.tail(path)
+		local folderpath, filename = gace.path.tail(path)
 
 		local function DoRename(tab_was_open)
 			gace.ext.ShowTextInputPrompt("Filename", function(nm)
@@ -38,7 +38,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 					-- TODO does reopening tab need a delay?
 					if tab_was_open then gace.OpenSession(newpath) end
 				end)
-			end, node:GetText())
+			end, filename)
 		end
 
 		local sess = gace.GetSession(path)
