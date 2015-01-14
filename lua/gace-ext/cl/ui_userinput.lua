@@ -19,7 +19,7 @@ gace.AddHook("AddPanels", "Editor_AddUserInput", function(frame, basepnl)
 
 			inputpanel:Hide()
 			gace.Frame.BasePanel:InvalidateLayout(true)
-			
+
 			inputpanel.InputCallback(self:GetText())
 		end
 	end
@@ -33,6 +33,7 @@ function gace.ext.ShowTextInputPrompt(query, callback, default)
 	inputpanel.QueryString = query or ""
 
 	inputpanel.Input:SetText(default or "")
+	inputpanel.Input:SetCaretPos(string.len(default or ""))
 	inputpanel.Input:RequestFocus()
 
 	inputpanel:Show()
@@ -59,7 +60,7 @@ function gace.ext.ShowTextInputPrompt(query, callback, default)
 				resolver:resolve(text)
 			end
 			inputpanel.InputClosedCallback = function()
-				resolver:reject("closed")
+				resolver:reject("input terminated")
 			end
 		end)
 	end
