@@ -32,6 +32,45 @@ local VGUI_GACEINPUT = {
 		self:DrawTextEntryText(textcolor, self.m_colHighlight, textcolor)
 		return true
 	end,
+
+	-- Enabling history requires some hacks, so we'll have a method for that
+	EnableHistory = function(self)
+		self:SetHistoryEnabled(true)
+
+		-- Override OnKeyCodeTyped
+		-- Requires some bloat code from dtextentry.lua
+		self.OnKeyCodeTyped = function(self, code)
+			self:OnKeyCode(code)
+
+			if code == KEY_ENTER and not self:IsMultiline() and self:GetEnterAllowed() then
+				if IsValid(self.Menu) then
+					self.Menu:Remove()
+				end
+
+				self:AddHistory(self:GetText())
+
+				self:FocusNext()
+				self:OnEnter()
+				self.HistoryPos = 0
+			end
+
+			if self.m_bHistory or IsValid(self.Menu) then
+				if code == KEY_UP then
+					self.HistoryPos = self.HistoryPos - 1;
+					self:UpdateFromHistory()
+				end
+
+				if code == KEY_DOWN then
+					self.HistoryPos = self.HistoryPos + 1;
+					self:UpdateFromHistory()
+				end
+			end
+		end
+
+		self.OnLoseFocus = function(self)
+			hook.Call("OnTextEntryLoseFocus", nil, self)
+		end
+	end
 }
 
 derma.DefineControl( "GAceInput", "Text input for GAce", VGUI_GACEINPUT, "DTextEntry" )

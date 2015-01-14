@@ -9,6 +9,7 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 	consolepanel:AddDocked("Console", console, FILL)
 
 	local consoleinput = vgui.Create("GAceInput")
+	consoleinput:EnableHistory()
 	consoleinput.OnEnter = function()
 		gace.Log(Color(0, 255, 0), "> ", gace.UIColors["tab_fg"], consoleinput:GetText())
 		LocalPlayer():ConCommand("gace " .. consoleinput:GetText())
