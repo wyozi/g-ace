@@ -168,9 +168,9 @@ local VGUI_GACETREE = {
                 c:SetPos(0, -100)
             else
                 c:SetPos(0, y)
-                c:SetSize(self:GetWide(), 22)
+                c:SetSize(self:GetWide(), c:GetTall())
 
-                y = y + 22
+                y = y + c:GetTall()
             end
         end
 
@@ -211,6 +211,7 @@ local mat_arrow = Material("icon16/bullet_go.png")
 local VGUI_GACETREENODE = {
     Init = function(self)
         self:SetText("")
+        self:SetTall(20)
     end,
 
     DoClick = function(self)
