@@ -4,10 +4,14 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 		text = function()
 			local sess = gace.GetOpenSession()
 			if sess and sess.VFolder.git then
-				return string.format("Git mode: %s", (sess.VFolder.git.enabled) and "On" or "Off")
+				if sess.VFolder.git.enabled then
+					return string.format("Git [%s]", (sess.VFolder.git.branch))
+				else
+					return "Git [-]"
+				end
 			end
 
-			return "Enable Git"
+			return "Git"
 		end,
 		width = 90,
 		fn = function()

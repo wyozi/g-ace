@@ -46,9 +46,9 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GLuaDocsCommand", function(com
 	comps:AddComponent {
 		text = function()
 			local docshtml = gace.GetPanel("DocsHTMLPanel")
-			return docshtml and docshtml.IsOpened and "Close" or "Open"
+			return docshtml and docshtml.IsOpened and "Close docs" or "Documentation"
 		end,
-		width = 70,
+		width = 100,
 		fn = function()
 			local docshtml = gace.GetPanel("DocsHTMLPanel")
 			if docshtml then
