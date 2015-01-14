@@ -23,9 +23,30 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 	local opl = horiz_scroller.PerformLayout
 	horiz_scroller.PerformLayout = function(self)
 		self:SetPos(0, 0)
-		self:SetSize(frame:GetWide() - 100, 24)
+
+		local max_width = frame:GetWide() - 100
+
+		-- Compute horizscroller width
+		local w = 0
+		for i=1, #self.Panels do
+			w = w + self.Panels[i]:GetWide() - self.m_iOverlap
+		end
+		self:SetSize(math.min(w, max_width), 24)
 
 		return opl(self)
+	end
+
+	-- For some STUPID reason frame resize doesn't trigger PerformLayout, so we
+	-- have to do this crap manually
+	local last_framew
+	horiz_scroller.Think = function(self)
+		if IsValid(frame) then
+			local framew = frame:GetWide()
+			if last_framew and last_framew ~= framew then
+				self:InvalidateLayout()
+			end
+			last_framew = framew
+		end
 	end
 
 	horiz_scroller:SetOverlap(-2)
