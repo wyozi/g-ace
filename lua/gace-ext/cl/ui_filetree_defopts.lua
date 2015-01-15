@@ -9,7 +9,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local folderpath = gace.path.tail(path)
 			local filname = folderpath .. "/" .. nm
-			gace.Fetch(path, function(_, _, payload)
+			gace.SendRequest("fetch", {path = path}, function(_, _, payload)
 				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
 				gace.OpenSession(filname, {
 					content = payload.content
@@ -25,13 +25,13 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 			gace.ext.ShowTextInputPrompt("Filename", function(nm)
 				local newpath = folderpath .. "/" .. nm
 
-				gace.Fetch(path, function(_, _, payload)
+				gace.SendRequest("fetch", {path = path}, function(_, _, payload)
 					if payload.err then return MsgN("Failed to fetch: ", payload.err) end
 
 					if tab_was_open then gace.CloseSession(path) end
 
-					gace.Delete(path)
-					gace.Save(newpath, payload.content)
+					gace.SendRequest("rm", {path = path})
+					gace.SendRequest("save", {path = newpath, content = payload.content})
 
 					ft.RefreshPath(folderpath)
 
@@ -58,7 +58,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 	csmpnl:SetIcon( "icon16/cross.png" )
 
 	csubmenu:AddOption("Are you sure?", function()
-		gace.Delete(path, function(_, _, pl)
+		gace.SendRequest("rm", {path = path}, function(_, _, pl)
 			if pl.err then
 				gace.Log(gace.LOG_ERROR, "Failed to delete file: ", pl.err)
 				return
@@ -88,7 +88,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 	menu:AddOption("Create Folder", function()
 		gace.ext.ShowTextInputPrompt("Folder name", function(nm)
 			local filname = path .. "/" .. nm
-			gace.MkDir(filname, function(_, _, pl)
+			gace.SendRequest("mkdir", {path = filname}, function(_, _, pl)
 				if pl.err then
 					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
 					return
@@ -102,7 +102,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 	csmpnl:SetIcon( "icon16/cross.png" )
 
 	csubmenu:AddOption("Are you sure?", function()
-		gace.Delete(path, function(_, _, pl)
+		gace.SendRequest("rm", {path = path}, function(_, _, pl)
 			if pl.err then
 				gace.Log(gace.LOG_ERROR, "Failed to delete folder: ", pl.err)
 				return
@@ -114,6 +114,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 		end)
 	end):SetIcon("icon16/stop.png")
 
+	--[==[OBSOLETE
 	menu:AddOption("Find", function()
 		gace.ext.ShowTextInputPrompt("The phrase to search", function(nm)
 			gace.Find(path, nm, function(_, _, pl)
@@ -153,4 +154,5 @@ print("Place your cursor on a 'goto' line and press Ctrl-Enter to go to that row
 			end)
 		end)
 	end):SetIcon("icon16/magnifier.png")
+	]==]
 end)

@@ -10,12 +10,12 @@ gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(mypath, n
 		for _,fp in pairs(filepanels) do
 			local path = fp.NodeId
 			-- Fetch contents of this file
-			gace.Fetch(path, function(_, _, payload)
+			gace.SendRequest("fetch", {path = path}, function(_, _, payload)
 				if payload.err then return MsgN("Fail to fetch: ", payload.err) end
 
 				-- Delete old file (this is a move, not a copy after all) and save new file with old contents
-				gace.Delete(path)
-				gace.Save(mypath .. "/" .. fp.NodeId:match("/?([^/]*)$"), payload.content)
+				gace.SendRequest("rm", {path = path})
+				gace.SendRequest("save", {path = mypath .. "/" .. fp.NodeId:match("/?([^/]*)$"), content = payload.content})
 
 				-- Refresh both old and new folders
 				gace.filetree.RefreshPath(mypath)

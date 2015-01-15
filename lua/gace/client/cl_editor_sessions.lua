@@ -97,7 +97,7 @@ function gace.OpenSession(id, data)
 	else
 		gace.SetHTMLSession(id, "Fetching latest sources from server.")
 
-		gace.Fetch(id, function(_, _, payload)
+		gace.SendRequest("fetch", {path = id}, function(_, _, payload)
 			if payload.err then
 				return gace.Log(gace.LOG_ERROR, "Can't open ", id, ": ", payload.err)
 			end

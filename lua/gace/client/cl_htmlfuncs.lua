@@ -56,7 +56,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
-			gace.Save(path, content, function(_, _, pl)
+			gace.SendRequest("save", {path = path, content = content}, function(_, _, pl)
 				if pl.err then
 					local better_err = pl.err
 					if better_err == "Inexistent virtual folder" then
