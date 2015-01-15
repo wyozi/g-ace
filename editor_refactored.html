@@ -116,7 +116,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     // Add row highlighting
     var AceRange = require("ace/range").Range;
     function HighlightRow(rownum) {
-        var marker = editor.getSession().addMarker(new AceRange(rownum, 0, rownum, 2000), "gace-highlight", "fullLine");
+        var marker = editor.getSession().addMarker(new AceRange(rownum, 0, rownum, 2000), "gace-highlight", "fullLine", true);
 
         setTimeout(function() {
             anim(document.querySelector(".gace-highlight"), {opacity: 0}, 3, "ease-in");
