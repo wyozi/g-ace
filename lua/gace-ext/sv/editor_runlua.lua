@@ -34,7 +34,7 @@ function gace.luarun.client(cl, code, code_id)
         return status, ret
     end
 
-    gace.NetMessageOut("lua-runclient", nil, {code = code, code_id = code_id}):Send(cl)
+    gace.NetMessageOut("lua-runclient", {code = code, code_id = code_id}):Send(cl)
 
     return true
 end
@@ -45,7 +45,7 @@ function gace.luarun.clients(code, code_id)
     end
 
     for _,ply in pairs(player.GetAll()) do
-        gace.NetMessageOut("lua-runclient", nil, {code = code, code_id = code_id}):Send(ply)
+        gace.NetMessageOut("lua-runclient", {code = code, code_id = code_id}):Send(ply)
     end
 
     return true

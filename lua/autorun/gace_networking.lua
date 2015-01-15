@@ -1,8 +1,10 @@
 
 gace.RequestCallbacks = gace.RequestCallbacks or {}
 
-function gace.GenReqId(id)
-	return util.CRC(id .. os.time() .. math.random())
+local req_num = 0
+function gace.GenReqId()
+	req_num = req_num + 1
+	return math.floor(CurTime()) .. "_" .. req_num
 end
 
 if SERVER then util.AddNetworkString("gace_fileacc") end
@@ -14,7 +16,7 @@ net.Receive("gace_fileacc", function(len, cl)
 
 	local cbtbl = gace.RequestCallbacks[reqid]
 
-	gace.Debug("Received fileacc ", op, " with reqid: ", reqid, " resolving to req cb tbl: ", cbtbl)
+	gace.Debug("Received net message ", op, " with reqid: ", reqid, " resolving to req cb tbl: ", cbtbl)
 	if gace.IsDebug() then
 		gace.Debug("Payload: ")
 		PrintTable(payload)
@@ -32,7 +34,7 @@ end)
 function gace.SendNetMessage(netmsg)
 	net.Start("gace_fileacc")
 
-	gace.Debug("Sending gace netmsg ", netmsg:GetOpcode(), " with reqid ", netmsg:GetReqId())
+	gace.Debug("Sending net message ", netmsg:GetOpcode(), " with reqid ", netmsg:GetReqId())
 
 	net.WriteString(netmsg:GetReqId())
 	net.WriteString(netmsg:GetOpcode())

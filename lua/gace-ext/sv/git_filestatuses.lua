@@ -31,7 +31,7 @@ function gace.GitBroadcastRepoStatus(ply, path)
     		end
 
     		local vfolder = gace.path.head(path)
-    		gace.NetMessageOut("git_updstatus", nil, {vfolder = vfolder, changes = payload}):Send(ply)
+    		gace.NetMessageOut("git_updstatus", {vfolder = vfolder, changes = payload}):Send(ply)
         end)
 	end):catch(print)
 end

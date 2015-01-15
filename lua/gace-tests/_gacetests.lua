@@ -46,7 +46,17 @@ function gace.RunTests()
 
     local testing_funcs = {
         assertTrue = function(b, msg)
-            if b then pass(msg) else fail(msg) end
+            if b == true then pass(msg) else fail(msg) end
+        end,
+        assertFalse = function(b, msg)
+            if b == false then pass(msg) else fail(msg) end
+        end,
+
+        assertNonNil = function(b, msg)
+            if b ~= nil then pass(msg) else fail(msg) end
+        end,
+        assertNil = function(b, msg)
+            if b == nil then pass(msg) else fail(msg) end
         end,
 
         -- Equality check

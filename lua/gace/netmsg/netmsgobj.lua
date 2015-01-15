@@ -33,6 +33,9 @@ if SERVER then
 end
 
 function netmsg_out_meta:ListenToResponse(callback)
+    if not self:GetReqId() then
+        self:SetReqId(gace.GenReqId())
+    end
     self.protocol.Listen(self, callback)
 
     return self
@@ -64,14 +67,16 @@ if SERVER then
     AccessorFunc(netmsg_in_meta, "sender", "Sender")
 end
 
-function netmsg_in_meta:CreateResponsePacket(op, payload)
-    if not self:GetReqId() or self:GetReqId() == "" then return error("trying to response to packet with no req id") end
-    local netmsg = gace.NetMessageOut(op, self:GetReqId(), payload)
+function netmsg_in_meta:CreateResponseMessage(op, payload)
+    if not self:GetReqId() or self:GetReqId() == "" then return error("trying to response to a message with no req id") end
+    local netmsg = gace.NetMessageOut(op or self:GetOpcode(), payload)
+    netmsg:SetReqId(self:GetReqId())
 
     if SERVER then netmsg:SetTarget(self:GetSender()) end
 
     return netmsg
 end
+netmsg_in_meta.CreateResponsePacket = netmsg_in_meta.CreateResponseMessage
 
 --[[
 Constructors
@@ -80,21 +85,21 @@ gace.NetMessageIn = function(op, reqid, payload, protocol)
     reqid = reqid or ""
     payload = payload or {}
     if not op then
-        return error("reqid and/or opcode required!")
+        return error("opcode required!")
     end
 
     local msg = {reqid = reqid, op = op, payload = payload, protocol = protocol or gace.NetMessageDefaultProtocol}
     setmetatable(msg, netmsg_in_meta)
     return msg
 end
-gace.NetMessageOut = function(op, reqid, payload, protocol)
+gace.NetMessageOut = function(op, payload, protocol)
     reqid = reqid or ""
     payload = payload or {}
     if not op then
-        return error("reqid and/or opcode required!")
+        return error("opcode required!")
     end
 
-    local msg = {reqid = reqid, op = op, payload = payload, protocol = protocol or gace.NetMessageDefaultProtocol}
+    local msg = {op = op, payload = payload, protocol = protocol or gace.NetMessageDefaultProtocol}
     setmetatable(msg, netmsg_out_meta)
     return msg
 end

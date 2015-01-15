@@ -1,17 +1,9 @@
 if CLIENT then
-    local reqid = 0
-    local function IpcReq()
-        reqid = reqid + 1
-        return "ipc_" .. math.floor(CurTime()*100) .. "_" .. (reqid)
-    end
-
     gace.AddHook("PreCommandCall", "InterceptIPCCommands", function(cmd, opts, caller, r)
         if not opts.ipc then return end
 
         return Promise(function(resolver)
-            local reqid = IpcReq()
-
-            local netmsg = gace.NetMessageOut(opts.ipc, reqid, {args = r})
+            local netmsg = gace.NetMessageOut(opts.ipc, {args = r})
         	netmsg:ListenToResponse(function(_, _, pl)
                 if pl.err then
                     resolver:reject(pl.err)

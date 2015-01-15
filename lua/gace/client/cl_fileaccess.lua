@@ -1,7 +1,3 @@
-function gace.ListTree(path, callback)
-	gace.SendMultiPartRequest("ls", {path=path, recursive=true}, callback)
-end
-
 function gace.Fetch(path, callback)
 	gace.SendRequest("fetch", {path=path}, callback)
 end
