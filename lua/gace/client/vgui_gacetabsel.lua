@@ -28,6 +28,27 @@ local VGUI_EDITOR_TAB_SEL = {
 	end,
 	DoClick = function(self)
 		local menu = DermaMenu()
+
+		menu:AddOption("Go to file", function()
+			gace.ext.ShowTextInputPrompt("File path", function(path)
+				local rownum = path:match("@(%d+)$")
+				if rownum then path = path:sub(1, -(#rownum+2)) end
+
+				gace.OpenSession(path, {
+					callback = function()
+						print("callbacked")
+						if rownum then
+							gace.RunJavascript([[
+								editor.moveCursorTo(]] .. rownum .. [[, 0);
+								HighlightRow(]] .. rownum .. [[);
+							]])
+						end
+					end
+				})
+			end)
+		end)
+		menu:AddSpacer()
+
 		local tabs = gace.GetPanel("Tabs")
 		for _,pnl in pairs(tabs.Panels) do
 			if pnl.SessionId then

@@ -69,7 +69,10 @@ function gace.CreateSession(id, tbl)
 end
 
 function gace.OpenSession(id, data)
-	if gace.OpenedSessionId == id then return end
+	if gace.OpenedSessionId == id then
+		if data and data.callback then data.callback() end
+		return
+	end
 
 	local sess = gace.GetSession(id)
 
