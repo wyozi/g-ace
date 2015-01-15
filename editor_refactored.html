@@ -29,28 +29,8 @@
         z-index: 9999;
     }
 
-    @keyframes highlight {
-        0% {
-            background: rgb(217, 30, 24);
-        }
-        100% {
-            background: none;
-        }
-    }
-    @-webkit-keyframes highlight {
-        0% {
-            background: rgb(217, 30, 24);
-        }
-        100% {
-            background: none;
-        }
-    }
-
     .gace-highlight {
-        animation: highlight 3s;
-        animation-timing-function: ease-out;
-        -webkit-animation: highlight 3s;
-        -webkit-animation-timing-function: ease-out;
+        background-color: red;
         position: absolute;
     }
 </style>
@@ -77,7 +57,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 <script src="ace/ext-settings_menu.js"></script>
 <script src="ace/ext-keybinding_menu.js"></script>
 <script src="ace/ext-statusbar.js"></script>
-<script src="ace-ext/mode-moon.js"></script>
+<script src="anim.min.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
 
 <script>
@@ -137,9 +117,14 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     var AceRange = require("ace/range").Range;
     function HighlightRow(rownum) {
         var marker = editor.getSession().addMarker(new AceRange(rownum, 0, rownum, 2000), "gace-highlight", "fullLine");
+
+        setTimeout(function() {
+            anim(document.querySelector(".gace-highlight"), {opacity: 0}, 3, "ease-in");
+        }, 100);
+
 		setTimeout(function() {
 			editor.getSession().removeMarker(marker);
-		}, 2000);
+		}, 3100);
     }
 
     var emptySessionContent = editor.getSession().getValue();
