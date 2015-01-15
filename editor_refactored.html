@@ -37,10 +37,20 @@
             background: none;
         }
     }
+    @-webkit-keyframes highlight {
+        0% {
+            background: rgb(217, 30, 24);
+        }
+        100% {
+            background: none;
+        }
+    }
 
     .gace-highlight {
         animation: highlight 3s;
         animation-timing-function: ease-out;
+        -webkit-animation: highlight 3s;
+        -webkit-animation-timing-function: ease-out;
         position: absolute;
     }
 </style>
