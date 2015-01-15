@@ -34,7 +34,7 @@ end
 
 function netmsg_out_meta:ListenToResponse(callback)
     if not self:GetReqId() then
-        self:SetReqId(gace.GenReqId())
+        self:SetReqId(gace.reqid.generate())
     end
     self.protocol.Listen(self, callback)
 
@@ -68,7 +68,7 @@ if SERVER then
 end
 
 function netmsg_in_meta:CreateResponseMessage(op, payload)
-    if not self:GetReqId() or self:GetReqId() == "" then return error("trying to response to a message with no req id") end
+    if not gace.reqid.validate(self:GetReqId()) then return error("creating a response message with invalid reqid") end
     local netmsg = gace.NetMessageOut(op or self:GetOpcode(), payload)
     netmsg:SetReqId(self:GetReqId())
 

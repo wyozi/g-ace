@@ -1,12 +1,6 @@
 local gat = gace.AddTest
 
-gat("Networking: request id uniqueness", function(t)
-    local f = gace.GenReqId()
-    local s = gace.GenReqId()
-    t.assertNonEqual(f, s, "two reqids generated in row should not be equal")
-end)
-
-gat("NetMessage object: validate parameters", function(t)
+gat("NetMessage object: validate constructor parameters", function(t)
     local constructors = {"NetMessageIn", "NetMessageOut"}
 
     for _,c in pairs(constructors) do
@@ -36,9 +30,18 @@ gat("NetMessage object: sending", function(t)
     t.assertError(netmsg.Send, "trying to send more than once errors", netmsg)
 end)
 
-gat("NetMessage object: response message", function(t)
+gat("NetMessage object: response message creation", function(t)
     local _protocol = CreateProtocolStub(function(netmsg) end, function(netmsg, callback) end)
 
+    -- Test validation of reqid
+    local netmsg = gace.NetMessageIn("test_op", nil, {})
+    t.assertError(netmsg.CreateResponseMessage, "should fail if reqid is nil", netmsg)
+    netmsg:SetReqId("")
+    t.assertError(netmsg.CreateResponseMessage, "should fail if reqid is an empty string", netmsg)
+    netmsg:SetReqId(0)
+    t.assertError(netmsg.CreateResponseMessage, "should fail if reqid is a number", netmsg)
+
+    -- Test other things
     local netmsg = gace.NetMessageIn("test_op", "test_reqid", {})
 
     local response_msg = netmsg:CreateResponseMessage(nil, {})

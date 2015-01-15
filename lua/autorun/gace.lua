@@ -31,6 +31,7 @@ load("gace-tests/path.lua", "shared")
 load("gace-tests/pathobj.lua", "shared")
 load("gace-tests/netmsgobj.lua", "shared")
 load("gace-tests/ui_gacetree.lua", "shared")
+load("gace-tests/reqid.lua", "shared")
 
 -- Load GAce files
 load("gace/util/miscutils.lua")
@@ -40,6 +41,7 @@ load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
 load("gace/cache/cachesync_filesystem.lua")
 
+load("gace/netmsg/reqid.lua")
 load("gace/netmsg/protocol_netlib.lua")
 load("gace/netmsg/netmsgobj.lua")
 
