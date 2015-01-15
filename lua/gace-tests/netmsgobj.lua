@@ -1,6 +1,6 @@
 local gat = gace.AddTest
 
-gat("NetMessage object: Validate parameters", function(t)
+gat("NetMessage object: validate parameters", function(t)
     local constructors = {"NetMessageIn", "NetMessageOut"}
 
     for _,c in pairs(constructors) do
@@ -14,11 +14,18 @@ gat("NetMessage object: Validate parameters", function(t)
     end
 end)
 
-gat("NetMessage object: Sending", function(t)
-    local netmsg = gace.NetMessageOut("", 0, {})
-    t.assertTrue(not netmsg.sent, "'sent' false before calling :Send()")
+local function CreateProtocolStub(send, listen)
+    return {
+        Send = send,
+        Listen = listen
+    }
+end
 
-    -- We imitate having already sent the net message by setting 'sent' directly
-    netmsg.sent = true
+gat("NetMessage object: sending", function(t)
+    local _protocol = CreateProtocolStub(function(netmsg) end, function(netmsg, callback) end)
+
+    local netmsg = gace.NetMessageOut("", 0, {}, _protocol)
+
+    netmsg:Send()
     t.assertError(netmsg.Send, "trying to send more than once errors", netmsg)
 end)

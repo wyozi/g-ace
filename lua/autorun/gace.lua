@@ -40,6 +40,7 @@ load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
 load("gace/cache/cachesync_filesystem.lua")
 
+load("gace/netmsg/protocol_netlib.lua")
 load("gace/netmsg/netmsgobj.lua")
 
 load("gace/cmd/commands.lua")

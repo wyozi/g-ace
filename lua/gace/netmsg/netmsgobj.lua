@@ -32,16 +32,8 @@ if SERVER then
     AccessorFunc(netmsg_out_meta, "target", "Target")
 end
 
-gace.NetMsgListeners = {}
-gace.AddHook("HandleNetMessage", "_ResponseToListeners", function(packet)
-    local listener = gace.NetMsgListeners[packet:GetReqId()]
-    if listener then
-        listener(packet:GetReqId(), packet:GetOpcode(), packet:GetPayload())
-    end
-end)
-
 function netmsg_out_meta:ListenToResponse(callback)
-    gace.NetMsgListeners[self:GetReqId()] = callback
+    self.protocol.Listen(self, callback)
 
     return self
 end
@@ -58,7 +50,7 @@ function netmsg_out_meta:Send(targ)
         end
     end
 
-    gace.SendNetMessage(self)
+    self.protocol.Send(self)
 end
 
 --[[
@@ -84,25 +76,25 @@ end
 --[[
 Constructors
 ]]
-gace.NetMessageIn = function(op, reqid, payload)
+gace.NetMessageIn = function(op, reqid, payload, protocol)
     reqid = reqid or ""
     payload = payload or {}
     if not op then
         return error("reqid and/or opcode required!")
     end
 
-    local msg = {reqid = reqid, op = op, payload = payload}
+    local msg = {reqid = reqid, op = op, payload = payload, protocol = protocol or gace.NetMessageDefaultProtocol}
     setmetatable(msg, netmsg_in_meta)
     return msg
 end
-gace.NetMessageOut = function(op, reqid, payload)
+gace.NetMessageOut = function(op, reqid, payload, protocol)
     reqid = reqid or ""
     payload = payload or {}
     if not op then
         return error("reqid and/or opcode required!")
     end
 
-    local msg = {reqid = reqid, op = op, payload = payload}
+    local msg = {reqid = reqid, op = op, payload = payload, protocol = protocol or gace.NetMessageDefaultProtocol}
     setmetatable(msg, netmsg_out_meta)
     return msg
 end
