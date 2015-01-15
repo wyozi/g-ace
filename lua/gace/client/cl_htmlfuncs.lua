@@ -164,7 +164,16 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		gace.ext.OpenDocumentationFor(str)
 	end)
 
+
 	-- General editor related functions (such as updating theme)
+	html:AddFunction("gace", "ContextMenu", function(str)
+		local tbl = util.JSONToTable(str)
+
+		local menu = DermaMenu()
+		gace.CallHook("EditorContextMenu", menu, tbl)
+		menu:Open()
+	end)
+
 	html:AddFunction("gace", "EditorReady", function()
 		local c_theme = cookie.GetString("gace-theme", "ace/theme/tomorrow_night") or "ace/theme/tomorrow_night"
 		local the_theme = "ace/theme/tomorrow_night"

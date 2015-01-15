@@ -1,0 +1,10 @@
+gace.AddHook("EditorContextMenu", "DefaultOptions", function(menu, data)
+    menu:AddOption("Copy", function()
+		SetClipboardText(data.selection_text or "")
+	end):SetIcon("icon16/page_copy.png")
+
+    menu:AddOption("Copy path", function()
+        local path = string.format("%s@%d", gace.OpenedSessionId or "", data.cursorpos.row)
+		SetClipboardText(path)
+	end):SetIcon("icon16/page_link.png")
+end)

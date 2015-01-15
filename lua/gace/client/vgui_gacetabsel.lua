@@ -36,7 +36,6 @@ local VGUI_EDITOR_TAB_SEL = {
 
 				gace.OpenSession(path, {
 					callback = function()
-						print("callbacked")
 						if rownum then
 							gace.RunJavascript([[
 								editor.moveCursorTo(]] .. rownum .. [[, 0);

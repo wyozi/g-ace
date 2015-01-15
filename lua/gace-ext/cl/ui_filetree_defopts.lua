@@ -5,6 +5,10 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 
 	local ft = gace.filetree -- Shortcut to filetree library
 
+	menu:AddOption("Copy path", function()
+		SetClipboardText(path)
+	end):SetIcon("icon16/page_link.png")
+
 	menu:AddOption("Duplicate", function()
 		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local folderpath = gace.path.tail(path)
