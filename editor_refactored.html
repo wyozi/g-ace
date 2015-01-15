@@ -28,6 +28,21 @@
 
         z-index: 9999;
     }
+
+    @keyframes highlight {
+        0% {
+            background: rgb(217, 30, 24);
+        }
+        100% {
+            background: none;
+        }
+    }
+
+    .gace-highlight {
+        animation: highlight 3s;
+        animation-timing-function: ease-out;
+        position: absolute;
+    }
 </style>
 </head>
 <body>
@@ -106,6 +121,15 @@ Select a file or press Ctrl-n from the filetree to start hacking!
     function ParseGModQueryResponse(requestid, values) {
         gmodApiCallbacks[requestid](null, values);
         delete gmodApiCallbacks[requestid];
+    }
+
+    // Add row highlighting
+    var AceRange = require("ace/range").Range;
+    function HighlightRow(rownum) {
+        var marker = editor.getSession().addMarker(new AceRange(rownum, 0, rownum, 2000), "gace-highlight", "fullLine");
+		setTimeout(function() {
+			editor.getSession().removeMarker(marker);
+		}, 2000);
     }
 
     var emptySessionContent = editor.getSession().getValue();
