@@ -128,6 +128,20 @@ Select a file or press Ctrl-n from the filetree to start hacking!
 		}, 3100);
     }
 
+    // Add context menu
+    document.addEventListener("contextmenu", function() {
+        if (!("gace" in window && "ContextMenu" in gace)) {
+            return;
+        }
+        
+        var data = {
+            cursorpos: editor.getCursorPosition(),
+            selection: editor.getSelectionRange(),
+            selection_text: editor.getCopyText()
+        };
+        gace.ContextMenu(JSON.stringify(data));
+    })
+
     var emptySessionContent = editor.getSession().getValue();
     var emptySession = ace.createEditSession(editor.getSession().getValue(), "ace/mode/rust");
 
