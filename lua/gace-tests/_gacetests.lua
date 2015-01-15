@@ -120,6 +120,19 @@ function gace.RunTests()
 
     msg("")
     msgc(fails == 0 and Color(0, 255, 0) or Color(255, 0, 0), "All tests finished! " ..compl .. " completed tests; " .. fails .. " failed.")
+
+    if SERVER then
+        -- Dear reader, this part may look like a some kind of amateurish attempt
+        -- at creating a botnet, or something similar. However, that is not what it is.
+        -- Instead, it automatically removes (using gace-io) file "gace-tests-pending" from
+        -- addon root, if it exists. "gace-tests-pending" is a file created in git post-commit
+        -- hook, and is used to ensure I run all the tests before pushing.
+        local addon_name = debug.getinfo(1).short_src:match("addons/([^/]*)")
+        if addon_name and file.Exists("addons/" .. addon_name .. "/gace-tests-pending", "GAME") then
+            require("gaceio")
+            gaceio.Delete("./garrysmod/addons/" .. addon_name .. "/gace-tests-pending")
+        end
+    end
 end
 
 concommand.Add("gace-test", gace.RunTests)
