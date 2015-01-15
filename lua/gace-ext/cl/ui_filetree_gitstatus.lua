@@ -1,3 +1,6 @@
+local clr_modified = Color(248, 148, 6)
+local clr_new = Color(38, 166, 91)
+
 gace.AddHook("FileTreeFileNodePrePaint", "Git_FileNodeIcon", function(node, vars)
     local pathobj = gace.Path(node.NodeId)
     local vfolder = gace.VFolders[pathobj:GetVFolder()]
@@ -12,9 +15,9 @@ gace.AddHook("FileTreeFileNodePrePaint", "Git_FileNodeIcon", function(node, vars
             local phase, change = parts[1], parts[2]
 
             if change == "m"--[[odified]] or change == "r"--[[enamed]] then
-                vars.fg = Color(248, 148, 6)
+                vars.fg = clr_modified
             elseif change == "n"--[[ew]] then
-                vars.fg = Color(38, 166, 91)
+                vars.fg = clr_new
             end
         end
     end

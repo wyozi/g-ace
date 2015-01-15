@@ -228,7 +228,7 @@ local VGUI_GACETREENODE = {
 
     Paint = function(self, w, h)
         local vars = {
-            bg_hover = gace.UIColors.tab_bg_hover,
+            bg_hover = gace.UIColors.treenode_bg_hover,
             bg = gace.UIColors.tab_bg,
 
             fg = gace.UIColors.tab_fg,
