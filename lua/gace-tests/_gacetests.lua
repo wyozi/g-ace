@@ -124,9 +124,13 @@ function gace.RunTests()
     if SERVER then
         -- Dear reader, this part may look like a some kind of amateurish attempt
         -- at creating a botnet, or something similar. However, that is not what it is.
-        -- Instead, it automatically removes (using gace-io) file "gace-tests-pending" from
+        --
+        -- It automatically removes (using gace-io) file "gace-tests-pending" from
         -- addon root, if it exists. "gace-tests-pending" is a file created in git post-commit
         -- hook, and is used to ensure I run all the tests before pushing.
+        --
+        -- If you for some reason want to do the same, copy hooks from /githooks to .git/hooks
+        -- You also need gace-io binary module to remove the file programmatically.
         local addon_name = debug.getinfo(1).short_src:match("addons/([^/]*)")
         if addon_name and file.Exists("addons/" .. addon_name .. "/gace-tests-pending", "GAME") then
             require("gaceio")
