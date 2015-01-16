@@ -33,7 +33,7 @@ if SERVER then
 end
 
 function netmsg_out_meta:ListenToResponse(callback)
-    if not self:GetReqId() then
+    if not gace.reqid.validate(self:GetReqId()) then
         self:SetReqId(gace.reqid.generate())
     end
     self.protocol.Listen(self, callback)

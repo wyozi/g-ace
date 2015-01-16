@@ -62,6 +62,11 @@ gat("NetMessage object: response message creation", function(t)
     t.assertNonNil(response:GetReqId(), "listening to response should compute a reqid if it's nonexistent")
 
     local response = gace.NetMessageOut("test_op", {}, _protocol)
+    response:SetReqId("")
+    response:ListenToResponse(function() end)
+    t.assertNonEqual(response:GetReqId(), "", "listening to response should compute a reqid if it's empty string")
+
+    local response = gace.NetMessageOut("test_op", {}, _protocol)
     response:SetReqId("--reqid--")
     response:ListenToResponse(function() end)
     t.assertEquals(response:GetReqId(), "--reqid--", "listening to response should use existent reqid if it exists")
