@@ -34,9 +34,14 @@ function gace.path.tail(path)
 end
 
 local validator_pattern = "[^%a%d%_%- %./]"
-function gace.path.validate(comp)
-    if string.find(comp, validator_pattern) then
+function gace.path.validate(path)
+    if string.find(path, validator_pattern) then
         return false
     end
     return true
+end
+
+function gace.path.validate_comp(comp)
+    if string.find(comp, "/") then return false end
+    return gace.path.validate(comp)
 end

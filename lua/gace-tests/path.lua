@@ -10,9 +10,16 @@ gat("Path library: validation", function(t)
     t.assertTrue(gpv("file_name.txt"), "name with an underscore")
 
     t.assertTrue(gpv("path/file.txt"), "file path")
-    t.assertTrue(not gpv("path\\file.txt"), "backwards slash")
+    t.assertFalse(gpv("path\\file.txt"), "backwards slash")
 
-    t.assertTrue(not gpv("äää.txt"), "name with non-ASCII")
+    t.assertFalse(gpv("äää.txt"), "name with non-ASCII")
+end)
+
+gat("Path library: component validation", function(t)
+    local gpv = gace.path.validate_comp
+
+	t.assertTrue(gpv("file"), "extensionless name")
+    t.assertFalse(gpv("path/file.txt"), "file path")
 end)
 
 gat("Path library: normalization", function(t)

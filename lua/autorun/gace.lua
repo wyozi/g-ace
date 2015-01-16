@@ -24,15 +24,6 @@ end
 load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/andthen.lua", "shared")
 
--- Load GAce testing lib and tests
-load("gace-tests/_gacetests.lua", "shared")
-load("gace-tests/utils.lua", "shared")
-load("gace-tests/path.lua", "shared")
-load("gace-tests/pathobj.lua", "shared")
-load("gace-tests/netmsgobj.lua", "shared")
-load("gace-tests/ui_gacetree.lua", "shared")
-load("gace-tests/reqid.lua", "shared")
-
 -- Load GAce files
 load("gace/util/miscutils.lua")
 load("gace/util/hooks.lua")
@@ -98,3 +89,17 @@ load("gace/client/vgui_gacetab.lua", "client")
 load("gace/client/vgui_gacetabsel.lua", "client")
 load("gace/client/vgui_gacetextinput.lua", "client")
 load("gace/client/vgui_gacetree.lua", "client")
+
+
+-- Load GAce testing lib and tests
+load("gace-tests/_gacetests.lua", "shared")
+load("gace-tests/utils.lua", "shared")
+load("gace-tests/path.lua", "shared")
+load("gace-tests/pathobj.lua", "shared")
+load("gace-tests/netmsgobj.lua", "shared")
+load("gace-tests/ui_gacetree.lua", "shared")
+load("gace-tests/reqid.lua", "shared")
+
+load("gace-tests/vfs/_vfs.lua", "shared")
+load("gace-tests/vfs/classes.lua", "shared")
+load("gace-tests/vfs/root.lua", "shared")

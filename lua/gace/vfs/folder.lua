@@ -21,7 +21,7 @@ function Folder:listEntries(opts)
 end
 
 function Folder:validateChildName(name)
-    return #name >= 1 and gace.path.validate(name)
+    return #name >= 1 and gace.path.validate_comp(name)
 end
 
 function Folder:createChildNode(name, type, opts)
