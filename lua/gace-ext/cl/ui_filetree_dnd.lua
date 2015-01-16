@@ -1,6 +1,6 @@
 -- This file implemented Drag n Drop functionality in the file tree using Garry's Mod's default VGui dnd functionality
 
-gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(mypath, node, type)
+gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(target_folderpath, node, type)
 	if type ~= "folder" then return end
 
 	node:Receiver("gacefile", function(self, filepanels, dropped)
@@ -9,18 +9,21 @@ gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(mypath, n
 		-- Files getting moved to this folder
 		for _,fp in pairs(filepanels) do
 			local path = fp.NodeId
-			-- Fetch contents of this file
-			gace.SendRequest("fetch", {path = path}, function(_, _, payload)
-				if payload.err then return MsgN("Fail to fetch: ", payload.err) end
+			local source_folder = gace.path.tail(path)
+			local newpath = target_folderpath .. "/" .. fp.NodeId:match("/?([^/]*)$")
 
-				-- Delete old file (this is a move, not a copy after all) and save new file with old contents
-				gace.SendRequest("rm", {path = path})
-				gace.SendRequest("save", {path = mypath .. "/" .. fp.NodeId:match("/?([^/]*)$"), content = payload.content})
+			local sess = gace.GetSession(path)
 
-				-- Refresh both old and new folders
-				gace.filetree.RefreshPath(mypath)
-				local oldfolder = gace.path.tail(path)
-				gace.filetree.RefreshPath(oldfolder)
+			gace.cmd.mv(LocalPlayer(), path, newpath):then_(function()
+				gace.filetree.RefreshPath(source_folder)
+				gace.filetree.RefreshPath(target_folderpath)
+
+				if sess ~= nil then
+					gace.CloseSession(path)
+					gace.OpenSession(newpath)
+				end
+			end):catch(function(e)
+				gace.Log(gace.LOG_ERROR, "File move failed: ", e)
 			end)
 		end
 	end)
