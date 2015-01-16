@@ -100,18 +100,16 @@ function gace.OpenSession(id, data)
 	else
 		gace.SetHTMLSession(id, "Fetching latest sources from server.")
 
-		gace.SendRequest("fetch", {path = id}, function(_, _, payload)
-			if payload.err then
-				return gace.Log(gace.LOG_ERROR, "Can't open ", id, ": ", payload.err)
-			end
-
-			sess.Content = payload.content
+		gace.cmd.cat(LocalPlayer(), id):then_(function(t)
+			sess.Content = t.data
 			if not data or not data.mark_unsaved then
 				sess.SavedContent = sess.Content
 			end
 			gace.SetHTMLSession(id, sess.Content, nil, (data and data.mode))
 
 			if data and data.callback then data.callback() end
+		end):catch(function(e)
+			gace.Log(gace.LOG_ERROR, "Can't open ", id, ": ", e)
 		end)
 	end
 

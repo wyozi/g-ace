@@ -48,6 +48,8 @@ load("gace/netmsg/netmsgobj.lua")
 load("gace/cmd/commands.lua")
 load("gace/cmd/ipc.lua")
 
+load("gace/vfs-cmds/cat.lua")
+load("gace/vfs-cmds/cp.lua")
 load("gace/vfs-cmds/ls.lua")
 load("gace/vfs-cmds/mkvfolder.lua")
 

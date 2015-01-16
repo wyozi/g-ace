@@ -12,12 +12,12 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 	menu:AddOption("Duplicate", function()
 		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
 			local folderpath = gace.path.tail(path)
-			local filname = folderpath .. "/" .. nm
-			gace.SendRequest("fetch", {path = path}, function(_, _, payload)
-				if payload.err then return MsgN("Failed to fetch: ", payload.err) end
-				gace.OpenSession(filname, {
-					content = payload.content
-				})
+			local newpath = folderpath .. "/" .. nm
+
+			gace.cmd.cp(LocalPlayer(), path, newpath):then_(function()
+				ft.RefreshPath(folderpath)
+			end):catch(function(e)
+				gace.Log(gace.LOG_ERROR, "File duplication failed: ", e)
 			end)
 		end)
 	end):SetIcon("icon16/page_copy.png")
