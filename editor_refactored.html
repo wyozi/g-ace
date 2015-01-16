@@ -49,7 +49,7 @@
  \$$    $$      | $$  | $$\$$     \\$$     \
   \$$$$$$        \$$   \$$ \$$$$$$$ \$$$$$$$
 
-Select a file or press Ctrl-n from the filetree to start hacking!
+Press Ctrl-N to create a new file and open it in a new tab.
 </div>
 <div id="statusBar"></div>
 
@@ -133,7 +133,7 @@ Select a file or press Ctrl-n from the filetree to start hacking!
         if (!("gace" in window && "ContextMenu" in gace)) {
             return;
         }
-        
+
         var data = {
             cursorpos: editor.getCursorPosition(),
             selection: editor.getSelectionRange(),
