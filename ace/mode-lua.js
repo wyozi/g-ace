@@ -295,7 +295,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 });
 
 
-define("ace/mode/behaviour/cstyle",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/token_iterator","ace/lib/lang"], function(require, exports, module) {
+define("ace/mode/behaviour/luastyle",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/token_iterator","ace/lib/lang"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -304,7 +304,7 @@ var TokenIterator = require("../../token_iterator").TokenIterator;
 var lang = require("../../lib/lang");
 
 var SAFE_INSERT_IN_TOKENS =
-    ["text", "paren.rparen", "punctuation.operator"];
+    ["text", "paren.rparen", "punctuation.operator", "comment"];
 var SAFE_INSERT_BEFORE_TOKENS =
     ["text", "paren.rparen", "punctuation.operator", "comment"];
 
@@ -330,7 +330,7 @@ var initContext = function(editor) {
     };
 };
 
-var CstyleBehaviour = function() {
+var LuaStyleBehaviour = function() {
     this.add("braces", "insertion", function(state, action, editor, session, text) {
         var cursor = editor.getCursorPosition();
         var line = session.doc.getLine(cursor.row);
@@ -343,15 +343,15 @@ var CstyleBehaviour = function() {
                     text: '{' + selected + '}',
                     selection: false
                 };
-            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
+            } else if (LuaStyleBehaviour.isSaneInsertion(editor, session)) {
                 if (/[\]\}\)]/.test(line[cursor.column]) || editor.inMultiSelectMode) {
-                    CstyleBehaviour.recordAutoInsert(editor, session, "}");
+                    LuaStyleBehaviour.recordAutoInsert(editor, session, "}");
                     return {
                         text: '{}',
                         selection: [1, 1]
                     };
                 } else {
-                    CstyleBehaviour.recordMaybeInsert(editor, session, "{");
+                    LuaStyleBehaviour.recordMaybeInsert(editor, session, "{");
                     return {
                         text: '{',
                         selection: [1, 1]
@@ -363,8 +363,8 @@ var CstyleBehaviour = function() {
             var rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar == '}') {
                 var matching = session.$findOpeningBracket('}', {column: cursor.column + 1, row: cursor.row});
-                if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
-                    CstyleBehaviour.popAutoInsertedClosing();
+                if (matching !== null && LuaStyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                    LuaStyleBehaviour.popAutoInsertedClosing();
                     return {
                         text: '',
                         selection: [1, 1]
@@ -374,9 +374,9 @@ var CstyleBehaviour = function() {
         } else if (text == "\n" || text == "\r\n") {
             initContext(editor);
             var closing = "";
-            if (CstyleBehaviour.isMaybeInsertedClosing(cursor, line)) {
+            if (LuaStyleBehaviour.isMaybeInsertedClosing(cursor, line)) {
                 closing = lang.stringRepeat("}", context.maybeInsertedBrackets);
-                CstyleBehaviour.clearMaybeInsertedClosing();
+                LuaStyleBehaviour.clearMaybeInsertedClosing();
             }
             var rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar === '}') {
@@ -387,7 +387,7 @@ var CstyleBehaviour = function() {
             } else if (closing) {
                 var next_indent = this.$getIndent(line);
             } else {
-                CstyleBehaviour.clearMaybeInsertedClosing();
+                LuaStyleBehaviour.clearMaybeInsertedClosing();
                 return;
             }
             var indent = next_indent + session.getTabString();
@@ -397,7 +397,7 @@ var CstyleBehaviour = function() {
                 selection: [1, indent.length, 1, indent.length]
             };
         } else {
-            CstyleBehaviour.clearMaybeInsertedClosing();
+            LuaStyleBehaviour.clearMaybeInsertedClosing();
         }
     });
 
@@ -426,8 +426,8 @@ var CstyleBehaviour = function() {
                     text: '(' + selected + ')',
                     selection: false
                 };
-            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
-                CstyleBehaviour.recordAutoInsert(editor, session, ")");
+            } else if (LuaStyleBehaviour.isSaneInsertion(editor, session)) {
+                LuaStyleBehaviour.recordAutoInsert(editor, session, ")");
                 return {
                     text: '()',
                     selection: [1, 1]
@@ -440,8 +440,8 @@ var CstyleBehaviour = function() {
             var rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar == ')') {
                 var matching = session.$findOpeningBracket(')', {column: cursor.column + 1, row: cursor.row});
-                if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
-                    CstyleBehaviour.popAutoInsertedClosing();
+                if (matching !== null && LuaStyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                    LuaStyleBehaviour.popAutoInsertedClosing();
                     return {
                         text: '',
                         selection: [1, 1]
@@ -474,8 +474,8 @@ var CstyleBehaviour = function() {
                     text: '[' + selected + ']',
                     selection: false
                 };
-            } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
-                CstyleBehaviour.recordAutoInsert(editor, session, "]");
+            } else if (LuaStyleBehaviour.isSaneInsertion(editor, session)) {
+                LuaStyleBehaviour.recordAutoInsert(editor, session, "]");
                 return {
                     text: '[]',
                     selection: [1, 1]
@@ -488,8 +488,8 @@ var CstyleBehaviour = function() {
             var rightChar = line.substring(cursor.column, cursor.column + 1);
             if (rightChar == ']') {
                 var matching = session.$findOpeningBracket(']', {column: cursor.column + 1, row: cursor.row});
-                if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
-                    CstyleBehaviour.popAutoInsertedClosing();
+                if (matching !== null && LuaStyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                    LuaStyleBehaviour.popAutoInsertedClosing();
                     return {
                         text: '',
                         selection: [1, 1]
@@ -580,7 +580,7 @@ var CstyleBehaviour = function() {
 };
 
 
-CstyleBehaviour.isSaneInsertion = function(editor, session) {
+LuaStyleBehaviour.isSaneInsertion = function(editor, session) {
     var cursor = editor.getCursorPosition();
     var iterator = new TokenIterator(session, cursor.row, cursor.column);
     if (!this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS)) {
@@ -593,11 +593,11 @@ CstyleBehaviour.isSaneInsertion = function(editor, session) {
         this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_BEFORE_TOKENS);
 };
 
-CstyleBehaviour.$matchTokenType = function(token, types) {
+LuaStyleBehaviour.$matchTokenType = function(token, types) {
     return types.indexOf(token.type || token) > -1;
 };
 
-CstyleBehaviour.recordAutoInsert = function(editor, session, bracket) {
+LuaStyleBehaviour.recordAutoInsert = function(editor, session, bracket) {
     var cursor = editor.getCursorPosition();
     var line = session.doc.getLine(cursor.row);
     if (!this.isAutoInsertedClosing(cursor, line, context.autoInsertedLineEnd[0]))
@@ -607,7 +607,7 @@ CstyleBehaviour.recordAutoInsert = function(editor, session, bracket) {
     context.autoInsertedBrackets++;
 };
 
-CstyleBehaviour.recordMaybeInsert = function(editor, session, bracket) {
+LuaStyleBehaviour.recordMaybeInsert = function(editor, session, bracket) {
     var cursor = editor.getCursorPosition();
     var line = session.doc.getLine(cursor.row);
     if (!this.isMaybeInsertedClosing(cursor, line))
@@ -618,26 +618,26 @@ CstyleBehaviour.recordMaybeInsert = function(editor, session, bracket) {
     context.maybeInsertedBrackets++;
 };
 
-CstyleBehaviour.isAutoInsertedClosing = function(cursor, line, bracket) {
+LuaStyleBehaviour.isAutoInsertedClosing = function(cursor, line, bracket) {
     return context.autoInsertedBrackets > 0 &&
         cursor.row === context.autoInsertedRow &&
         bracket === context.autoInsertedLineEnd[0] &&
         line.substr(cursor.column) === context.autoInsertedLineEnd;
 };
 
-CstyleBehaviour.isMaybeInsertedClosing = function(cursor, line) {
+LuaStyleBehaviour.isMaybeInsertedClosing = function(cursor, line) {
     return context.maybeInsertedBrackets > 0 &&
         cursor.row === context.maybeInsertedRow &&
         line.substr(cursor.column) === context.maybeInsertedLineEnd &&
         line.substr(0, cursor.column) == context.maybeInsertedLineStart;
 };
 
-CstyleBehaviour.popAutoInsertedClosing = function() {
+LuaStyleBehaviour.popAutoInsertedClosing = function() {
     context.autoInsertedLineEnd = context.autoInsertedLineEnd.substr(1);
     context.autoInsertedBrackets--;
 };
 
-CstyleBehaviour.clearMaybeInsertedClosing = function() {
+LuaStyleBehaviour.clearMaybeInsertedClosing = function() {
     if (context) {
         context.maybeInsertedBrackets = 0;
         context.maybeInsertedRow = -1;
@@ -646,12 +646,12 @@ CstyleBehaviour.clearMaybeInsertedClosing = function() {
 
 
 
-oop.inherits(CstyleBehaviour, Behaviour);
+oop.inherits(LuaStyleBehaviour, Behaviour);
 
-exports.CstyleBehaviour = CstyleBehaviour;
+exports.LuaStyleBehaviour = LuaStyleBehaviour;
 });
 
-define("ace/mode/lua",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/lua_highlight_rules","ace/mode/folding/lua","ace/range","ace/worker/worker_client","ace/mode/behaviour/cstyle"], function(require, exports, module) {
+define("ace/mode/lua",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/lua_highlight_rules","ace/mode/folding/lua","ace/range","ace/worker/worker_client","ace/mode/behaviour/luastyle"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -660,12 +660,12 @@ var LuaHighlightRules = require("./lua_highlight_rules").LuaHighlightRules;
 var LuaFoldMode = require("./folding/lua").FoldMode;
 var Range = require("../range").Range;
 var WorkerClient = require("../worker/worker_client").WorkerClient;
-var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
+var LuaStyleBehaviour = require("./behaviour/luastyle").LuaStyleBehaviour;
 
 var Mode = function() {
     this.HighlightRules = LuaHighlightRules;
 
-    this.$behaviour = new CstyleBehaviour();
+    this.$behaviour = new LuaStyleBehaviour();
     this.foldingRules = new LuaFoldMode();
 };
 oop.inherits(Mode, TextMode);
