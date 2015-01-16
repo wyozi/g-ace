@@ -99,7 +99,7 @@ var LuaHighlightRules = function() {
             stateName: "bracketedString",
             onMatch : function(value, currentState, stack){
                 stack.unshift(this.next, value.length, currentState);
-                return "comment";
+                return "string";
             },
             regex : /\[=*\[/,
             next  : [
@@ -112,13 +112,13 @@ var LuaHighlightRules = function() {
                         } else {
                             this.next = "";
                         }
-                        return "comment";
+                        return "string";
                     },
 
                     regex : /\]=*\]/,
                     next  : "start"
                 }, {
-                    defaultToken : "comment"
+                    defaultToken : "string"
                 }
             ]
         },
