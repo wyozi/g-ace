@@ -32,7 +32,6 @@ function Folder:deleteChildNode(node, opts)
     gace.Error(string.format("%s#%s is not implemented", self.class.name, "deleteChildNode"))
 end
 
-
 -- Alright, this is a bit hacky
 -- To figure out if this node is the initial root folder of a VFS
 -- (ie this is the node that was created using a constructor in vfs.lua)

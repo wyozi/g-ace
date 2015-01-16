@@ -37,7 +37,7 @@ function MemoryFolder:createChildNode(name, type, opts)
             resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
             return
         end
-        
+
         local ctor
 
         if type == "file" then
@@ -60,7 +60,9 @@ function MemoryFolder:createChildNode(name, type, opts)
     end)
 end
 
-function MemoryFolder:deleteChildNode(name, opts)
+function MemoryFolder:deleteChildNode(node, opts)
+    local name = node:getName()
+
     return Promise(function(resolver)
         if self._entries[name] then
             local node = self._entries[name]

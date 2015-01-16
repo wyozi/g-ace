@@ -50,6 +50,7 @@ load("gace/cmd/ipc.lua")
 
 load("gace/vfs-cmds/cat.lua")
 load("gace/vfs-cmds/cp.lua")
+load("gace/vfs-cmds/mv.lua")
 load("gace/vfs-cmds/ls.lua")
 load("gace/vfs-cmds/mkvfolder.lua")
 

@@ -29,18 +29,14 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 			gace.ext.ShowTextInputPrompt("Filename", function(nm)
 				local newpath = folderpath .. "/" .. nm
 
-				gace.SendRequest("fetch", {path = path}, function(_, _, payload)
-					if payload.err then return MsgN("Failed to fetch: ", payload.err) end
-
-					if tab_was_open then gace.CloseSession(path) end
-
-					gace.SendRequest("rm", {path = path})
-					gace.SendRequest("save", {path = newpath, content = payload.content})
-
+				gace.cmd.mv(LocalPlayer(), path, newpath):then_(function()
 					ft.RefreshPath(folderpath)
-
-					-- TODO does reopening tab need a delay?
-					if tab_was_open then gace.OpenSession(newpath) end
+					if tab_was_open then
+						gace.CloseSession(path)
+						gace.OpenSession(newpath)
+					end
+				end):catch(function(e)
+					gace.Log(gace.LOG_ERROR, "File rename failed: ", e)
 				end)
 			end, filename)
 		end
