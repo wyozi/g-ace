@@ -531,7 +531,7 @@ var LuaStyleBehaviour = function() {
 
                 var token = session.getTokenAt(cursor.row, cursor.column);
                 var rightToken = session.getTokenAt(cursor.row, cursor.column + 1);
-                if (leftChar == "\\" && token && /escape/.test(token.type))
+                if (leftChar == "\\" && token/* && /escape/.test(token.type)*/)
                     return null;
 
                 var stringBefore = token && /string/.test(token.type);
