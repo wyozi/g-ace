@@ -114,45 +114,45 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 		end)
 	end):SetIcon("icon16/stop.png")
 
-	--[==[OBSOLETE
-	menu:AddOption("Find", function()
-		gace.ext.ShowTextInputPrompt("The phrase to search", function(nm)
-			gace.Find(path, nm, function(_, _, pl)
+	menu:AddOption("Search", function()
+		gace.ext.ShowTextInputPrompt("Search phrase", function(nm)
+			gace.cmd.grep(LocalPlayer(), path, nm):then_(function(t)
+				local ins = table.insert
+				local content_tbl = {}
 
-				local resdocument = {}
-				local function ins(s) table.insert(resdocument, s) end
+				ins(content_tbl, "Searching for \x01" .. nm .. "\x01 in\x01" .. path .. "\x01\x01case sensitive\x01")
+				ins(content_tbl, "")
 
-				-- This weird formatting performs better than string concats, so excuse me
+				local res_byfile = {}
+				for _,res in pairs(t.results) do
+					res_byfile[res.path] = res_byfile[res.path] or {}
 
-				ins([[
-local searchresults = {
-phrase = "]] .. nm .. [[",
-search_location = "]] .. path .. [[",
-num_matches = ]] .. #pl.matches .. [[,
-}
-
-print("Note: each match is followed by a 'goto' line.")
-print("Place your cursor on a 'goto' line and press Ctrl-Enter to go to that row in that file.")
-
-]])
-				ins("local matches = {\n")
-				for i,match in ipairs(pl.matches) do
-					ins("	[") ins(i) ins("] = {\n")
-					ins("		row = ") ins(match.row) ins(", column = ") ins(match.col) ins(",\n")
-					ins("		line = [[") ins(match.line) ins("]],\n")
-
-					ins("		link = [[ ")
-						ins("goto[f=") ins(match.path) ins(";r=") ins(tostring(match.row))
-						ins(";c=") ins(tostring(match.col)) ins("]")
-					ins(" ]] -- Ctrl-enter on this line!\n")
-					ins("	},\n")
+					ins(res_byfile[res.path], res)
 				end
-				ins("}")
 
-				gace.OpenSession("find_results_" .. os.time(), {content=table.concat(resdocument, "")})
+				local matchno, fileno = 0, 0
 
+				for path, pathres in pairs(res_byfile) do
+					ins(content_tbl, path .. ":")
+					for _,res in pairs(pathres) do
+						ins(content_tbl, "\t" .. res.row .. ": " .. res.linestr)
+						matchno = matchno + 1
+					end
+					ins(content_tbl, "")
+					fileno = fileno + 1
+				end
+
+				ins(content_tbl, "")
+				ins(content_tbl, "Found " .. matchno .. " matches in " .. fileno .. " files")
+
+				gace.OpenSession("searchresults-" .. path, {
+					content = table.concat(content_tbl, "\n"),
+					mode = "ace/mode/c9search"
+				})
+			end):catch(function(e)
+				gace.Log(gace.LOG_ERROR, "Search failed: ", e)
 			end)
+
 		end)
 	end):SetIcon("icon16/magnifier.png")
-	]==]
 end)
