@@ -6,21 +6,25 @@ exports.snippetText = "snippet #!\n\
 	$1\n\
 snippet local\n\
 	local ${1:x} = ${2:1}\n\
+snippet afun\n\
+	function(${1:...})\n\
+		${2:body}\n\
+	end\n\
 snippet fun\n\
 	function ${1:fname}(${2:...})\n\
-		${3:-- body}\n\
+		${3:body}\n\
 	end\n\
 snippet for\n\
-	for ${1:i}=${2:1},${3:10} do\n\
+	for ${1:i}=${2:1}, ${3:10} do\n\
 		${4:print(i)}\n\
 	end\n\
 snippet forp\n\
-	for ${1:i},${2:v} in pairs(${3:table_name}) do\n\
-	   ${4:-- body}\n\
+	for ${1:i}, ${2:v} in pairs(${3:table_name}) do\n\
+	   ${4:body}\n\
 	end\n\
 snippet fori\n\
-	for ${1:i},${2:v} in ipairs(${3:table_name}) do\n\
-	   ${4:-- body}\n\
+	for ${1:i}, ${2:v} in ipairs(${3:table_name}) do\n\
+	   ${4:body}\n\
 	end\n\
 ";
 exports.scope = "lua";
