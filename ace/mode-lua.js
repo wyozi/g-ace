@@ -344,19 +344,11 @@ var LuaStyleBehaviour = function() {
                     selection: false
                 };
             } else if (LuaStyleBehaviour.isSaneInsertion(editor, session)) {
-                if (/[\]\}\)]/.test(line[cursor.column]) || editor.inMultiSelectMode) {
-                    LuaStyleBehaviour.recordAutoInsert(editor, session, "}");
-                    return {
-                        text: '{}',
-                        selection: [1, 1]
-                    };
-                } else {
-                    LuaStyleBehaviour.recordMaybeInsert(editor, session, "{");
-                    return {
-                        text: '{',
-                        selection: [1, 1]
-                    };
-                }
+                LuaStyleBehaviour.recordAutoInsert(editor, session, "}");
+                return {
+                    text: '{}',
+                    selection: [1, 1]
+                };
             }
         } else if (text == '}') {
             initContext(editor);
