@@ -23,6 +23,7 @@ end
 -- Load libraries
 load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/andthen.lua", "shared")
+load("gace/_libs/utf8.lua", "shared")
 
 -- Load GAce files
 load("gace/util/logging.lua")

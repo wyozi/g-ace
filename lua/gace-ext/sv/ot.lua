@@ -86,7 +86,7 @@ end
 
 local function opLen(op)
     if type(op) == "string" then
-        return #op
+        return string.utf8len(op)
     elseif op < 0 then
         return -op
     else
@@ -97,7 +97,7 @@ end
 -- Shortens an op by the given number of characters
 local function shorten(op, by)
     if type(op) == "string" then
-        return string.sub(op, 1 + by)
+        return string.utf8sub(op, 1 + by)
     elseif op < 0 then
         return op + by
     else
@@ -190,7 +190,7 @@ end
 -- Insert a string at the current position.
 function TextOperation:insert(s)
     local ops = self.ops
-    if #s ~= 0 then
+    if string.utf8len(s) ~= 0 then
         if isInsert(ops[#ops]) then
             ops[#ops] = ops[#ops] .. s
         elseif isDelete(ops[#ops]) then
@@ -234,7 +234,7 @@ function TextOperation:lenDifference()
     for i=1, #self.ops do
         local op = self.ops[i]
         if type(op) == "string" then
-            s = s + #op
+            s = s + string.utf8len(op)
         elseif op < 0 then
             s = s + op
         end
@@ -251,22 +251,22 @@ function TextOperation:__call(doc)
     for i=1, #self.ops do
         local op = self.ops[i]
         if isRetain(op) then
-            if len + op > #doc + 1 then
+            if len + op > string.utf8len(doc) + 1 then
                 error("Cannot apply retain operation: operation is too long")
             end
-            table.insert(parts, string.sub(doc, len, len + op - 1))
+            table.insert(parts, string.utf8sub(doc, len, len + op - 1))
             len = len + op
         elseif isInsert(op) then
             table.insert(parts, op)
         else
             len = len - op
-            if len > #doc + 1 then
+            if len > string.utf8len(doc) + 1 then
                 error("Cannot apply delete operation: operation is too long")
             end
         end
     end
 
-    if len ~= #doc + 1 then
+    if len ~= string.utf8len(doc) + 1 then
         error("Cannot apply operation: operation is too short")
     end
 
@@ -287,9 +287,9 @@ function TextOperation:invert(doc)
             inverse:retain(op)
             len = len + op
         elseif isInsert(op) then
-            inverse:delete(#op)
+            inverse:delete(string.utf8len(op))
         else
-            inverse:insert(string.sub(doc, len, len - op - 1))
+            inverse:insert(string.utf8sub(doc, len, len - op - 1))
             len = len - op
         end
     end
@@ -338,7 +338,7 @@ function TextOperation:compose(other)
             if isRetain(a) and isRetain(b) then
                 operation:retain(minLen)
             elseif isInsert(a) and isRetain(b) then
-                operation:insert(string.sub(a, 1, minLen))
+                operation:insert(string.utf8sub(a, 1, minLen))
             elseif isRetain(a) and isDelete(b) then
                 operation:delete(minLen)
             end
@@ -387,10 +387,10 @@ function TextOperation.transform(operationA, operationB)
 
         if isInsert(a) then
             aPrime:insert(a)
-            bPrime:retain(#a)
+            bPrime:retain(string.utf8len(a))
             a = nil
         elseif isInsert(b) then
-            aPrime:retain(#b)
+            aPrime:retain(string.utf8len(b))
             bPrime:insert(b)
             b = nil
         elseif a == nil then
