@@ -37,6 +37,15 @@
         opacity: 0.5;
         position: absolute;
     }
+
+    .gace-othercursor {
+        position: absolute;
+        background-color: cyan;
+        border-left: 2px solid cyan;
+
+        z-index: 3;
+        opacity: 0.5;
+    }
 </style>
 </head>
 <body>
@@ -418,7 +427,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
             var obj = typeof json == "string" ? JSON.parse(json) : json;
 
-            var otSess = {};
+            var otSess = {
+                cursors: {}
+            };
 
             var client = new ot.Client(obj.rev);
             otSess.client = client;
@@ -450,6 +461,16 @@ Press Ctrl-N to create a new file and open it in a new tab.
             ignoreEditorChanges = true;
             sess.setValue(obj.doc);
             ignoreEditorChanges = false;
+
+            sess.getSelection().on("changeCursor", function(e) {
+                var range = sess.getSelection().getRange();
+                var start = sess.getDocument().positionToIndex(range.start);
+                var end = sess.getDocument().positionToIndex(range.end);
+
+                if ("gaceot" in window && "UpdateCursor" in gaceot) {
+                    gaceot.UpdateCursor(id, start, end);
+                }
+            });
 
             otSessions[id] = otSess;
         }
@@ -486,24 +507,6 @@ Press Ctrl-N to create a new file and open it in a new tab.
             }
         }
 
-        /*
-
-  operationFromACEChange: (change) ->
-    delta = change.data
-    if delta.action in ["insertLines", "removeLines"]
-      text = delta.lines.join("\n") + "\n"
-      action = delta.action.replace "Lines", ""
-    else
-      text = delta.text.replace(@aceDoc.getNewLineCharacter(), '\n')
-      action = delta.action.replace "Text", ""
-    start = @indexFromPos delta.range.start
-    restLength = @lastDocLines.join('\n').length - start
-    restLength -= text.length if action is "remove"
-    operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
-    inverse = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
-    [operation, inverse] = [inverse, operation] if action is 'remove'
-    [operation, inverse]
-    */
         function operationFromAceChange(id, change) {
             var sess = gaceSessions.getSession(id);
 
@@ -574,6 +577,47 @@ Press Ctrl-N to create a new file and open it in a new tab.
             otSess.client.applyClient(operation);
         }
 
+        // Credits to Firepad
+        // https://github.com/firebase/firepad/blob/master/lib/ace-adapter.coffee
+        function updateCursor(id, cursorid, start, end) {
+            var otSess = otSessions[id];
+            if (otSess === undefined) {
+                console.log("cursor update on unknown id " + id);
+                return;
+            }
+
+            var sess = gaceSessions.getSession(id);
+            if (sess === undefined) {
+                console.log("cursor update unknown session " + id);
+                return;
+            }
+
+            var clazz = "gace-othercursor";
+
+            var startPos = sess.getDocument().indexToPosition(start);
+            var endPos = sess.getDocument().indexToPosition(end);
+
+            var cursor = new AceRange(startPos.row, startPos.column, endPos.row, endPos.column);
+
+            cursor.clipRows = function() {
+                var range = AceRange.prototype.clipRows.apply(this, arguments);
+                range.isEmpty = function() { return false; }
+                return range;
+            }
+
+            cursor.start = sess.getDocument().createAnchor(cursor.start);
+            cursor.end = sess.getDocument().createAnchor(cursor.end);
+            cursor.id = sess.addMarker(cursor, clazz, "text");
+
+            if (cursorid in otSess.cursors) {
+                otSess.cursors[cursorid].start.detach();
+                otSess.cursors[cursorid].end.detach();
+                sess.removeMarker(otSess.cursors[cursorid].id);
+            }
+
+            otSess.cursors[cursorid] = cursor;
+        }
+
         return  {
             debug: debug,
             getSession: function(id) {
@@ -594,7 +638,8 @@ Press Ctrl-N to create a new file and open it in a new tab.
             },
             onSubscribed: onSubscribed,
             operationReceived: operationReceived,
-            sessionChanged: sessionChanged
+            sessionChanged: sessionChanged,
+            updateCursor: updateCursor
         }
     })();
 
