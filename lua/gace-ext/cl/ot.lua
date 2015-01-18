@@ -22,6 +22,14 @@ gace.AddHook("PostDrawTab", "HighlightOTTabs", function(tab, id)
 	end
 end)
 
+gace.AddHook("FileTreeFileNodePostPaint", "OT_FileNodeIcon", function(node, vars)
+	if not node.NodeId:EndsWith(".ot") then return end
+	
+	surface.SetMaterial(collab_mat)
+	surface.SetDrawColor(255, 255, 255)
+	surface.DrawTexturedRect(vars.draw_x + 16, 10, 12, 12)
+end)
+
 gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
     html:AddFunction("gaceot", "Subscribe", function(id)
         gace.SendRequest("ot-sub", {id = id}, function(_, _, pl)

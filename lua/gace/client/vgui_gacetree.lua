@@ -227,6 +227,8 @@ local VGUI_GACETREENODE = {
     end,
 
     Paint = function(self, w, h)
+        local x = 5 + ((self.Depth or 0) * 15)
+
         local vars = {
             bg_hover = gace.UIColors.treenode_bg_hover,
             bg = gace.UIColors.tab_bg,
@@ -235,7 +237,9 @@ local VGUI_GACETREENODE = {
 
             mat_arrow = mat_arrow,
             mat_folder = mat_folder,
-            mat_file = mat_file
+            mat_file = mat_file,
+
+            draw_x = x
         }
 
         gace.CallHook("FileTreeFileNodePrePaint", self, vars)
@@ -246,8 +250,6 @@ local VGUI_GACETREENODE = {
 			surface.SetDrawColor(vars.bg)
 		end
         surface.DrawRect(0, 0, w, h)
-
-        local x = 5 + ((self.Depth or 0) * 15)
 
         draw.SimpleText(last_comp(self.NodeId or ""), "DermaDefaultBold", x+45, h/2, vars.fg, nil, TEXT_ALIGN_CENTER)
 
@@ -264,6 +266,8 @@ local VGUI_GACETREENODE = {
             surface.SetMaterial(vars.mat_file)
         end
         surface.DrawTexturedRect(x + 20, h/2 - 8, 16, 16)
+
+        gace.CallHook("FileTreeFileNodePostPaint", self, vars)
     end,
 
     Think = function(self)
