@@ -5,10 +5,22 @@ local filesync = gace.CacheSyncFS:new("gace-clientcache.txt")
 filesync:updateCache(gace.ClientCache)
 gace.ClientCache:addChangeListener(filesync)
 
-gace.DefaultEditorOptions = {
-	editor_url = "http://wyozi.github.io/g-ace/editor_refactored.html",
-	root_path = ""
-}
+local gace_editorurl = CreateConVar("gace_editorurl", "")
+
+local function UpdateDefaultOpts()
+	gace.Debug("Updating default editor opts")
+
+	local editorurl = gace_editorurl:GetString():Trim()
+
+	gace.DefaultEditorOptions = {
+		editor_url = editorurl == "" and "http://wyozi.github.io/g-ace/editor_refactored.html" or editorurl,
+		root_path = ""
+	}
+end
+
+UpdateDefaultOpts()
+
+cvars.AddChangeCallback("gace_editorurl", UpdateDefaultOpts)
 
 function gace.GetOption(opt)
 	if gace.EditorOptions and gace.EditorOptions[opt] then
