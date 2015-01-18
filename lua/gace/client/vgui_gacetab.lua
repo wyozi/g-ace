@@ -6,7 +6,7 @@ surface.CreateFont("EditorTabFont", {
 
 local max = 14
 local thickness = 2
-local crossPoly1 = {
+local cross_poly1 = {
     { x = 0, y = 0 },
     { x = thickness, y = 0 },
     { x = max, y = max-thickness },
@@ -15,7 +15,7 @@ local crossPoly1 = {
     { x = 0, y = thickness }
 }
 
-local crossPoly2 = {
+local cross_poly2 = {
     { x = max, y = 0 },
     { x = max, y = thickness },
     { x = thickness, y = max },
@@ -23,6 +23,10 @@ local crossPoly2 = {
     { x = 0, y = max-thickness },
     { x = max-thickness, y = 0 },
 }
+
+local cross_matrix = Matrix()
+-- close button size can't change so this is fine
+cross_matrix:SetTranslation(Vector(24/2 - 7, 22/2 - 7, 0))
 
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
@@ -33,17 +37,13 @@ local VGUI_EDITOR_TAB = {
 			if pself.Hovered then surface.SetDrawColor(242, 38, 19) end
 			surface.DrawRect(0, 0, w, h)
 
-			surface.SetDrawColor(255, 255, 255)
+			surface.SetDrawColor(189, 195, 199)
 			draw.NoTexture()
 
-			local matrix = Matrix()
-			matrix:SetTranslation(Vector(w/2 - 7, h/2 - 7, 0))
-			DisableClipping(true)
-			cam.PushModelMatrix(matrix)
-				surface.DrawPoly(crossPoly1)
-				surface.DrawPoly(crossPoly2)
+			cam.PushModelMatrix(cross_matrix)
+				surface.DrawPoly(cross_poly1)
+				surface.DrawPoly(cross_poly2)
 			cam.PopModelMatrix()
-			DisableClipping(false)
 		end
 		--self.CloseButton:SetIcon("icon16/cancel.png")
 		self.CloseButton.DoClick = function()
