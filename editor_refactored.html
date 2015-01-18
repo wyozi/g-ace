@@ -360,6 +360,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
                     sessionId = null;
                 }
                 delete sessions[id];
+                gaceCollaborate.removeSession(id);
             },
             getSessionId: function() {
                 return sessionId;
@@ -537,6 +538,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
             debug: debug,
             getSession: function(id) {
                 return otSessions[id];
+            },
+            removeSession: function(id) {
+                delete otSessions[id];
             },
             isSubscribed: function(id) {
                 return id in otSessions;
