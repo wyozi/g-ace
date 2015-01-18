@@ -252,7 +252,7 @@ function TextOperation:__call(doc)
         local op = self.ops[i]
         if isRetain(op) then
             if len + op > #doc + 1 then
-                error("Cannot apply operation: operation is too long")
+                error("Cannot apply retain operation: operation is too long")
             end
             table.insert(parts, string.sub(doc, len, len + op - 1))
             len = len + op
@@ -261,7 +261,7 @@ function TextOperation:__call(doc)
         else
             len = len - op
             if len > #doc + 1 then
-                error("Cannot apply operation: operation is too long")
+                error("Cannot apply delete operation: operation is too long")
             end
         end
     end
