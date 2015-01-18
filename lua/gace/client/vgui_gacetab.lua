@@ -36,6 +36,10 @@ local VGUI_EDITOR_TAB = {
 	PerformLayout = function(self)
 		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
 		self.CloseButton:SetSize(16, 16)
+
+		surface.SetFont("EditorTabFont")
+		local w = surface.GetTextSize(self.FileName) + (self.TextLeftPadding or 0) + 30 --[[close btn]]
+		self:SetWide(math.max(w, 120))
 	end,
 	Paint = function(self, w, h)
 		gace.CallHook("PreDrawTab", self, self.SessionId)
@@ -79,8 +83,6 @@ local VGUI_EDITOR_TAB = {
 
 		surface.SetFont("EditorTabFont")
 		local w = surface.GetTextSize(self.SessionId)
-
-		self:SetWide(140)--math.min(w+34, 160))
 	end,
 	DoClick = function(self)
 		gace.OpenSession(self.SessionId)
