@@ -1,4 +1,13 @@
 
+gace.AddHook("FileTreeContextMenu", "FileTree_AddOTOptions", function(path, menu, nodetype)
+	if nodetype ~= "file" then return end
+
+	menu:AddOption("Collaborate on", function()
+        local newpath = path .. ".ot"
+        gace.OpenSession(newpath, {content=""})
+	end):SetIcon("icon16/user_comment.png")
+end)
+
 gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
     html:AddFunction("gaceot", "Subscribe", function(id)
         gace.SendRequest("ot-sub", {id = id}, function(_, _, pl)
@@ -19,11 +28,10 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
         gace.SendRequest("ot-apply", {
             id = id,
             rev = rev,
-            op = op
+            op = util.JSONToTable(op)
         })
     end)
 end)
-
 
 gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 	local op = netmsg:GetOpcode()

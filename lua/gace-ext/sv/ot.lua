@@ -471,11 +471,13 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
             return
         end
 
-		local recv_op = TextOperation.fromJSON(util.JSONToTable(payload.op))
+		local recv_op = TextOperation.fromJSON(payload.op)
         local new_op = sess.srv:receiveOperation(payload.rev, recv_op)
 
+        gace.Debug("OT: ", payload.id, "server state: rev", sess.srv.backend:getRevision(), " doc", sess.srv.document)
+
         for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
-            gace.NetMessageOut("ot-apply", {user = ply, id = payload.id, op = util.TableToJSON(new_op:toJSON())}):Send(cl)
+            gace.NetMessageOut("ot-apply", {user = ply, id = payload.id, op = new_op:toJSON()}):Send(cl)
         end
     end
 
