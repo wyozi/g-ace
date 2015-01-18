@@ -486,9 +486,34 @@ Press Ctrl-N to create a new file and open it in a new tab.
             }
         }
 
-        function operationFromAceChange(change) {
+        /*
+
+  operationFromACEChange: (change) ->
+    delta = change.data
+    if delta.action in ["insertLines", "removeLines"]
+      text = delta.lines.join("\n") + "\n"
+      action = delta.action.replace "Lines", ""
+    else
+      text = delta.text.replace(@aceDoc.getNewLineCharacter(), '\n')
+      action = delta.action.replace "Text", ""
+    start = @indexFromPos delta.range.start
+    restLength = @lastDocLines.join('\n').length - start
+    restLength -= text.length if action is "remove"
+    operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
+    inverse = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
+    [operation, inverse] = [inverse, operation] if action is 'remove'
+    [operation, inverse]
+    */
+        function operationFromAceChange(id, change) {
+            var sess = gaceSessions.getSession(id);
+
+            if (sess === undefined) {
+                console.log("trying to subscribe to unknown session " + id);
+                return;
+            }
+
             var delta = change.data;
-            var text;
+            var action, text;
             if (delta.action in ["insertLines", "removeLines"]) {
                 text = delta.lines.join("\n") + "\n";
                 action = delta.action.replace("Lines", "");
@@ -498,10 +523,21 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 action = delta.action.replace("Text", "");
             }
 
-            var start = editor.getSession().getDocument().positionToIndex(delta.range.start);
-            var restLength = editor.getSession().getDocument().getValue().length - start - 1; // needs to be decr by 1?
+            // Compute doc length BEFORE edit. Could probably be done in a cleaner way
+            var lastDocLength = sess.getDocument().getValue().length;
+            if (action == "remove") {
+                lastDocLength += text.length;
+            }
+            else {
+                lastDocLength -= text.length;
+            }
 
-            if (action == "remove") { restLength += text.length; }
+            var start = sess.getDocument().positionToIndex(delta.range.start);
+            var restLength = lastDocLength - start;
+
+            if (action == "remove") {
+                restLength -= text.length;
+            }
 
             var operation = new ot.TextOperation().retain(start).insert(text).retain(restLength);
             var inverse = new ot.TextOperation().retain(start).delete(text).retain(restLength);
@@ -515,7 +551,10 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 ret = [operation, inverse];
             }
 
-            //console.log(action, ret);
+            if (_debug) {
+                console.log("operationFromAceChange " + action + ": " + text, ret[0].toJSON());
+            }
+
             return ret;
         }
         function sessionChanged(id, change) {
@@ -528,7 +567,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 return;
             }
 
-            var pair = operationFromAceChange(change);
+            var pair = operationFromAceChange(id, change);
             var operation = pair[0];
 
             otSess.client.applyClient(operation);
