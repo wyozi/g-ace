@@ -12,7 +12,10 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	if mode then
 		js_data.mode = mode
 	end
-	js_data.content = gace.JSEscape(content)
+
+	if content then
+		js_data.content = gace.JSEscape(content)
+	end
 
 	local js_table = {}
 	for k,v in pairs(js_data) do
