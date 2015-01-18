@@ -8,6 +8,20 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddOTOptions", function(path, menu
 	end):SetIcon("icon16/user_comment.png")
 end)
 
+local collab_mat = Material("icon16/group.png")
+gace.AddHook("PreDrawTab", "HighlightOTTabs", function(tab, id)
+	if id:EndsWith(".ot") then
+		tab.TextLeftPadding = 20
+	end
+end)
+gace.AddHook("PostDrawTab", "HighlightOTTabs", function(tab, id)
+	if id:EndsWith(".ot") then
+		surface.SetMaterial(collab_mat)
+		surface.SetDrawColor(255, 255, 255)
+		surface.DrawTexturedRect(3, 3, 16, 16)
+	end
+end)
+
 gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
     html:AddFunction("gaceot", "Subscribe", function(id)
         gace.SendRequest("ot-sub", {id = id}, function(_, _, pl)

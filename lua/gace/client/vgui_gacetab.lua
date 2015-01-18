@@ -38,6 +38,8 @@ local VGUI_EDITOR_TAB = {
 		self.CloseButton:SetSize(16, 16)
 	end,
 	Paint = function(self, w, h)
+		gace.CallHook("PreDrawTab", self, self.SessionId)
+
 		if self.Hovered then
 			surface.SetDrawColor(gace.UIColors.tab_bg_hover)--52, 152, 219)
 		elseif self.SessionId == gace.GetSessionId() then
@@ -47,7 +49,7 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(self.FileName, "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.FileName, "EditorTabFont", 5 + (self.TextLeftPadding or 0), h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 		local sess = gace.GetSession(self.SessionId)
 		if sess and not sess:IsSaved() then
@@ -65,6 +67,8 @@ local VGUI_EDITOR_TAB = {
 		local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
 		surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
 		surface.DrawOutlinedRect(0, 0, w, h)
+
+		gace.CallHook("PostDrawTab", self, self.SessionId)
 	end,
 	Setup = function(self, id)
 		self:SetText("")
