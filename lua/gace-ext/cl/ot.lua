@@ -17,10 +17,10 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
             end
             gace.Log(gace.LOG_INFO, "Subscribed to gace-ot ", id)
             gace.RunJavascript(
-                "gaceCollaborate.onSubscribed('" .. id .. "', '" .. util.TableToJSON {
+                "gaceCollaborate.onSubscribed(\"" .. gace.JSEscape(id) .. "\", \"" .. gace.JSEscape(util.TableToJSON {
         			rev = pl.rev,
         			doc = pl.doc
-        		} .. "')"
+        		}) .. "\")"
             )
         end)
     end)
@@ -47,10 +47,8 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
             ret.user = payload.user:SteamID()
         end
 
-        local json = util.TableToJSON(ret)
-        json = json:Replace("\\", "\\\\")
         gace.RunJavascript(
-            "gaceCollaborate.operationReceived('" .. json .. "')"
+            "gaceCollaborate.operationReceived(\"" .. gace.JSEscape(util.TableToJSON(ret)) .. "\")"
         )
     end
 end)

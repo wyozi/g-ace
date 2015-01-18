@@ -394,9 +394,9 @@ function TextOperation.transform(operationA, operationB)
             bPrime:insert(b)
             b = nil
         elseif a == nil then
-            error("Cannot compose operations: first operation is too short")
+            error("Cannot compose operations (" .. operationA .. ", " .. operationB .. "): first operation is too short")
         elseif b == nil then
-            error("Cannot compose operations: first operation is too long")
+            error("Cannot compose operations (" .. operationA .. ", " .. operationB .. "): first operation is too long")
         else
             local minLen = math.min(opLen(a), opLen(b))
             if isRetain(a) and isRetain(b) then

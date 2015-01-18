@@ -24,4 +24,10 @@ gat("Utils", function(t)
 	t.assertEquals(gace.FilterSeq({1,2,3,4}, function(v) return v%2 == 0 end), {2, 4}, "sequential filter")
 
 	t.assertEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}, "map")
+
+	t.assertEquals(
+		gace.JSEscape([[ {"key1": "val1", "key2": "{\"subkey\": \"subvalue\"}"} ]]),
+		[[ {\"key1\": \"val1\", \"key2\": \"{\\\"subkey\\\": \\\"subvalue\\\"}\"} ]],
+		"escape a JSON string"
+	)
 end)

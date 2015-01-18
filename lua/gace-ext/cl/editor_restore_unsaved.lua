@@ -1,4 +1,6 @@
 gace.AddHook("OnSessionContentUpdated", "RestoreUnsavedFiles", function(id, content)
+    if id:EndsWith(".ot") then return end
+    
     -- This hook is called after sess.Content is updated, so we can do this
     local equal_to_saved = gace.GetSession(id):IsSaved()
 
