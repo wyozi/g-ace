@@ -513,13 +513,14 @@ Press Ctrl-N to create a new file and open it in a new tab.
             }
 
             var delta = change.data;
+
             var action, text;
-            if (delta.action in ["insertLines", "removeLines"]) {
+            if (delta.action == "insertLines" || delta.action == "removeLines") {
                 text = delta.lines.join("\n") + "\n";
                 action = delta.action.replace("Lines", "");
             }
             else {
-                text = delta.text /*.replace(@aceDoc.getNewLineCharacter(), '\n')*/
+                text = delta.text.replace(sess.getDocument().getNewLineCharacter(), '\n');
                 action = delta.action.replace("Text", "");
             }
 
@@ -552,7 +553,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
             }
 
             if (_debug) {
-                console.log("operationFromAceChange " + action + ": " + text, ret[0].toJSON());
+                console.log("operationFromAceChange " + delta.action + ": " + text, ret[0].toJSON());
             }
 
             return ret;
