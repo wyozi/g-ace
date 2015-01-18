@@ -441,7 +441,8 @@ local function GetSession(id)
         srv = Server.new("", MemoryBackend.new()),
         id = id,
 
-        clients = {}
+        clients = {},
+        cursors = {}
     }
     gace.OTSessions[id] = s
 
@@ -462,8 +463,26 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
         netmsg:CreateResponseMessage("ot-sub", {
             rev = sess.srv.backend:getRevision(),
-            doc = sess.srv.document
+            doc = sess.srv.document,
+            cursors = sess.cursors
         }):Send()
+    elseif op == "ot-cursor" then
+        local sess = GetSession(payload.id)
+        if not table.HasValue(sess.clients, ply) then
+            netmsg:CreateResponseMessage("ot-cursor", {err = "not subscribed"}):Send()
+            return
+        end
+
+        sess.cursors[ply:UserID()] = {start = payload.start, ["end"] = payload["end"]}
+
+        gace.Debug("OT: ", payload.id, " ", ply, " new cursor pos: ", table.ToString(sess.cursors[ply:UserID()]))
+
+        for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
+            if cl ~= ply then
+                gace.NetMessageOut("ot-cursor", {cursorid = ply:UserID(), id = payload.id, cursor = sess.cursors[ply:UserID()]}):Send(cl)
+            end
+        end
+
     elseif op == "ot-apply" then
         local sess = GetSession(payload.id)
         if not table.HasValue(sess.clients, ply) then

@@ -31,6 +31,13 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
             op = util.JSONToTable(op)
         })
     end)
+    html:AddFunction("gaceot", "UpdateCursor", function(id, start, _end)
+        gace.SendRequest("ot-cursor", {
+            id = id,
+            start = start,
+            ["end"] = _end
+        })
+    end)
 end)
 
 gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
@@ -49,6 +56,13 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
         gace.RunJavascript(
             "gaceCollaborate.operationReceived(\"" .. gace.JSEscape(util.TableToJSON(ret)) .. "\")"
+        )
+    elseif op == "ot-cursor" then
+        local cursor = payload.cursor
+        local js = "gaceCollaborate.updateCursor(\"" .. gace.JSEscape(payload.id) .. "\", \"" .. gace.JSEscape(tostring(payload.cursorid)) .. "\", " .. (cursor.start) .. ", " .. cursor["end"] .. ")"
+
+        gace.RunJavascript(
+            js
         )
     end
 end)
