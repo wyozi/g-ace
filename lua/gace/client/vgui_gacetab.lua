@@ -4,10 +4,48 @@ surface.CreateFont("EditorTabFont", {
 	size = 14
 })
 
+local max = 14
+local thickness = 2
+local crossPoly1 = {
+    { x = 0, y = 0 },
+    { x = thickness, y = 0 },
+    { x = max, y = max-thickness },
+    { x = max, y = max },
+    { x = max-thickness, y = max },
+    { x = 0, y = thickness }
+}
+
+local crossPoly2 = {
+    { x = max, y = 0 },
+    { x = max, y = thickness },
+    { x = thickness, y = max },
+    { x = 0, y = max },
+    { x = 0, y = max-thickness },
+    { x = max-thickness, y = 0 },
+}
+
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
-		self.CloseButton = vgui.Create("DImageButton", self)
-		self.CloseButton:SetIcon("icon16/cancel.png")
+		self.CloseButton = vgui.Create("DButton", self)
+		self.CloseButton:SetText("")
+		self.CloseButton.Paint = function(pself, w, h)
+			surface.SetDrawColor(150, 40, 27)
+			if pself.Hovered then surface.SetDrawColor(242, 38, 19) end
+			surface.DrawRect(0, 0, w, h)
+
+			surface.SetDrawColor(255, 255, 255)
+			draw.NoTexture()
+
+			local matrix = Matrix()
+			matrix:SetTranslation(Vector(w/2 - 7, h/2 - 7, 0))
+			DisableClipping(true)
+			cam.PushModelMatrix(matrix)
+				surface.DrawPoly(crossPoly1)
+				surface.DrawPoly(crossPoly2)
+			cam.PopModelMatrix()
+			DisableClipping(false)
+		end
+		--self.CloseButton:SetIcon("icon16/cancel.png")
 		self.CloseButton.DoClick = function()
 			self:CloseTab()
 		end
@@ -34,11 +72,11 @@ local VGUI_EDITOR_TAB = {
 		if callback then callback() end
 	end,
 	PerformLayout = function(self)
-		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
-		self.CloseButton:SetSize(16, 16)
+		self.CloseButton:SetPos(self:GetWide() - self:GetTall() - 1, 1)
+		self.CloseButton:SetSize(self:GetTall(), self:GetTall() - 2)
 
 		surface.SetFont("EditorTabFont")
-		local w = surface.GetTextSize(self.FileName) + (self.TextLeftPadding or 0) + 30 --[[close btn]]
+		local w = surface.GetTextSize(self.FileName) + (self.TextLeftPadding or 0) + 35 --[[close btn]]
 		self:SetWide(math.max(w, 120))
 	end,
 	Paint = function(self, w, h)

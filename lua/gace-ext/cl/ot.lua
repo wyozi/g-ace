@@ -18,7 +18,7 @@ gace.AddHook("PostDrawTab", "HighlightOTTabs", function(tab, id)
 	if id:EndsWith(".ot") then
 		surface.SetMaterial(collab_mat)
 		surface.SetDrawColor(255, 255, 255)
-		surface.DrawTexturedRect(3, 3, 16, 16)
+		surface.DrawTexturedRect(2, 2, 16, 16)
 	end
 end)
 
