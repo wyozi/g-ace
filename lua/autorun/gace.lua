@@ -25,6 +25,7 @@ load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/andthen.lua", "shared")
 
 -- Load GAce files
+load("gace/util/logging.lua")
 load("gace/util/miscutils.lua")
 load("gace/util/hooks.lua")
 
