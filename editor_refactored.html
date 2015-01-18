@@ -62,6 +62,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
 <script src="ace/ext-keybinding_menu.js"></script>
 <script src="ace/ext-statusbar.js"></script>
 <script src="anim.min.js"></script>
+<script src="ot.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
 
 <script>
@@ -74,6 +75,42 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
     var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
     var statusBar = new StatusBar(editor, document.getElementById("statusBar"));
+    statusBar.updateStatus = function(editor) {
+        var status = [];
+        function add(str, separator) {
+            str && status.push(str, separator || "|");
+        }
+
+        add(editor.keyBinding.getStatusText(editor));
+        if (editor.commands.recording)
+            add("REC");
+
+        var c = editor.selection.lead;
+        add(c.row + ":" + c.column, " ");
+        if (!editor.selection.isEmpty()) {
+            var r = editor.getSelectionRange();
+            add("(" + (r.end.row - r.start.row) + ":"  +(r.end.column - r.start.column) + ")", " ");
+        }
+
+        var sess = gaceSessions.getSessionId();
+        add("Session:(" + sess + ")", " ");
+
+        var otSess = gaceCollaborate.getSession(sess);
+        if (otSess != undefined) {
+            add("OTSession:(rev: " + otSess.client.revision + ")", " ");
+        }
+
+        add("Mode:(" + editor.getSession().getMode().$id + ")", " ");
+
+        var cursor = editor.getCursorPosition();
+        var token = editor.getSession().getTokenAt(cursor.row, cursor.column);
+        if (token != null) {
+            add("Token:(" + token.type + ")", " ");
+        }
+
+        status.pop();
+        this.element.textContent = status.join("");
+    };
 
     // We should remove the old class, but it gets overridden by the new one so meh
     editor.renderer.on("themeLoaded", function(e) {
@@ -276,6 +313,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
             exists: function(id) {
                 return id in sessions;
             },
+            getSession: function(id) {
+                return sessions[id];
+            },
             setSession: function(id, data) {
                 var existedBefore = true;
 
@@ -300,11 +340,17 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 else
                     content = data.content;
 
-                if (content !== undefined)
+                if (content !== undefined) {
                     session.setValue(content);
-                else if (data.requestDataIfNotCached && !existedBefore)
+                }
+                else if (data.requestDataIfNotCached && !existedBefore) {
                     // If we're setting session without passing contents and contents are not cached in html, request newest content from lua
                     gace.RequestSessionContent();
+                }
+
+                if (!gaceCollaborate.isSubscribed(id) && /\.ot$/.test(id)) {
+                    gaceCollaborate.subscribe(id);
+                }
             },
             removeSession: function(id) {
                 // If closed session is current session, lets clear it by making new empty session
@@ -320,6 +366,194 @@ Press Ctrl-N to create a new file and open it in a new tab.
             }
         }
     })();
+
+    var gaceCollaborate = (function() {
+        var otSessions = {};
+        var ignoreEditorChanges = false;
+        var _debug = false;
+        function debug(b) {
+            _debug = b;
+        }
+
+        function applyOperationToAce(id, operation) {
+            var sess = gaceSessions.getSession(id);
+
+            if (sess === undefined) {
+                console.log("trying to apply op to unknown session " + id);
+                return;
+            }
+
+            ignoreEditorChanges = true;
+
+            var index = 0;
+            for (var i in operation.ops) {
+                var op = operation.ops[i];
+                if (ot.TextOperation.isRetain(op)) {
+                    index += op;
+                }
+                else if (ot.TextOperation.isInsert(op)) {
+                    sess.getDocument().insert(sess.getDocument().indexToPosition(index), op);
+                    index += op.length;
+                }
+                else if (ot.TextOperation.isDelete(op)) {
+                    var from = sess.getDocument().indexToPosition(index);
+                    var to = sess.getDocument().indexToPosition(index + -op);
+                    var range = AceRange.fromPoints(from, to);
+
+                    sess.getDocument().remove(range);
+                }
+            }
+
+            ignoreEditorChanges = false;
+        }
+
+        function onSubscribed(id, json) {
+            var sess = gaceSessions.getSession(id);
+
+            if (sess === undefined) {
+                console.log("trying to subscribe to unknown session " + id);
+                return;
+            }
+
+            var obj = typeof json == "string" ? JSON.parse(json) : json;
+
+            var client = new ot.Client(obj.rev);
+            client.applyOperation = function(operation) {
+                if (_debug) {
+                    console.log("Applying op " + operation + " to " + id);
+                }
+                applyOperationToAce(id, operation);
+            };
+            client.sendOperation = function(revision, operation) {
+                if (_debug) {
+                    console.log("Sending op [" + operation + "](rev " + revision + ") of " + id);
+                }
+
+                // Working around bugs in GMod's JSONToTable..
+                var op_json_arr = operation.toJSON();
+                var op_json_obj = {};
+                for (var k in op_json_arr) {
+                    op_json_obj[1+parseInt(k)] = op_json_arr[k];
+                }
+
+                if ("gaceot" in window) {
+                    gaceot.Send(id, revision, JSON.stringify(op_json_obj));
+                }
+            }
+
+            ignoreEditorChanges = true;
+            sess.setValue(obj.doc);
+            ignoreEditorChanges = false;
+
+            otSessions[id] = {
+                client: client
+            };
+        }
+
+        function toJSArray(jsonobj) {
+            var arr = [];
+            for (var i = 1;; i++) {
+                var val = jsonobj[i];
+                if (val == undefined) break;
+
+                arr[i-1] = val;
+            }
+            return arr;
+        }
+        function operationReceived(json) {
+            var obj = JSON.parse(json);
+
+            var id = obj.id;
+
+            var otSess = otSessions[id];
+            if (otSess === undefined) {
+                console.log("operationReceived on unknown id " + id);
+                return;
+            }
+
+            var op_arr = toJSArray(obj.op);
+
+            var operation = ot.TextOperation.fromJSON(op_arr);
+            if (obj.user === undefined) {
+                otSess.client.serverAck();
+            }
+            else {
+                otSess.client.applyServer(operation);
+            }
+        }
+
+        function operationFromAceChange(change) {
+            var delta = change.data;
+            var text;
+            if (delta.action in ["insertLines", "removeLines"]) {
+                text = delta.lines.join("\n") + "\n";
+                action = delta.action.replace("Lines", "");
+            }
+            else {
+                text = delta.text /*.replace(@aceDoc.getNewLineCharacter(), '\n')*/
+                action = delta.action.replace("Text", "");
+            }
+
+            var start = editor.getSession().getDocument().positionToIndex(delta.range.start);
+            var restLength = editor.getSession().getDocument().getValue().length - start - 1; // needs to be decr by 1?
+
+            if (action == "remove") { restLength += text.length; }
+
+            var operation = new ot.TextOperation().retain(start).insert(text).retain(restLength);
+            var inverse = new ot.TextOperation().retain(start).delete(text).retain(restLength);
+
+            var ret;
+
+            if (action == "remove") {
+                ret = [inverse, operation];
+            }
+            else {
+                ret = [operation, inverse];
+            }
+
+            //console.log(action, ret);
+            return ret;
+        }
+        function sessionChanged(id, change) {
+            if (ignoreEditorChanges) { return; }
+            if (id === null) { return; }
+
+            var otSess = otSessions[id];
+            if (otSess === undefined) {
+                console.log("sessionChanged on unknown id " + id);
+                return;
+            }
+
+            var pair = operationFromAceChange(change);
+            var operation = pair[0];
+
+            otSess.client.applyClient(operation);
+        }
+
+        return  {
+            debug: debug,
+            getSession: function(id) {
+                return otSessions[id];
+            },
+            isSubscribed: function(id) {
+                return id in otSessions;
+            },
+            subscribe: function(id) {
+                if (!("gaceot" in window)) {
+                    console.log("gaceCollaborate subscribe failed: no gaceot");
+                    return;
+                }
+                gaceot.Subscribe(id);
+            },
+            onSubscribed: onSubscribed,
+            operationReceived: operationReceived,
+            sessionChanged: sessionChanged
+        }
+    })();
+
+    editor.on("change", function(e) {
+        gaceCollaborate.sessionChanged(gaceSessions.getSessionId(), e);
+    })
 
     // Ugly hack, required because theme id isn't passed to themeLoaded
     var changingToTheme;
