@@ -97,7 +97,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
         var otSess = gaceCollaborate.getSession(sess);
         if (otSess != undefined) {
-            add("OTSession:(rev: " + otSess.client.revision + ")", " ");
+            add("OTSession:(rev: " + otSess.client.revision + ", sentRev: " + otSess.lastSentRev + ")", " ");
         }
 
         add("Mode:(" + editor.getSession().getMode().$id + ")", " ");
@@ -417,7 +417,11 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
             var obj = typeof json == "string" ? JSON.parse(json) : json;
 
+            var otSess = {};
+
             var client = new ot.Client(obj.rev);
+            otSess.client = client;
+
             client.applyOperation = function(operation) {
                 if (_debug) {
                     console.log("Applying op " + operation + " to " + id);
@@ -428,6 +432,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 if (_debug) {
                     console.log("Sending op [" + operation + "](rev " + revision + ") of " + id);
                 }
+                otSess.lastSentRev = revision;
 
                 // Working around bugs in GMod's JSONToTable..
                 var op_json_arr = operation.toJSON();
@@ -445,9 +450,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
             sess.setValue(obj.doc);
             ignoreEditorChanges = false;
 
-            otSessions[id] = {
-                client: client
-            };
+            otSessions[id] = otSess;
         }
 
         function toJSArray(jsonobj) {
@@ -474,7 +477,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
             var op_arr = toJSArray(obj.op);
 
             var operation = ot.TextOperation.fromJSON(op_arr);
-            if (obj.user === undefined) {
+            if (obj.user == undefined) {
                 otSess.client.serverAck();
             }
             else {
