@@ -93,6 +93,7 @@ local function opLen(op)
         return op
     end
 end
+TextOperation.opLen = opLen
 
 -- Shortens an op by the given number of characters
 local function shorten(op, by)
@@ -432,10 +433,13 @@ function TextOperation:__tostring()
     return table.concat(t, "")
 end
 
-gace.OTSessions = {}
+gace.ot = {}
+gace.ot.TextOperation = TextOperation
+
+gace.ot.Sessions = {}
 
 local function GetSession(id)
-    if gace.OTSessions[id] then return gace.OTSessions[id] end
+    if gace.ot.Sessions[id] then return gace.ot.Sessions[id] end
 
     local s = {
         srv = Server.new("", MemoryBackend.new()),
@@ -444,7 +448,7 @@ local function GetSession(id)
         clients = {},
         cursors = {}
     }
-    gace.OTSessions[id] = s
+    gace.ot.Sessions[id] = s
 
     return s
 end
@@ -501,5 +505,3 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     end
 
 end)
-
---local srv = Server.new("", MemoryBackend.new())

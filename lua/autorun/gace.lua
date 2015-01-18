@@ -102,6 +102,7 @@ load("gace-tests/pathobj.lua", "shared")
 load("gace-tests/netmsgobj.lua", "shared")
 load("gace-tests/ui_gacetree.lua", "shared")
 load("gace-tests/reqid.lua", "shared")
+load("gace-tests/ot.lua", "shared")
 
 load("gace-tests/vfs/_vfs.lua", "shared")
 load("gace-tests/vfs/classes.lua", "shared")
