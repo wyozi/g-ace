@@ -17,10 +17,13 @@
         bottom: 0;
         left: 0;
         display: flex;
+        display: -webkit-box;
         flex-direction: column;
+        -webkit-flex-direction: column;
     }
     #editor {
         flex: 1;
+        -webkit-flex: 1;
     }
     #quickcmd {
         position: absolute;
@@ -31,6 +34,7 @@
 
     #statusBar {
         flex: 0 0 16px;
+        -webkit-flex: 0 0 16px;
         width: 100%;
 
         padding: 2px;
