@@ -106,10 +106,11 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
         var otSess = gaceCollaborate.getSession(sess);
         if (otSess != undefined) {
-            add("OTSession:(rev: " + otSess.client.revision + ", sentRev: " + otSess.lastSentRev + ")", " ");
+            add("Collaboration:(rev: " + otSess.lastSentRev + "/" + otSess.client.revision + ")", " ");
         }
 
-        add("Mode:(" + editor.getSession().getMode().$id + ")", " ");
+        var modeId = editor.getSession().getMode().$id;
+        add("Mode:(" + modeId.replace("ace/mode", "") + ")", " ");
 
         var cursor = editor.getCursorPosition();
         var token = editor.getSession().getTokenAt(cursor.row, cursor.column);
