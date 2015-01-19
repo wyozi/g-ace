@@ -4,7 +4,7 @@ surface.CreateFont("EditorTabFont", {
 	size = 14
 })
 
-local max = 14
+local max = 12
 local thickness = 2
 local cross_poly1 = {
     { x = 0, y = 0 },
@@ -26,7 +26,7 @@ local cross_poly2 = {
 
 local cross_matrix = Matrix()
 -- close button size can't change so this is fine
-cross_matrix:SetTranslation(Vector(24/2 - 7, 22/2 - 7, 0))
+cross_matrix:SetTranslation(Vector(24/2 - max/2, 22/2 - max/2, 0))
 
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
