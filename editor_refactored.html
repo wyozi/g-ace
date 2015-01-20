@@ -8,30 +8,20 @@
         margin: 0;
         height: 100%;
     }
-    #content {
+    #editor {
         position: absolute;
         top: 0;
         right: 0;
-        bottom: 0;
+        bottom: 16px;
         left: 0;
-
-        width: 100%;
-        height: 100%;
-
-        display: table;
-    }
-    #editor {
-        display:table-row;
-
-        width: 100%;
     }
     #status-bar {
-        display: table-row;
+        position: absolute;
+        right: 0;
+        bottom: 0px;
+        left: 0;
 
-        width: 100%;
         height: 16px;
-
-        padding: 2px;
 
         font-size: 10pt;
         font-family: "Lucida Console";
@@ -63,22 +53,20 @@
 </head>
 <body>
 
-<div id="content">
-    <div id="editor">
-      ______          ______
-     /      \        /      \
-    |  $$$$$$\      |  $$$$$$\ _______  ______
-    | $$ __\$$______| $$__| $$/       \/      \
-    | $$|    |      | $$    $|  $$$$$$|  $$$$$$\
-    | $$ \$$$$\$$$$$| $$$$$$$| $$     | $$    $$
-    | $$__| $$      | $$  | $| $$_____| $$$$$$$$
-     \$$    $$      | $$  | $$\$$     \\$$     \
-      \$$$$$$        \$$   \$$ \$$$$$$$ \$$$$$$$
+<div id="editor">
+  ______          ______
+ /      \        /      \
+|  $$$$$$\      |  $$$$$$\ _______  ______
+| $$ __\$$______| $$__| $$/       \/      \
+| $$|    |      | $$    $|  $$$$$$|  $$$$$$\
+| $$ \$$$$\$$$$$| $$$$$$$| $$     | $$    $$
+| $$__| $$      | $$  | $| $$_____| $$$$$$$$
+ \$$    $$      | $$  | $$\$$     \\$$     \
+  \$$$$$$        \$$   \$$ \$$$$$$$ \$$$$$$$
 
-    Press Ctrl-N to create a new file and open it in a new tab.
-    </div>
-    <div id="status-bar"></div>
+Press Ctrl-N to create a new file and open it in a new tab.
 </div>
+<div id="status-bar"></div>
 
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/ext-language_tools.js"></script>
