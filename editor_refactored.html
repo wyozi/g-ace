@@ -40,15 +40,6 @@
         opacity: 0.5;
         position: absolute;
     }
-
-    .gace-othercursor {
-        position: absolute;
-        background-color: cyan;
-        border-left: 2px solid cyan;
-
-        z-index: 3;
-        opacity: 0.5;
-    }
 </style>
 </head>
 <body>
@@ -74,6 +65,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
 <script src="ace/ext-keybinding_menu.js"></script>
 <script src="ace/ext-statusbar.js"></script>
 <script src="anim.min.js"></script>
+<script src="please.min.js"></script>
 <script src="ot.js"></script>
 <script src="base64/base64.min.js" type="text/javascript" charset="utf-8"></script>
 
@@ -381,6 +373,30 @@ Press Ctrl-N to create a new file and open it in a new tab.
         }
     })();
 
+    // Programmatically create css for different collaboration cursors
+    (function() {
+        var dom = ace.require("ace/lib/dom");
+        var cssText = "";
+
+        var cursors = 12;
+
+        var colors = Please.make_color({
+        	colors_returned: cursors
+        });
+
+        for (var i = 0; i < cursors; i++) {
+            cssText += ".ot-cursor-" + i + " {\
+                position: absolute;\
+                background-color: " + colors[i] + ";\
+                border-left: 2px solid " + colors[i] + ";\
+                z-index: 3;\
+                opacity: 0.5;\
+            }\n";
+        }
+
+        dom.importCssString(cssText, "ot-cursor");
+    })();
+
     var gaceCollaborate = (function() {
         var otSessions = {};
         var ignoreEditorChanges = false;
@@ -432,7 +448,8 @@ Press Ctrl-N to create a new file and open it in a new tab.
             var obj = typeof json == "string" ? JSON.parse(json) : json;
 
             var otSess = {
-                cursors: {}
+                cursors: {},
+                cursorIndices: []
             };
 
             var client = new ot.Client(obj.rev);
@@ -596,7 +613,12 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 return;
             }
 
-            var clazz = "gace-othercursor";
+            var cursorIndex = otSess.cursorIndices.indexOf(cursorid);
+            if (cursorIndex == -1) {
+                cursorIndex = otSess.cursorIndices.push(cursorid) - 1;
+            }
+
+            var clazz = "ot-cursor-" + cursorIndex;
 
             var startPos = sess.getDocument().indexToPosition(start);
             var endPos = sess.getDocument().indexToPosition(end);
