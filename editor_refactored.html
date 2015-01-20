@@ -12,8 +12,28 @@
         position: absolute;
         top: 0;
         right: 0;
+        bottom: 32px;
+        left: 0;
+    }
+    #collab-status {
+        position: absolute;
+        right: 0;
         bottom: 16px;
         left: 0;
+
+        height: 16px;
+
+        font-size: 10pt;
+        font-family: "Lucida Console";
+    }
+    #collab-status span {
+        position: relative;
+
+        padding-left: 5px;
+        padding-right: 5px;
+        margin-right: 5px;
+
+        height: 100%;
     }
     #status-bar {
         position: absolute;
@@ -25,8 +45,6 @@
 
         font-size: 10pt;
         font-family: "Lucida Console";
-
-        z-index: 9999;
     }
 
     #quickcmd {
@@ -57,6 +75,7 @@
 
 Press Ctrl-N to create a new file and open it in a new tab.
 </div>
+<div id="collab-status"></div>
 <div id="status-bar"></div>
 
 <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -390,7 +409,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 background-color: " + colors[i] + ";\
                 border-left: 2px solid " + colors[i] + ";\
                 z-index: 3;\
-                opacity: 0.5;\
+                opacity: 0.8;\
             }\n";
         }
 
@@ -616,6 +635,12 @@ Press Ctrl-N to create a new file and open it in a new tab.
             var cursorIndex = otSess.cursorIndices.indexOf(cursorid);
             if (cursorIndex == -1) {
                 cursorIndex = otSess.cursorIndices.push(cursorid) - 1;
+
+                var cursorName = document.createElement("span");
+                cursorName.setAttribute("class", "ot-cursor-" + cursorIndex);
+                cursorName.setAttribute("id", "ot-cursor-" + cursorIndex);
+                cursorName.textContent = cursorid;
+                document.getElementById("collab-status").appendChild(cursorName);
             }
 
             var clazz = "ot-cursor-" + cursorIndex;
