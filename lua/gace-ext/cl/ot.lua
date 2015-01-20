@@ -24,7 +24,7 @@ end)
 
 gace.AddHook("FileTreeFileNodePostPaint", "OT_FileNodeIcon", function(node, vars)
 	if not node.NodeId:EndsWith(".ot") then return end
-	
+
 	surface.SetMaterial(collab_mat)
 	surface.SetDrawColor(255, 255, 255)
 	surface.DrawTexturedRect(vars.draw_x + 16, 10, 12, 12)

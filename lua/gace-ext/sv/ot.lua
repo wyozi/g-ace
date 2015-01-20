@@ -459,49 +459,79 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 	local reqid = netmsg:GetReqId()
 	local payload = netmsg:GetPayload()
 
+    local function CheckPath(normpath)
+        if not gace.path.validate(normpath) then return gace.RejectedPromise(gace.VFS.ErrorCode.INVALID_NAME) end
+
+        local normpath_folder = gace.path.tail(normpath)
+		return gace.fs.resolve(normpath_folder):then_(function(node)
+			if not node:hasPermission(ply, gace.VFS.Permission.READ) then
+				return error(gace.VFS.ErrorCode.ACCESS_DENIED)
+			end
+			return
+		end)
+    end
+
     if op == "ot-sub" then
-        local sess = GetSession(payload.id)
-        if not table.HasValue(sess.clients, ply) then
-            table.insert(sess.clients, ply)
-        end
-
-        netmsg:CreateResponseMessage("ot-sub", {
-            rev = sess.srv.backend:getRevision(),
-            doc = sess.srv.document,
-            cursors = sess.cursors
-        }):Send()
-    elseif op == "ot-cursor" then
-        local sess = GetSession(payload.id)
-        if not table.HasValue(sess.clients, ply) then
-            netmsg:CreateResponseMessage("ot-cursor", {err = "not subscribed"}):Send()
-            return
-        end
-
-        sess.cursors[ply:UserID()] = {start = payload.start, ["end"] = payload["end"]}
-
-        gace.Debug("OT: ", payload.id, " ", ply, " new cursor pos: ", table.ToString(sess.cursors[ply:UserID()]))
-
-        for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
-            if cl ~= ply then
-                gace.NetMessageOut("ot-cursor", {cursorid = ply:UserID(), id = payload.id, cursor = sess.cursors[ply:UserID()]}):Send(cl)
+        local normpath = gace.path.normalize(payload.id)
+        CheckPath(payload.id):then_(function()
+            local sess = GetSession(normpath)
+            if not table.HasValue(sess.clients, ply) then
+                table.insert(sess.clients, ply)
             end
-        end
+
+            netmsg:CreateResponseMessage("ot-sub", {
+                rev = sess.srv.backend:getRevision(),
+                doc = sess.srv.document,
+                cursors = sess.cursors
+            }):Send()
+        end):catch(function(e)
+            netmsg:CreateResponseMessage("ot-sub", {err = e})
+        end)
+
+    elseif op == "ot-cursor" then
+        local normpath = gace.path.normalize(payload.id)
+        CheckPath(payload.id):then_(function()
+
+            local sess = GetSession(normpath)
+            if not table.HasValue(sess.clients, ply) then
+                netmsg:CreateResponseMessage("ot-cursor", {err = "not subscribed"}):Send()
+                return
+            end
+
+            sess.cursors[ply:UserID()] = {start = payload.start, ["end"] = payload["end"]}
+
+            gace.Debug("OT: ", normpath, " ", ply, " new cursor pos: ", table.ToString(sess.cursors[ply:UserID()]))
+
+            for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
+                if cl ~= ply then
+                    gace.NetMessageOut("ot-cursor", {cursorid = ply:UserID(), id = normpath, cursor = sess.cursors[ply:UserID()]}):Send(cl)
+                end
+            end
+        end):catch(function(e)
+            netmsg:CreateResponseMessage("ot-cursor", {err = e}):Send()
+        end)
 
     elseif op == "ot-apply" then
-        local sess = GetSession(payload.id)
-        if not table.HasValue(sess.clients, ply) then
-            netmsg:CreateResponseMessage("ot-apply", {err = "not subscribed"}):Send()
-            return
-        end
+        local normpath = gace.path.normalize(payload.id)
+        CheckPath(payload.id):then_(function()
 
-		local recv_op = TextOperation.fromJSON(payload.op)
-        local new_op = sess.srv:receiveOperation(payload.rev, recv_op)
+            local sess = GetSession(normpath)
+            if not table.HasValue(sess.clients, ply) then
+                netmsg:CreateResponseMessage("ot-apply", {err = "not subscribed"}):Send()
+                return
+            end
 
-        gace.Debug("OT: ", payload.id, "server state: rev", sess.srv.backend:getRevision(), " doc", sess.srv.document)
+    		local recv_op = TextOperation.fromJSON(payload.op)
+            local new_op = sess.srv:receiveOperation(payload.rev, recv_op)
 
-        for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
-            gace.NetMessageOut("ot-apply", {user = ply, id = payload.id, op = new_op:toJSON()}):Send(cl)
-        end
+            gace.Debug("OT: ", normpath, "server state: rev", sess.srv.backend:getRevision(), " doc", sess.srv.document)
+
+            for _,cl in pairs(gace.FilterSeq(sess.clients, function(p) return IsValid(p) end)) do
+                gace.NetMessageOut("ot-apply", {user = ply, id = normpath, op = new_op:toJSON()}):Send(cl)
+            end
+        end):catch(function(e)
+            netmsg:CreateResponseMessage("ot-apply", {err = e})
+        end)
     end
 
 end)
