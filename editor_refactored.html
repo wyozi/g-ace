@@ -484,6 +484,10 @@ Press Ctrl-N to create a new file and open it in a new tab.
             ignoreEditorChanges = false;
 
             sess.getSelection().on("changeCursor", function(e) {
+                if (ignoreEditorChanges) {
+                    return; // anchored cursor pos on each client handles this
+                }
+
                 var range = sess.getSelection().getRange();
                 var start = sess.getDocument().positionToIndex(range.start);
                 var end = sess.getDocument().positionToIndex(range.end);
