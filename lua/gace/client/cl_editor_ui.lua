@@ -6,11 +6,11 @@ gace.UIColors = {
 
 	tab_fg = Color(255, 255, 255),
 	tab_bg = Color(78, 77, 74),
-	tab_bg_hover = Color(148, 186, 101),
-	tab_bg_active = Color(39, 144, 176),
+	tab_bg_active = Color(52, 73, 94),
+	tab_bg_hover = Color(30, 130, 76),
 
-	treenode_bg_hover = Color(128, 166, 81),
-	treenode_bg_active = Color(29, 104, 126),
+	treenode_bg_active = Color(52, 73, 94),
+	treenode_bg_hover = Color(30, 130, 76),
 }
 
 function gace.GetFrameDimensions()

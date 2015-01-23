@@ -70,3 +70,7 @@ function gace.TableKeysToList(tbl)
 end
 
 gace.TableKeys = gace.TableKeysToList -- alias
+
+function gace.JSEscape(str)
+	return str:gsub("\\", "\\\\"):gsub("\"", "\\\""):gsub("\'", "\\'"):gsub("\r", "\\r"):gsub("\n", "\\n")
+end

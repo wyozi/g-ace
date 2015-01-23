@@ -12,9 +12,9 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	if mode then
 		js_data.mode = mode
 	end
+
 	if content then
-		content = (util.Base64Encode(content) or ""):Replace("\n", "")
-		js_data.contentb = content
+		js_data.content = gace.JSEscape(content)
 	end
 
 	local js_table = {}
@@ -58,11 +58,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local function SaveTo(path)
 			gace.SendRequest("save", {path = path, content = content}, function(_, _, pl)
 				if pl.err then
-					local better_err = pl.err
-					if better_err == "Inexistent virtual folder" then
-						better_err = "Trying to save to root. Try to save inside a folder instead."
-					end
-					return gace.Log(gace.LOG_ERROR, "Unable to save: ", better_err)
+					return gace.Log(gace.LOG_ERROR, "Unable to save: ", pl.err)
 				end
 
 				sess.SavedContent = content
@@ -80,7 +76,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		end
 
 		if gace.Path(initial_osi):WithoutVFolder():IsRoot() then
-			gace.ext.ShowTextInputPrompt("Where to save? Must be absolute path (e.g. EpicJB/folder/file.txt) and must end in .txt", function(txt)
+			gace.ext.ShowTextInputPrompt("Where to save?", function(txt)
 				SaveTo(txt)
 			end)
 			return
@@ -165,7 +161,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 	end)
 
 
-	-- General editor related functions (such as updating theme)
+	-- General editor related functions
+	
 	html:AddFunction("gace", "ContextMenu", function(str)
 		local tbl = util.JSONToTable(str)
 

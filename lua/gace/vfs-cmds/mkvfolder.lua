@@ -25,6 +25,7 @@ gace.RegisterCommand("mkvfolder", {
 			if caller:IsValid() then
                 childNode:grantPlayerPermission(caller, gace.VFS.ServerPermission)
             end
+            childNode:grantPermission("superadmins", gace.VFS.ServerPermission)
 		end)
     end,
     func_ipc = function(caller, request, promise)

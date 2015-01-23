@@ -4,10 +4,48 @@ surface.CreateFont("EditorTabFont", {
 	size = 14
 })
 
+local max = 12
+local thickness = 2
+local cross_poly1 = {
+    { x = 0, y = 0 },
+    { x = thickness, y = 0 },
+    { x = max, y = max-thickness },
+    { x = max, y = max },
+    { x = max-thickness, y = max },
+    { x = 0, y = thickness }
+}
+
+local cross_poly2 = {
+    { x = max, y = 0 },
+    { x = max, y = thickness },
+    { x = thickness, y = max },
+    { x = 0, y = max },
+    { x = 0, y = max-thickness },
+    { x = max-thickness, y = 0 },
+}
+
+local cross_matrix = Matrix()
+-- close button size can't change so this is fine
+cross_matrix:SetTranslation(Vector(24/2 - max/2, 22/2 - max/2, 0))
+
 local VGUI_EDITOR_TAB = {
 	Init = function(self)
-		self.CloseButton = vgui.Create("DImageButton", self)
-		self.CloseButton:SetIcon("icon16/cancel.png")
+		self.CloseButton = vgui.Create("DButton", self)
+		self.CloseButton:SetText("")
+		self.CloseButton.Paint = function(pself, w, h)
+			surface.SetDrawColor(150, 40, 27)
+			if pself.Hovered then surface.SetDrawColor(242, 38, 19) end
+			surface.DrawRect(0, 0, w, h)
+
+			surface.SetDrawColor(189, 195, 199)
+			draw.NoTexture()
+
+			cam.PushModelMatrix(cross_matrix)
+				surface.DrawPoly(cross_poly1)
+				surface.DrawPoly(cross_poly2)
+			cam.PopModelMatrix()
+		end
+		--self.CloseButton:SetIcon("icon16/cancel.png")
 		self.CloseButton.DoClick = function()
 			self:CloseTab()
 		end
@@ -34,10 +72,16 @@ local VGUI_EDITOR_TAB = {
 		if callback then callback() end
 	end,
 	PerformLayout = function(self)
-		self.CloseButton:SetPos(self:GetWide() - 18, self:GetTall()/2-16/2)
-		self.CloseButton:SetSize(16, 16)
+		self.CloseButton:SetPos(self:GetWide() - self:GetTall() - 1, 1)
+		self.CloseButton:SetSize(self:GetTall(), self:GetTall() - 2)
+
+		surface.SetFont("EditorTabFont")
+		local w = surface.GetTextSize(self.FileName) + (self.TextLeftPadding or 0) + 35 --[[close btn]]
+		self:SetWide(math.max(w, 120))
 	end,
 	Paint = function(self, w, h)
+		gace.CallHook("PreDrawTab", self, self.SessionId)
+
 		if self.Hovered then
 			surface.SetDrawColor(gace.UIColors.tab_bg_hover)--52, 152, 219)
 		elseif self.SessionId == gace.GetSessionId() then
@@ -47,7 +91,7 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(self.FileName, "EditorTabFont", 5, h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.FileName, "EditorTabFont", 5 + (self.TextLeftPadding or 0), h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 		local sess = gace.GetSession(self.SessionId)
 		if sess and not sess:IsSaved() then
@@ -65,6 +109,8 @@ local VGUI_EDITOR_TAB = {
 		local hh, s, v = ColorToHSV(gace.UIColors.frame_bg)
 		surface.SetDrawColor(HSVToColor(hh, s, v-0.1))
 		surface.DrawOutlinedRect(0, 0, w, h)
+
+		gace.CallHook("PostDrawTab", self, self.SessionId)
 	end,
 	Setup = function(self, id)
 		self:SetText("")
@@ -75,8 +121,6 @@ local VGUI_EDITOR_TAB = {
 
 		surface.SetFont("EditorTabFont")
 		local w = surface.GetTextSize(self.SessionId)
-
-		self:SetWide(140)--math.min(w+34, 160))
 	end,
 	DoClick = function(self)
 		gace.OpenSession(self.SessionId)
