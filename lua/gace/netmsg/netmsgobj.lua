@@ -56,6 +56,13 @@ function netmsg_out_meta:Send(targ)
     self.protocol.Send(self)
 end
 
+function netmsg_out_meta:Clone()
+    local cloned = gace.NetMessageOut(self:GetOpcode(), self:GetPayload(), self.protocol)
+    cloned:SetReqId(self:GetReqId())
+    if SERVER then cloned:SetTarget(self:GetTarget()) end
+    return cloned
+end
+
 --[[
 Incoming packet metatable
 ]]
@@ -76,6 +83,13 @@ function netmsg_in_meta:CreateResponseMessage(op, payload)
 
     return netmsg
 end
+
+function netmsg_in_meta:Clone()
+    local cloned = gace.NetMessageIn(self:GetOpcode(), self:GetReqId(), self:GetPayload(), self.protocol)
+    if SERVER then cloned:SetSender(self:GetSender()) end
+    return cloned
+end
+
 netmsg_in_meta.CreateResponsePacket = netmsg_in_meta.CreateResponseMessage
 
 --[[
