@@ -7,6 +7,13 @@ An in-game code editor for Garry's Mod.
 
 ---
 
+### Features
+- [Ace](https://github.com/ajaxorg/ace) editor, which is used internally, supports syntax highlighting, auto completion, multiple cursors, themes, many language modes etc..
+- First class Git support using [gm_git](https://github.com/wyozi/gm_git)
+- Instant GLua documentation lookup using [glua-docs](https://github.com/samuelmaddock/glua-docs)
+- Collaborative editing using [ot.js](https://github.com/Operational-Transformation/ot.js/) and [ot.lua](https://github.com/Operational-Transformation/ot.lua)
+- IO outside the ```data/``` folder using [g-ace-io](https://github.com/wyozi/g-ace-io)
+
 ### Requirements
 
 G-Ace works out of the box.
