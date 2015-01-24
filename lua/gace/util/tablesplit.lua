@@ -33,7 +33,7 @@ function gace.tablesplit.ComputeSize(obj, typeHeaderSize)
     error("Trying to compute size of unknown object (type:" .. t .. "): " .. obj)
 end
 
--- A recursive breadth-first pairs
+-- A recursive depth-first pairs
 local function DFSpairs(t, path)
     path = path or {}
 
