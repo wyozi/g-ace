@@ -1,4 +1,4 @@
-gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(comps)
+gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 
 	comps:AddCategory("Editor", Color(230, 126, 34))
 	comps:AddComponent {
@@ -44,6 +44,27 @@ gace.AddHook("AddActionBarComponents", "ActionBar_HTMLCommunication", function(c
 				for _,mode in pairs(modes) do
 					local mode2 = "ace/mode/" .. mode
 					local opt = csubmenu:AddOption(mode, function() gace.RunJavascript("editor.getSession().setMode('" .. mode2 .. "')") end)
+				end
+			end
+
+			local csubmenu, csmpnl = menu:AddSubMenu("Font Family", function() end)
+			csmpnl:SetIcon("icon16/font.png")
+			do
+				local fonts = {
+					"sourceCodePro",
+					"inconsolata"
+				}
+
+				for _,font in pairs(fonts) do
+					local opt = csubmenu:AddOption(font, function() gace.RunJavascript("setCustomEditorFont('" .. font .. "')") end)
+				end
+			end
+
+			local csubmenu, csmpnl = menu:AddSubMenu("Font Size", function() end)
+			csmpnl:SetIcon("icon16/text_smallcaps.png")
+			do
+				for s=10, 22 do
+					local opt = csubmenu:AddOption(tostring(s), function() gace.RunJavascript("setCustomEditorFontSize(" .. s .. ")") end)
 				end
 			end
 
