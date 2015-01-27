@@ -502,11 +502,15 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
             gace.Debug("OT: ", normpath, " ", ply, " new cursor pos: ", table.ToString(sess.cursors[ply:UserID()]))
 
-            for _,cl in pairs(_u.filter(sess.clients, function(p) return IsValid(p) end)) do
-                if cl ~= ply then
-                    gace.NetMessageOut("ot-cursor", {cursorid = ply:UserID(), id = normpath, cursor = sess.cursors[ply:UserID()]}):Send(cl)
-                end
-            end
+            _u.chain(sess.clients)
+                :filter(function(cl) return IsValid(cl) and cl ~= ply end)
+                :each(function(cl)
+                    gace.NetMessageOut("ot-cursor", {
+                        cursorid = ply:UserID(),
+                        id = normpath,
+                        cursor = sess.cursors[ply:UserID()]
+                    }):Send(cl)
+                end)
         end):catch(function(e)
             netmsg:CreateResponseMessage("ot-cursor", {err = e}):Send()
         end)
@@ -526,9 +530,16 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
             gace.Debug("OT: ", normpath, "server state: rev", sess.srv.backend:getRevision(), " doc", sess.srv.document)
 
-            for _,cl in pairs(_u.filter(sess.clients, function(p) return IsValid(p) end)) do
-                gace.NetMessageOut("ot-apply", {user = ply, id = normpath, op = new_op:toJSON()}):Send(cl)
-            end
+            _u.chain(sess.clients)
+                :filter(function(cl) return IsValid(cl) end)
+                :each(function(cl)
+                    gace.NetMessageOut("ot-apply", {
+                        user = ply,
+                        id = normpath,
+                        op = new_op:toJSON()
+                    }):Send(cl)
+                end)
+
         end):catch(function(e)
             netmsg:CreateResponseMessage("ot-apply", {err = e})
         end)

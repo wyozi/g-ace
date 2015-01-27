@@ -13,13 +13,9 @@ function gace.CreateTabPanel()
 end
 
 function gace.GetTabFor(id)
-	local thepanel
-
-	local tabs = gace.GetPanel("Tabs")
-	for _,pnl in pairs(tabs.Panels) do
-		if pnl.SessionId == id then thepanel = pnl end
-	end
-	return thepanel
+	return _u.detect(gace.GetPanel("Tabs").Panels, function(pnl)
+		return pnl.SessionId == id
+	end)
 end
 
 function gace.CreateTab(id)
