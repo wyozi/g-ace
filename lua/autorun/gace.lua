@@ -87,13 +87,15 @@ load("gace/client/cl_filetree.lua", "client")
 load("gace/client/cl_htmlfuncs.lua", "client")
 load("gace/client/cl_networking.lua", "client")
 load("gace/client/vfs.lua", "client")
-load("gace/client/vgui_dynamicpanel.lua", "client")
-load("gace/client/vgui_gacebutton.lua", "client")
-load("gace/client/vgui_gacesplitter.lua", "client")
-load("gace/client/vgui_gacetab.lua", "client")
-load("gace/client/vgui_gacetabsel.lua", "client")
-load("gace/client/vgui_gacetextinput.lua", "client")
-load("gace/client/vgui_gacetree.lua", "client")
+
+load("gace/vgui/vgui_dynamicpanel.lua", "client")
+load("gace/vgui/vgui_gacebutton.lua", "client")
+load("gace/vgui/vgui_gacesplitter.lua", "client")
+load("gace/vgui/vgui_gacetab.lua", "client")
+load("gace/vgui/vgui_gacetabsel.lua", "client")
+load("gace/vgui/vgui_gacetextinput.lua", "client")
+load("gace/vgui/vgui_gacetree.lua", "client")
+load("gace/vgui/vgui_animhorizscroller.lua", "client")
 
 
 -- Load GAce testing lib and tests
