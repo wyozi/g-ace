@@ -38,11 +38,16 @@ end
 function Underscore.iter(list_or_iter)
 	if type(list_or_iter) == "function" then return list_or_iter end
 
-	return coroutine.wrap(function()
-		for i=1,#list_or_iter do
-			coroutine.yield(list_or_iter[i])
-		end
-	end)
+    local function valuepairs(t)
+		local nextkey = nil
+    	return function(t)
+			local k, v = next(t, nextkey)
+			nextkey = k
+			return v
+		end, t, nil
+    end
+
+	return valuepairs(list_or_iter)
 end
 
 function Underscore.range(start_i, end_i, step)
@@ -51,12 +56,19 @@ function Underscore.range(start_i, end_i, step)
 		start_i = 1
 	end
 	step = step or 1
-	local range_iter = coroutine.wrap(function()
-		for i=start_i, end_i, step do
-			coroutine.yield(i)
-		end
-	end)
-	return Underscore:new(range_iter)
+
+	local range_iter = function(from, to, step)
+		step = step or 1
+		return function(_, lastvalue)
+			local nextvalue = lastvalue + step
+			if step > 0 and nextvalue <= to or step < 0 and nextvalue >= to or
+				step == 0
+				then
+				return nextvalue
+			end
+		end, nil, from - step
+	end
+	return Underscore:new(range_iter(start_i, end_i, step))
 end
 
 --- Identity function. This function looks useless, but is used throughout Underscore as a default.

@@ -47,6 +47,7 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
         end)
     end)
     html:AddFunction("gaceot", "Send", function(id, rev, op)
+		gace.Debug("Sending ot-apply for " .. id .. " with rev " .. rev)
         gace.SendRequest("ot-apply", {
             id = id,
             rev = rev,

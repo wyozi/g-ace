@@ -15,6 +15,9 @@ function gace.tablesplit.ComputeSize(obj, typeHeaderSize)
     if t == "string" then return #obj + 2 end
     if t == "boolean" then return 1 end
 
+    if t == "Player" then return 4 end
+    if t == "Entity" then return 4 end
+
     if t == "table" then
         local size = 0
 
@@ -30,7 +33,8 @@ function gace.tablesplit.ComputeSize(obj, typeHeaderSize)
         return size
     end
 
-    error("Trying to compute size of unknown object (type:" .. t .. "): " .. obj)
+    MsgN("Trying to compute size of unknown object (type:".. t .. "): " .. tostring(obj))
+    return 4 -- whatever
 end
 
 -- A recursive depth-first pairs
