@@ -39,7 +39,7 @@ function RealGIOFolder:refresh()
         end
 
         -- List of entries that dont exist on filesystem
-        local leftovers = gace.TableKeysToList(self._entries)
+        local leftovers = _u.keys(self._entries)
 
         -- Add unsynced file/folder to _entries and emit events
         local function AddEntry(name, type)
@@ -103,7 +103,7 @@ function RealGIOFolder:createChildNode(name, type, opts)
             resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
             return
         end
-        
+
         local localPath = self:fsLocalChildPath(name)
         if gaceio.Exists(localPath) then
             resolver:reject(gace.VFS.ErrorCode.ALREADY_EXISTS)

@@ -164,7 +164,7 @@ function gace.RunTests()
         table.insert(test_results, group)
     end
 
-    local test_promises = gace.Map(test_results, function(r) return r.promise end)
+    local test_promises = _u.map(test_results, function(r) return r.promise end)
 
     Promise(test_promises):all():then_(function()
         table.SortByMember(test_results, "name", true)

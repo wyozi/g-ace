@@ -17,14 +17,6 @@ gat("Utils", function(t)
 	t.assertDeepEquals({1, {2, 3}}, {1, {2, 3}}, "multi-dim table equality")
 	t.assertDeepEquals({a={b={c="hi"}}}, {a={b={c="hi"}}}, "string-key table equality")
 
-	t.assertEquals(gace.TableKeys({"a", "b"}), {1, 2}, "simple TableKeys")
-	t.assertEquals(gace.TableKeys({"a", c="b"}), {1, "c"}, "string-key TableKeys")
-
-	t.assertEquals(gace.Filter({a=1,b=2,c=4}, function(v) return v%2 == 0 end), {b=2,c=4}, "string-key filter")
-	t.assertEquals(gace.FilterSeq({1,2,3,4}, function(v) return v%2 == 0 end), {2, 4}, "sequential filter")
-
-	t.assertEquals(gace.Map({"1","2","3"}, function(x)return tonumber(x)end), {1,2,3}, "map")
-
 	t.assertEquals(
 		gace.JSEscape([[ {"key1": "val1", "key2": "{\"subkey\": \"subvalue\"}"} ]]),
 		[[ {\"key1\": \"val1\", \"key2\": \"{\\\"subkey\\\": \\\"subvalue\\\"}\"} ]],
