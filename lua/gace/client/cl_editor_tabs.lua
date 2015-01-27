@@ -1,3 +1,17 @@
+function gace.CreateTabPanel()
+	local tabs = vgui.Create("DHorizontalScroller")
+	tabs.Paint = function(self, w, h)
+		surface.SetDrawColor(gace.UIColors.tab_border)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+	tabs:SetOverlap(-1)
+
+	local tabsel = vgui.Create("GAceTabSelector", tabs)
+	tabs:AddPanel(tabsel)
+
+	return tabs
+end
+
 function gace.GetTabFor(id)
 	local thepanel
 
