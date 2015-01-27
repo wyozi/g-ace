@@ -702,13 +702,50 @@ Press Ctrl-N to create a new file and open it in a new tab.
             gace.ModeChanged(editor.getSession().getMode().$id);
     });
 
-    function OnReady() {
-        if ("gace" in window)
-            gace.EditorReady();
-    }
-    document.addEventListener('DOMContentLoaded', OnReady);
+    function setCustomEditorFontSize(size) {
+        document.getElementById('editor').style.fontSize = size + "px";
 
-    document.getElementById('editor').style.fontSize = '14px';
+        window.localStorage.gaceFontSize = size;
+    }
+
+    var customFontMap = {
+        sourceCodePro: "Source Code Pro",
+        inconsolata: "Inconsolata"
+    };
+
+    function setCustomEditorFont(id) {
+        var fontName = customFontMap[id];
+        if (!fontName) {
+            console.log("Invalid font id " + id);
+            return;
+        }
+
+        window.localStorage.gaceFont = id;
+
+        var el = document.getElementById("gace-font-" + id);
+        if (!el) {
+            var link = document.createElement("link");
+            link.setAttribute("rel", "stylesheet");
+            link.setAttribute("type", "text/css");
+            link.setAttribute("href", "http://fonts.googleapis.com/css?family=" + encodeURIComponent(fontName));
+            link.setAttribute("id", "gace-font-" + id);
+            document.body.appendChild(link);
+        }
+
+        document.getElementById('editor').style.fontFamily = fontName;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if ("gaceFontSize" in window.localStorage) {
+            setCustomEditorFontSize(window.localStorage.gaceFontSize);
+        }
+        if ("gaceFont" in window.localStorage) {
+            setCustomEditorFont(window.localStorage.gaceFont);
+        }
+        if ("gace" in window) {
+            gace.EditorReady();
+        }
+    });
 </script>
 </body>
 </html>
