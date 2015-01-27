@@ -186,6 +186,7 @@ gace.AddHook("HandleNetMessage", "HandleGitMessages", function(netmsg)
 	-- Git integration
 	if op == "git-status" then
 		gace.git.virt_to_real(payload.path):then_(function(realpath)
+			gace.Debug("git-status: checking " .. realpath .. " for repo validity")
 			if not gace.git.is_repo(realpath) then
 				return {ret = "Success", git_enabled = false}
 			end

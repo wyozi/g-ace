@@ -13,7 +13,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 
 			return "Git"
 		end,
-		width = 90,
+		width = 100,
 		fn = function()
 			local sess = gace.GetOpenSession()
 			local vfolder = sess.VFolder
