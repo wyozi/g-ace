@@ -95,8 +95,6 @@ load("gace/vgui/vgui_gacetab.lua", "client")
 load("gace/vgui/vgui_gacetabsel.lua", "client")
 load("gace/vgui/vgui_gacetextinput.lua", "client")
 load("gace/vgui/vgui_gacetree.lua", "client")
-load("gace/vgui/vgui_animhorizscroller.lua", "client")
-
 
 -- Load GAce testing lib and tests
 load("gace-tests/_gacetests.lua", "shared")
