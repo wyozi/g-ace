@@ -7,7 +7,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_GitCommands", function(comps)
 				if sess.VFolder.git.enabled then
 					return string.format("Git [%s]", (sess.VFolder.git.branch))
 				else
-					return "Git [-]"
+					return "Git [unavailable]"
 				end
 			end
 
