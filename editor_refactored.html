@@ -102,7 +102,8 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
         var otSess = gaceCollaborate.getSession(sess);
         if (otSess != undefined) {
-            add("Collaboration:(rev: " + otSess.lastSentRev + "/" + otSess.client.revision + ")", " ");
+            var stateStr = otSess.client.state.constructor.name;
+            add("Collaboration:(rev: " + otSess.lastSentRev + "/" + otSess.client.revision + "; state: " + stateStr + ")", " ");
         }
 
         var modeId = editor.getSession().getMode().$id;
@@ -698,8 +699,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
     });
 
     editor.on("changeMode", function(e) {
-        if ("gace" in window)
+        if ("gace" in window) {
             gace.ModeChanged(editor.getSession().getMode().$id);
+        }
     });
 
     function setCustomEditorFontSize(size) {
