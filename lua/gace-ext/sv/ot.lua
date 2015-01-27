@@ -485,7 +485,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
                 cursors = sess.cursors
             }):Send()
         end):catch(function(e)
-            netmsg:CreateResponseMessage("ot-sub", {err = e})
+            netmsg:CreateResponseMessage("ot-sub", {err = e}):Send()
         end)
 
     elseif op == "ot-cursor" then
@@ -541,7 +541,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
                 end)
 
         end):catch(function(e)
-            netmsg:CreateResponseMessage("ot-apply", {err = e})
+            netmsg:CreateResponseMessage("ot-apply", {err = e}):Send()
         end)
     end
 
