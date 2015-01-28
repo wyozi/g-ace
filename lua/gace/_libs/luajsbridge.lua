@@ -1,7 +1,7 @@
 luajsbridge = {}
 
 function luajsbridge.Debug(...)
-	MsgN("[LuaJSBridge] ", ...)
+	--MsgN("[LuaJSBridge] ", ...)
 end
 function luajsbridge.Error(...)
 	error("LuaJSBridge: " .. table.concat({...}, ""))
