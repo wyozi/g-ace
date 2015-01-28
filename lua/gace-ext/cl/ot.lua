@@ -38,12 +38,7 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
                 return
             end
             gace.Log(gace.LOG_INFO, "Subscribed to gace-ot ", id)
-            gace.RunJavascript(
-                "gaceCollaborate.onSubscribed(\"" .. gace.JSEscape(id) .. "\", \"" .. gace.JSEscape(util.TableToJSON {
-        			rev = pl.rev,
-        			doc = pl.doc
-        		}) .. "\")"
-            )
+			gace.JSBridge().gaceCollaborate.onSubscribed(id, {rev = pl.rev, doc = pl.doc})
         end)
     end)
     html:AddFunction("gaceot", "Send", function(id, rev, op)
@@ -77,15 +72,9 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
             ret.user = payload.user:SteamID()
         end
 
-        gace.RunJavascript(
-            "gaceCollaborate.operationReceived(\"" .. gace.JSEscape(util.TableToJSON(ret)) .. "\")"
-        )
+		gace.JSBridge().gaceCollaborate.operationReceived(ret)
     elseif op == "ot-cursor" then
         local cursor = payload.cursor
-        local js = "gaceCollaborate.updateCursor(\"" .. gace.JSEscape(payload.id) .. "\", \"" .. gace.JSEscape(tostring(payload.cursorid)) .. "\", " .. (cursor.start) .. ", " .. cursor["end"] .. ")"
-
-        gace.RunJavascript(
-            js
-        )
+		gace.JSBridge().gaceCollaborate.updateCursor(payload.id, tostring(payload.cursorid), cursor.start, cursor["end"])
     end
 end)

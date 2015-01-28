@@ -25,6 +25,7 @@ load("gace/_libs/andthen.lua", "shared")
 load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/underscore.lua", "shared")
 load("gace/_libs/utf8.lua", "shared")
+load("gace/_libs/luajsbridge.lua", "client")
 
 -- Load GAce files
 load("gace/util/logging.lua")

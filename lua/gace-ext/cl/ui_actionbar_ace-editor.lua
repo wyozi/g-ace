@@ -7,8 +7,8 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 		fn = function()
 			local menu = DermaMenu()
 
-			menu:AddOption("Settings", function() gace.RunJavascript("editor.showSettingsMenu();") end):SetIcon("icon16/wrench.png")
-			menu:AddOption("Shortcuts", function() gace.RunJavascript("editor.showKeyboardShortcuts();") end):SetIcon("icon16/keyboard.png")
+			menu:AddOption("Settings", function() gace.JSBridge().editor.showSettingsMenu() end):SetIcon("icon16/wrench.png")
+			menu:AddOption("Shortcuts", function() gace.JSBridge().editor.showKeyboardShortcuts() end):SetIcon("icon16/keyboard.png")
 
 			local csubmenu, csmpnl = menu:AddSubMenu("Set theme", function() end)
 			csmpnl:SetIcon("icon16/map.png")
@@ -17,7 +17,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 				local theme_name = c_theme:Split("/")[3]
 
 				for _,theme in pairs(gace.AvailableThemes) do
-					local opt = csubmenu:AddOption(theme, function() gace.RunJavascript("editor.setTheme('ace/theme/" .. theme .. "')") end)
+					local opt = csubmenu:AddOption(theme, function() gace.JSBridge().editor.setTheme("ace/theme/" .. theme) end)
 					if theme_name == theme then
 						opt:SetChecked(true)
 					end
@@ -43,7 +43,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 
 				for _,mode in pairs(modes) do
 					local mode2 = "ace/mode/" .. mode
-					local opt = csubmenu:AddOption(mode, function() gace.RunJavascript("editor.getSession().setMode('" .. mode2 .. "')") end)
+					local opt = csubmenu:AddOption(mode, function() gace.JSBridge().editor.session.setMode(mode) end)
 				end
 			end
 
@@ -56,7 +56,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 				}
 
 				for _,font in pairs(fonts) do
-					local opt = csubmenu:AddOption(font, function() gace.RunJavascript("setCustomEditorFont('" .. font .. "')") end)
+					local opt = csubmenu:AddOption(font, function() gace.JSBridge().setCustomEditorFont(font) end)
 				end
 			end
 
@@ -64,7 +64,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 			csmpnl:SetIcon("icon16/text_smallcaps.png")
 			do
 				for s=10, 22 do
-					local opt = csubmenu:AddOption(tostring(s), function() gace.RunJavascript("setCustomEditorFontSize(" .. s .. ")") end)
+					local opt = csubmenu:AddOption(tostring(s), function() gace.JSBridge().setCustomEditorFontSize(s) end)
 				end
 			end
 

@@ -2,6 +2,9 @@ function gace.RunJavascript(js)
 	local html = gace.GetPanel("Editor")
 	html:QueueJavascript(js)
 end
+function gace.JSBridge()
+	return gace.GetPanel("Editor").Bridge
+end
 
 function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	local js_data = {}
@@ -14,7 +17,7 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 	end
 
 	if content then
-		js_data.content = gace.JSEscape(content)
+		js_data.content = content
 	end
 
 	local js_table = {}
@@ -22,9 +25,7 @@ function gace.SetHTMLSession(id, content, requestDataIfNotCached, mode)
 		table.insert(js_table, k .. ": \"" .. tostring(v) .. "\"")
 	end
 
-	local js = [[gaceSessions.setSession("]] .. id ..[[",{]] .. table.concat(js_table, ", ") .. [[});]]
-	gace.RunJavascript(js)
-
+	gace.JSBridge().gaceSessions.setSession(id, js_data)
 end
 
 gace.AvailableThemes = {
@@ -91,7 +92,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		gace.OpenSession(id, {callback = function()
 			if not line and not column then return end
 
-			gace.RunJavascript("editor.moveCursorTo(" .. line .. ", " .. (column or 0) .. ");")
+			gace.JSBridge().editor.moveCursorTo(line, column or 0)
 		end})
 	end)
 	html:AddFunction("gace", "CloseSession", function(force)
@@ -162,7 +163,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 
 
 	-- General editor related functions
-	
+
 	html:AddFunction("gace", "ContextMenu", function(str)
 		local tbl = util.JSONToTable(str)
 
@@ -177,7 +178,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		if table.HasValue(gace.AvailableThemes, c_theme:Split("/")[3]) then
 			the_theme = c_theme
 		end
-		gace.RunJavascript("editor.setTheme('" .. the_theme .. "')")
+		gace.JSBridge().editor.setTheme(the_theme)
 	end)
 
 	local function RGBStringToColor(str)

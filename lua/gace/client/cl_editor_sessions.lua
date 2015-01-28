@@ -116,9 +116,8 @@ function gace.OpenSession(id, data)
 end
 
 function gace.CloseSession(id)
-	gace.RunJavascript([[
-		gaceSessions.removeSession("]] .. id .. [[");
-	]])
+	gace.JSBridge().gaceSessions.removeSession(id)
+	
 	if gace.GetSessionId() == id then
 		gace.OpenedSessionId = nil
 	end

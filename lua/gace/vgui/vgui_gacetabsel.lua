@@ -36,10 +36,8 @@ local VGUI_EDITOR_TAB_SEL = {
 				gace.OpenSession(path, {
 					callback = function()
 						if rownum then
-							gace.RunJavascript([[
-								editor.moveCursorTo(]] .. rownum .. [[, 0);
-								HighlightRow(]] .. rownum .. [[);
-							]])
+							gace.JSBridge().editor.moveCursorTo(rownum, 0)
+							gace.JSBridge().HighlightRow(rownum)
 						end
 					end
 				})
