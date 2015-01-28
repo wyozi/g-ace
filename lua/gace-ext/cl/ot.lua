@@ -1,33 +1,33 @@
 
 gace.AddHook("FileTreeContextMenu", "FileTree_AddOTOptions", function(path, menu, nodetype)
-	if nodetype ~= "file" then return end
+    if nodetype ~= "file" then return end
 
-	menu:AddOption("Collaborate on", function()
+    menu:AddOption("Collaborate on", function()
         local newpath = path .. ".ot"
         gace.OpenSession(newpath, {content=""})
-	end):SetIcon("icon16/user_comment.png")
+    end):SetIcon("icon16/user_comment.png")
 end)
 
 local collab_mat = Material("icon16/group.png")
 gace.AddHook("PreDrawTab", "HighlightOTTabs", function(tab, id)
-	if id:EndsWith(".ot") then
-		tab.TextLeftPadding = 20
-	end
+    if id:EndsWith(".ot") then
+        tab.TextLeftPadding = 20
+    end
 end)
 gace.AddHook("PostDrawTab", "HighlightOTTabs", function(tab, id)
-	if id:EndsWith(".ot") then
-		surface.SetMaterial(collab_mat)
-		surface.SetDrawColor(255, 255, 255)
-		surface.DrawTexturedRect(2, 2, 16, 16)
-	end
+    if id:EndsWith(".ot") then
+        surface.SetMaterial(collab_mat)
+        surface.SetDrawColor(255, 255, 255)
+        surface.DrawTexturedRect(2, 2, 16, 16)
+    end
 end)
 
 gace.AddHook("FileTreeFileNodePostPaint", "OT_FileNodeIcon", function(node, vars)
-	if not node.NodeId:EndsWith(".ot") then return end
+    if not node.NodeId:EndsWith(".ot") then return end
 
-	surface.SetMaterial(collab_mat)
-	surface.SetDrawColor(255, 255, 255)
-	surface.DrawTexturedRect(vars.draw_x + 16, 10, 12, 12)
+    surface.SetMaterial(collab_mat)
+    surface.SetDrawColor(255, 255, 255)
+    surface.DrawTexturedRect(vars.draw_x + 16, 10, 12, 12)
 end)
 
 gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
@@ -38,11 +38,11 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
                 return
             end
             gace.Log(gace.LOG_INFO, "Subscribed to gace-ot ", id)
-			gace.JSBridge().gaceCollaborate.onSubscribed(id, {rev = pl.rev, doc = pl.doc})
+            gace.JSBridge().gaceCollaborate.onSubscribed(id, {rev = pl.rev, doc = pl.doc})
         end)
     end)
     html:AddFunction("gaceot", "Send", function(id, rev, op)
-		gace.Debug("Sending ot-apply for " .. id .. " with rev " .. rev)
+        gace.Debug("Sending ot-apply for " .. id .. " with rev " .. rev)
         gace.SendRequest("ot-apply", {
             id = id,
             rev = rev,
@@ -59,9 +59,9 @@ gace.AddHook("SetupHTMLPanel", "OT_Funcs", function(html)
 end)
 
 gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
-	local op = netmsg:GetOpcode()
-	local reqid = netmsg:GetReqId()
-	local payload = netmsg:GetPayload()
+    local op = netmsg:GetOpcode()
+    local reqid = netmsg:GetReqId()
+    local payload = netmsg:GetPayload()
 
     if op == "ot-apply" then
         local ret = {
@@ -72,9 +72,9 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
             ret.user = payload.user:SteamID()
         end
 
-		gace.JSBridge().gaceCollaborate.operationReceived(ret)
+        gace.JSBridge().gaceCollaborate.operationReceived(ret)
     elseif op == "ot-cursor" then
         local cursor = payload.cursor
-		gace.JSBridge().gaceCollaborate.updateCursor(payload.id, tostring(payload.cursorid), cursor.start, cursor["end"])
+        gace.JSBridge().gaceCollaborate.updateCursor(payload.id, tostring(payload.cursorid), cursor.start, cursor["end"])
     end
 end)

@@ -65,10 +65,10 @@ function gace.luarun.shared(code, code_id)
 end
 
 gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
-	local ply = netmsg:GetSender()
-	local op = netmsg:GetOpcode()
-	local reqid = netmsg:GetReqId()
-	local payload = netmsg:GetPayload()
+    local ply = netmsg:GetSender()
+    local op = netmsg:GetOpcode()
+    local reqid = netmsg:GetReqId()
+    local payload = netmsg:GetPayload()
 
     local function CheckPermission()
         return gace.fs.resolve(""):then_(function(node)
@@ -93,25 +93,25 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
             netmsg:CreateResponsePacket(op, {}):Send()
         end):catch(function(e)
             netmsg:CreateResponsePacket(op, {err = e}):Send()
-		end)
+        end)
     end
 
-	-- Git integration
-	if op == "lua-runsv" then
+    -- Git integration
+    if op == "lua-runsv" then
         HandleOp(function(code, code_id)
             return gace.luarun.server(code, code_id)
         end)
-	elseif op == "lua-runsh" then
+    elseif op == "lua-runsh" then
         HandleOp(function(code, code_id)
             return gace.luarun.shared(code, code_id)
         end)
-	elseif op == "lua-runcl" then
+    elseif op == "lua-runcl" then
         HandleOp(function(code, code_id)
             return gace.luarun.clients(code, code_id)
         end)
-	elseif op == "lua-runself" then
+    elseif op == "lua-runself" then
         HandleOp(function(code, code_id)
             return gace.luarun.client(ply, code, code_id)
         end)
-	end
+    end
 end)

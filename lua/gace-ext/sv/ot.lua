@@ -454,21 +454,21 @@ local function GetSession(id)
 end
 
 gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
-	local ply = netmsg:GetSender()
-	local op = netmsg:GetOpcode()
-	local reqid = netmsg:GetReqId()
-	local payload = netmsg:GetPayload()
+    local ply = netmsg:GetSender()
+    local op = netmsg:GetOpcode()
+    local reqid = netmsg:GetReqId()
+    local payload = netmsg:GetPayload()
 
     local function CheckPath(normpath)
         if not gace.path.validate(normpath) then return gace.RejectedPromise(gace.VFS.ErrorCode.INVALID_NAME) end
 
         local normpath_folder = gace.path.tail(normpath)
-		return gace.fs.resolve(normpath_folder):then_(function(node)
-			if not node:hasPermission(ply, gace.VFS.Permission.READ) then
-				return error(gace.VFS.ErrorCode.ACCESS_DENIED)
-			end
-			return
-		end)
+        return gace.fs.resolve(normpath_folder):then_(function(node)
+            if not node:hasPermission(ply, gace.VFS.Permission.READ) then
+                return error(gace.VFS.ErrorCode.ACCESS_DENIED)
+            end
+            return
+        end)
     end
 
     if op == "ot-sub" then
@@ -524,7 +524,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
                 return
             end
 
-    		local recv_op = TextOperation.fromJSON(payload.op)
+            local recv_op = TextOperation.fromJSON(payload.op)
             local new_op = sess.srv:receiveOperation(payload.rev, recv_op)
 
             gace.Debug("OT: ", normpath, "server state: rev", sess.srv.backend:getRevision(), " doc", sess.srv.document)
