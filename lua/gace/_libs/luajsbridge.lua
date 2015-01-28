@@ -23,8 +23,6 @@ function luajsbridge.ToJS(obj)
 	luajsbridge.Error("Trying to JSify invalid type ", t)
 end
 
-print(luajsbridge.ToJS({"Hello\nWorld"}))
-
 function luajsbridge.CreateBridge(pnl)
 	return setmetatable({
 		_pnl = pnl,
