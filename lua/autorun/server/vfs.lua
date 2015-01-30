@@ -63,23 +63,7 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 		end)
 	end
 
-	if op == "save" then
-		local normpath = gace.path.normalize(payload.path)
-		local par_path, file_name = gace.path.tail(normpath)
-		ResolveNode(par_path, gace.VFS.Permission.WRITE):then_(function(node)
-			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
-
-			return node:verifyChildFileExists(file_name)
-		end):then_(function(childNode)
-			return childNode:write(payload.content):then_(function(content)
-				responder_func(ply, reqid, op, {ret="Success"})
-
-				gace.CallHook("PostSave", ply, normpath)
-			end)
-		end):catch(function(e)
-			responder_func(ply, reqid, op, {err=e})
-		end)
-	elseif op == "mkdir" then
+	if op == "mkdir" then
 		local par_folder, folder_name = gace.path.tail(gace.path.normalize(payload.path))
 		ResolveNode(par_folder, gace.VFS.Permission.WRITE):then_(function(node)
 			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end

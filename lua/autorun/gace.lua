@@ -50,6 +50,7 @@ load("gace/vfs-cmds/cp.lua")
 load("gace/vfs-cmds/mv.lua")
 load("gace/vfs-cmds/ls.lua")
 load("gace/vfs-cmds/mkvfolder.lua")
+load("gace/vfs-cmds/write.lua")
 
 load("gace/util/tablesplit.lua")
 load("gace/util/eventemitter.lua")

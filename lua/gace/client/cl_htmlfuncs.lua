@@ -57,11 +57,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		local initial_osi = gace.GetSessionId()
 
 		local function SaveTo(path)
-			gace.SendRequest("save", {path = path, content = content}, function(_, _, pl)
-				if pl.err then
-					return gace.Log(gace.LOG_ERROR, "Unable to save: ", pl.err)
-				end
-
+			gace.cmd.write(LocalPlayer(), path, content):then_(function()
 				sess.SavedContent = content
 				gace.CallHook("OnRemoteSessionSaved", path)
 
@@ -71,6 +67,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				end
 
 				gace.filetree.RefreshPath(gace.Path(path):WithoutFile():ToString())
+			end):catch(function(e)
+				gace.Log(gace.LOG_ERROR, "File save failed: ", e)
 			end)
 
 			gace.CallHook("OnLocalSessionSaved", path)
