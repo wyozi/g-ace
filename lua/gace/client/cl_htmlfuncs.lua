@@ -133,23 +133,19 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 				cur_table = lookedup_val
 
 			elseif lookedup_val == nil and is_last then
-				local possibilities = {}
+				local completions = {}
 				for key,_ in pairs(cur_table) do
 					if key:StartWith(val) then
-						table.insert(possibilities, {
+						table.insert(completions, {
 							name = key,
 							value = key
 						})
 					end
 				end
 
-				local jstbl = {}
-				for _,pos in pairs(possibilities) do
-					table.insert(jstbl, "{name: \"" .. pos.name .. "\", value: \"" .. pos.value .. "\", meta: \"gmod\"}")
-				end
-
-				local runjs = [[ParseGModQueryResponse("]] .. requestid .. [[", []] .. table.concat(jstbl, ", ") .. [[])]]
-				gace.RunJavascript(runjs)
+				gace.JSBridge().ParseGModQueryResponse(requestid, _u.map(completions, function(pos)
+					return {name = pos.name, value = pos.value, meta = "gmod"}
+				end))
 			else
 				return -- No possibilities can be found
 			end

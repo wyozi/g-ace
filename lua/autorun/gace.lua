@@ -22,6 +22,7 @@ end
 
 -- Load libraries
 load("gace/_libs/andthen.lua", "shared")
+load("gace/_libs/json.lua", "shared")
 load("gace/_libs/middleclass.lua", "shared")
 load("gace/_libs/underscore.lua", "shared")
 load("gace/_libs/utf8.lua", "shared")
