@@ -33,7 +33,12 @@ function gace.GitBroadcastRepoStatus(ply, path)
             local vfolder = gace.path.head(path)
             gace.NetMessageOut("git_updstatus", {vfolder = vfolder, changes = payload}):Send(ply)
         end)
-    end):catch(print)
+    end):catch(function(e)
+        -- we don't care about folders that don't map to real paths
+        if e == gace.VFS.ErrorCode.INSUFFICIENT_CAPS then return end
+
+        gace.Log(gace.LOG_ERROR, "Git repo status check failed: ", e)
+    end)
 end
 
 gace.AddHook("PostSave", "Git_BroadcastGitStatus", function(ply, path)

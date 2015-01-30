@@ -133,7 +133,7 @@ end
 function Node:realPath()
     return Promise(function(resolver)
         if not self:hasCapability(gace.VFS.Capability.REALFILE) then
-            resolver:reject(string.format("%s has no CAPABILITY_REALFILE!", self.class.name))
+            resolver:reject(gace.VFS.ErrorCode.INSUFFICIENT_CAPS)
             return
         end
         resolver:reject(string.format("%s#%s is not implemented", self.class.name, "realPath"))

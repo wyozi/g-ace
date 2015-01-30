@@ -19,7 +19,7 @@ function gace.git.virt_to_real(path, dont_find_root, return_node_instead)
 			return error(gace.VFS.ErrorCode.ACCESS_DENIED)
 		end
 		if not node:hasCapability(gace.VFS.Capability.REALFILE) then
-			return error("path does not support REALFILE")
+			return error(gace.VFS.ErrorCode.INSUFFICIENT_CAPS)
 		end
 		if return_node_instead then return node end
 		return node:realPath()

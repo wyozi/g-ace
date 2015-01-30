@@ -24,10 +24,11 @@ gace.VFS.ServerPermission = gace.VFS.Permission.READ  +
                             gace.VFS.Permission.EXECUTE
 
 gace.VFS.ErrorCode = {
-    ERROR          = "error", -- generic
-    NOT_FOUND      = "not found",
-    INVALID_TYPE   = "invalid type",
-    ALREADY_EXISTS = "already exists",
-    ACCESS_DENIED  = "access denied",
-    INVALID_NAME  = "invalid name",
+    ERROR             = "error", -- generic
+    NOT_FOUND         = "not found",
+    INVALID_TYPE      = "invalid type",
+    ALREADY_EXISTS    = "already exists",
+    ACCESS_DENIED     = "access denied",
+    INVALID_NAME      = "invalid name",
+    INSUFFICIENT_CAPS = "insufficient capabilities",
 }
