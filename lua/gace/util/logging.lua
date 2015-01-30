@@ -1,18 +1,20 @@
 -- Default logging mechanism. Simply concats passed arguments converting them to string using "tostring()" if needed
 -- "LogMessage" GAce hook can override the whole log system
+
+local clr_white = Color(255, 255, 255)
+local clr_prefix = Color(78, 205, 196)
+local clr_debug = Color(235, 151, 78)
 gace.Log = function(...)
 	if gace.CallHook("LogMessage", ...) then return end
 
-	MsgC(Color(78, 205, 196), "[G-Ace Log] ")
+	MsgC(clr_prefix, "[G-Ace Log] ")
 
-	local clr
+	local clr = clr_white
 	for _,v in pairs{...} do
 		if type(v) == "table" and v.r and v.g and v.b then
 			clr = v
-		elseif clr then
-			MsgC(clr, tostring(v))
 		else
-			Msg(tostring(v))
+			MsgC(clr, tostring(v))
 		end
 	end
 
@@ -23,8 +25,9 @@ local debug_cvar = CreateConVar("gace_debug", "0")
 function gace.IsDebug()
 	return debug_cvar:GetBool()
 end
+
 function gace.Debug(...)
 	if gace.IsDebug() then
-		gace.Log("[Debug] ", ...)
+		gace.Log(clr_debug, "[Debug] ", clr_white, ...)
 	end
 end
