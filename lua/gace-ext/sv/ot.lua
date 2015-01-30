@@ -438,20 +438,40 @@ gace.ot.TextOperation = TextOperation
 
 gace.ot.Sessions = {}
 
-local function GetSession(id, dontCreate)
-    if gace.ot.Sessions[id] then return gace.ot.Sessions[id] end
-    if dontCreate then return end
+local function SessionExists(id)
+    return gace.ot.Sessions[id] ~= nil
+end
 
-    local s = {
-        srv = Server.new("", MemoryBackend.new()),
-        id = id,
+local function GetSession(id)
+    return gace.ot.Sessions[id]
+end
 
-        clients = {},
-        cursors = {}
-    }
-    gace.ot.Sessions[id] = s
+local function CreateSession(id, ply)
+    if SessionExists(id) then
+        return gace.RejectedPromise(id .. " otsess already exists")
+    end
 
-    return s
+    local promise = Promise()
+
+    if id:EndsWith(".ot") then
+        promise = promise:then_(function()
+            local path = id:sub(1, -4)
+            return gace.cmd.cat(ply, path)
+        end)
+    end
+
+    return promise:then_(function(doc)
+        local s = {
+            srv = Server.new(doc or "", MemoryBackend.new()),
+            id = id,
+
+            clients = {},
+            cursors = {}
+        }
+        gace.ot.Sessions[id] = s
+
+        return s
+    end)
 end
 
 gace.AddHook("PreSaveMeta", "OT_OverwriteOriginalsWithOT", function(event)
@@ -488,37 +508,51 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     if op == "ot-sub" then
         local normpath = gace.path.normalize(payload.id)
         CheckPath(payload.id):then_(function()
-            local sess = GetSession(normpath)
-            if not table.HasValue(sess.clients, ply) then
-                table.insert(sess.clients, ply)
+            local function Subscribe(sess)
+                if not table.HasValue(sess.clients, ply) then
+                    table.insert(sess.clients, ply)
+                end
+
+                netmsg:CreateResponseMessage("ot-sub", {
+                    rev = sess.srv.backend:getRevision(),
+                    doc = sess.srv.document,
+                    cursors = sess.cursors
+                }):Send()
             end
 
-            netmsg:CreateResponseMessage("ot-sub", {
-                rev = sess.srv.backend:getRevision(),
-                doc = sess.srv.document,
-                cursors = sess.cursors
-            }):Send()
+            local sess = GetSession(normpath)
+            if sess then
+                Subscribe(sess)
+            else
+                return CreateSession(normpath, ply):then_(function(createdSess)
+                    Subscribe(createdSess)
+                end)
+            end
         end):catch(function(e)
             netmsg:CreateResponseMessage("ot-sub", {err = e}):Send()
         end)
     elseif op == "ot-unsub" then
         local normpath = gace.path.normalize(payload.id)
-        local sess = GetSession(normpath, true)
+        if not SessionExists(normpath) then
+            return
+        end
+
+        local sess = GetSession(normpath, {dontCreate = true})
         if sess then
             table.RemoveByValue(sess.clients, ply)
 
             if _u.reduce(sess.clients, 0, function(o, i) return o + (IsValid(i) and 1 or 0) end) == 0 then
                 gace.Debug("Removing OT session due to all valid clients unsubscribing")
-                gace.ot.Sessions[id] = nil
+                gace.ot.Sessions[payload.id] = nil
             end
         end
     elseif op == "ot-cursor" then
         local normpath = gace.path.normalize(payload.id)
         CheckPath(payload.id):then_(function()
-
             local sess = GetSession(normpath)
+            if not sess then return end
+
             if not table.HasValue(sess.clients, ply) then
-                netmsg:CreateResponseMessage("ot-cursor", {err = "not subscribed"}):Send()
                 return
             end
 
@@ -541,6 +575,10 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     elseif op == "ot-apply" then
         local normpath = gace.path.normalize(payload.id)
         CheckPath(payload.id):then_(function()
+            if not SessionExists(normpath) then
+                error("session doesn't exist")
+                return
+            end
 
             local sess = GetSession(normpath)
             if not table.HasValue(sess.clients, ply) then
