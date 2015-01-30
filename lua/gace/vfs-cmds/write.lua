@@ -37,7 +37,7 @@ gace.RegisterCommand("write", {
     			return node:verifyChildFileExists(file_name)
         	end):then_(function(childNode)
     			return childNode:write(str):then_(function(content)
-    				gace.CallHook("PostSave", ply, normpath)
+    				gace.CallHook("PostSave", caller, normpath)
     			end)
             end)
         end)
