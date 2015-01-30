@@ -8,20 +8,38 @@ gace.RegisterCommand("write", {
     },
     func = function(caller, file, str)
 		local normpath = gace.path.normalize(file)
-		local par_path, file_name = gace.path.tail(normpath)
-    	return gace.fs.resolve(par_path):then_(function(node)
-			if not node:hasPermission(caller, gace.VFS.Permission.WRITE) then
-				return error(gace.VFS.ErrorCode.ACCESS_DENIED)
-			end
-    		if node:type() ~= "folder" then
-                return error(gace.VFS.ErrorCode.INVALID_TYPE)
+
+        local eventobj = {
+            caller = caller,
+            origPath = normpath,
+            path = normpath
+        }
+        eventobj.promise = Promise()
+
+        gace.CallHook("PreSaveMeta", eventobj)
+
+        return eventobj.promise:then_(function()
+            if eventobj.path ~= eventobj.origPath then
+                gace.Debug("PreSaveMeta: filename changed [", eventobj.origPath, " -> ", eventobj.path, "]")
             end
 
-			return node:verifyChildFileExists(file_name)
-    	end):then_(function(childNode)
-			return childNode:write(str):then_(function(content)
-				gace.CallHook("PostSave", ply, normpath)
-			end)
+            local normpath = gace.path.normalize(eventobj.path)
+
+            local par_path, file_name = gace.path.tail(normpath)
+        	return gace.fs.resolve(par_path):then_(function(node)
+    			if not node:hasPermission(caller, gace.VFS.Permission.WRITE) then
+    				return error(gace.VFS.ErrorCode.ACCESS_DENIED)
+    			end
+        		if node:type() ~= "folder" then
+                    return error(gace.VFS.ErrorCode.INVALID_TYPE)
+                end
+
+    			return node:verifyChildFileExists(file_name)
+        	end):then_(function(childNode)
+    			return childNode:write(str):then_(function(content)
+    				gace.CallHook("PostSave", ply, normpath)
+    			end)
+            end)
         end)
     end,
     func_ipc = function(caller, request, promise)

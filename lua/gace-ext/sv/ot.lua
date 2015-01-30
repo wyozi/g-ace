@@ -453,6 +453,19 @@ local function GetSession(id)
     return s
 end
 
+gace.AddHook("PreSaveMeta", "OT_OverwriteOriginalsWithOT", function(event)
+    if not event.path:EndsWith(".ot") then return end
+
+    -- TODO add check:
+    --      if non-.ot file exists and .ot doesn't: overwrite
+    --      if neither exist: overwrite
+    --      if non-.ot doesn't exist and .ot does:  don't overwrite
+    --      if both exist: don't overwrite
+
+    -- remove .ot extension
+    event.path = event.path:sub(1, -4)
+end)
+
 gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     local ply = netmsg:GetSender()
     local op = netmsg:GetOpcode()
