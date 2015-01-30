@@ -41,6 +41,12 @@ gace.AddHook("AddPanels", "Editor_AddDocsSideBar", function(frame, basepnl)
 	sb:AddDocked("DocsHTMLPanel", pnl, FILL)
 end)
 
+gace.AddHook("SetupHTMLPanel", "SetupGLuaDocsFuncs", function(html)
+	html:AddFunction("gace", "OpenDocumentationFor", function(str)
+		gace.ext.OpenDocumentationFor(str)
+	end)
+end)
+
 gace.AddHook("AddActionBarComponents", "ActionBar_GLuaDocsCommand", function(comps)
 	comps:AddCategory("Documentation", Color(52, 73, 94), 100)
 	comps:AddComponent {
