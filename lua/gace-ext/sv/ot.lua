@@ -438,8 +438,9 @@ gace.ot.TextOperation = TextOperation
 
 gace.ot.Sessions = {}
 
-local function GetSession(id)
+local function GetSession(id, dontCreate)
     if gace.ot.Sessions[id] then return gace.ot.Sessions[id] end
+    if dontCreate then return end
 
     local s = {
         srv = Server.new("", MemoryBackend.new()),
@@ -500,7 +501,17 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
         end):catch(function(e)
             netmsg:CreateResponseMessage("ot-sub", {err = e}):Send()
         end)
+    elseif op == "ot-unsub" then
+        local normpath = gace.path.normalize(payload.id)
+        local sess = GetSession(normpath, true)
+        if sess then
+            table.RemoveByValue(sess.clients, ply)
 
+            if _u.reduce(sess.clients, 0, function(o, i) return o + (IsValid(i) and 1 or 0) end) == 0 then
+                gace.Debug("Removing OT session due to all valid clients unsubscribing")
+                gace.ot.Sessions[id] = nil
+            end
+        end
     elseif op == "ot-cursor" then
         local normpath = gace.path.normalize(payload.id)
         CheckPath(payload.id):then_(function()
