@@ -1,8 +1,9 @@
-define("ace/mode/lua_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+define("ace/mode/lua_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules","ace/mode/html_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+var HtmlHighlightRules = require("./html_highlight_rules").HtmlHighlightRules;
 
 var LuaHighlightRules = function() {
 
@@ -64,93 +65,108 @@ var LuaHighlightRules = function() {
     var floatNumber = "(?:" + pointFloat + ")";
 
     this.$rules = {
-        "start" : [{
-            stateName: "bracketedComment",
-            onMatch : function(value, currentState, stack){
-                stack.unshift(this.next, value.length - 2, currentState);
-                return "comment";
+        "start" : [
+            {
+                stateName: "bracketedComment",
+                onMatch : function(value, currentState, stack){
+                    stack.unshift(this.next, value.length - 2, currentState);
+                    return "comment";
+                },
+                regex : /\-\-\[=*\[/,
+                next  : [
+                    {
+                        onMatch : function(value, currentState, stack) {
+                            if (value.length == stack[1]) {
+                                stack.shift();
+                                stack.shift();
+                                this.next = stack.shift();
+                            } else {
+                                this.next = "";
+                            }
+                            return "comment";
+                        },
+                        regex : /\]=*\]/,
+                        next  : "start"
+                    }, {
+                        defaultToken : "comment"
+                    }
+                ]
             },
-            regex : /\-\-\[=*\[/,
-            next  : [
-                {
-                    onMatch : function(value, currentState, stack) {
-                        if (value.length == stack[1]) {
-                            stack.shift();
-                            stack.shift();
-                            this.next = stack.shift();
-                        } else {
-                            this.next = "";
-                        }
-                        return "comment";
-                    },
-                    regex : /\]=*\]/,
-                    next  : "start"
-                }, {
-                    defaultToken : "comment"
-                }
-            ]
-        },
 
-        {
-            token : "comment",
-            regex : "\\-\\-.*$"
-        },
-        {
-            stateName: "bracketedString",
-            onMatch : function(value, currentState, stack){
-                stack.unshift(this.next, value.length, currentState);
-                return "string";
+            {
+                token : "comment",
+                regex : "\\-\\-.*$"
             },
-            regex : /\[=*\[/,
-            next  : [
-                {
-                    onMatch : function(value, currentState, stack) {
-                        if (value.length == stack[1]) {
-                            stack.shift();
-                            stack.shift();
-                            this.next = stack.shift();
-                        } else {
-                            this.next = "";
-                        }
-                        return "string";
-                    },
+            {
+                stateName: "bracketedString",
+                onMatch : function(value, currentState, stack){
+                    return "string";
+                },
+                regex : /\[=*\[/,
+                next  : [
+                    {
+                        onMatch : function(value, currentState, stack) {
+                            if (value.length == stack[1]) {
+                                this.next = stack.shift();
+                            } else {
+                                this.next = "";
+                            }
+                            return "string";
+                        },
 
-                    regex : /\]=*\]/,
-                    next  : "start"
-                }, {
-                    defaultToken : "string"
-                }
-            ]
-        },
-        {
-            token : "string",           // " string
-            regex : '"(?:[^\\\\]|\\\\.)*?"'
-        }, {
-            token : "string",           // ' string
-            regex : "'(?:[^\\\\]|\\\\.)*?'"
-        }, {
-            token : "constant.numeric", // float
-            regex : floatNumber
-        }, {
-            token : "constant.numeric", // integer
-            regex : integer + "\\b"
-        }, {
-            token : keywordMapper,
-            regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-        }, {
-            token : "keyword.operator",
-            regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
-        }, {
-            token : "paren.lparen",
-            regex : "[\\[\\(\\{]"
-        }, {
-            token : "paren.rparen",
-            regex : "[\\]\\)\\}]"
-        }, {
-            token : "text",
-            regex : "\\s+|\\w+"
-        } ]
+                        regex : /\]=*\]/,
+                        next  : "start"
+                    }, {
+                        defaultToken : "string"
+                    }
+                ]
+            },
+            {
+                // Inject HTML into SetHTML calls
+                stateName: "htmlInjection",
+                token: ["identifier", "paren.lparen", "string"],
+                regex: "(SetHTML)(\\()(\\[\\[)",
+                next: "html-start"
+            },
+            {
+                token : "string",           // " string
+                regex : '"(?:[^\\\\]|\\\\.)*?"'
+            }, {
+                token : "string",           // ' string
+                regex : "'(?:[^\\\\]|\\\\.)*?'"
+            }, {
+                token : "constant.numeric", // float
+                regex : floatNumber
+            }, {
+                token : "constant.numeric", // integer
+                regex : integer + "\\b"
+            }, {
+                token : keywordMapper,
+                regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+            }, {
+                token : "keyword.operator",
+                regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
+            }, {
+                token : "paren.lparen",
+                regex : "[\\[\\(\\{]"
+            }, {
+                token : "paren.rparen",
+                regex : "[\\]\\)\\}]"
+            }, {
+                token : "text",
+                regex : "\\s+|\\w+"
+            }
+        ]
     };
+
+    this.embedRules(HtmlHighlightRules, "html-", [
+        {
+            token: "keyword",
+            regex: "(\\]\\])(\\))",
+            token: ["string", "paren.rparen"],
+            next: "start"
+        }
+    ]);
 
     this.normalizeRules();
 }
