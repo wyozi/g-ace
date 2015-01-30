@@ -553,8 +553,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
                 gace.NetMessageOut("ot-apply", pl):Send(cl)
             end)
         end):catch(function(e)
-            MsgN("ot-apply failed!: ", e)
-            netmsg:CreateResponseMessage("ot-apply", {err = e}):Send()
+            gace.Log(gace.LOG_ERROR, "ot-apply failed: ", e)
         end)
     end
 
