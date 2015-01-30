@@ -502,18 +502,11 @@ Press Ctrl-N to create a new file and open it in a new tab.
             otSessions[id] = otSess;
         }
 
-        function toJSArray(jsonobj) {
-            var arr = [];
-            for (var i = 1;; i++) {
-                var val = jsonobj[i];
-                if (val == undefined) break;
-
-                arr[i-1] = val;
-            }
-            return arr;
-        }
         function operationReceived(json) {
-            var obj = JSON.parse(json);
+            var obj = json;
+            if (typeof obj === "string") {
+                obj = JSON.parse(json);
+            }
 
             var id = obj.id;
 
@@ -523,7 +516,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 return;
             }
 
-            var op_arr = toJSArray(obj.op);
+            var op_arr = obj.op;
 
             var operation = ot.TextOperation.fromJSON(op_arr);
             if (obj.user == undefined) {
