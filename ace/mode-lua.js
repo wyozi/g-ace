@@ -161,7 +161,6 @@ var LuaHighlightRules = function() {
 
     this.embedRules(HtmlHighlightRules, "html-", [
         {
-            token: "keyword",
             regex: "(\\]\\])(\\))",
             token: ["string", "paren.rparen"],
             next: "start"
