@@ -703,8 +703,6 @@ Press Ctrl-N to create a new file and open it in a new tab.
 
     function setCustomEditorFontSize(size) {
         document.getElementById('editor').style.fontSize = size + "px";
-
-        window.localStorage.gaceFontSize = size;
     }
 
     var customFontMap = {
@@ -718,8 +716,6 @@ Press Ctrl-N to create a new file and open it in a new tab.
             console.log("Invalid font id " + id);
             return;
         }
-
-        window.localStorage.gaceFont = id;
 
         var el = document.getElementById("gace-font-" + id);
         if (!el) {
@@ -735,12 +731,6 @@ Press Ctrl-N to create a new file and open it in a new tab.
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        if ("gaceFontSize" in window.localStorage) {
-            setCustomEditorFontSize(window.localStorage.gaceFontSize);
-        }
-        if ("gaceFont" in window.localStorage) {
-            setCustomEditorFont(window.localStorage.gaceFont);
-        }
         if ("gace" in window) {
             gace.EditorReady();
         }
