@@ -127,6 +127,12 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 			the_theme = c_theme
 		end
 		gace.JSBridge().editor.setTheme(the_theme)
+
+		local c_font = cookie.GetString("gace-font", "")
+		local c_fontSize = tonumber(cookie.GetString("gace-fontSize", "14"))
+
+		gace.JSBridge().setCustomEditorFont(c_font)
+		gace.JSBridge().setCustomEditorFontSize(c_fontSize)
 	end)
 
 	local function RGBStringToColor(str)

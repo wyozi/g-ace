@@ -56,7 +56,10 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 				}
 
 				for _,font in pairs(fonts) do
-					local opt = csubmenu:AddOption(font, function() gace.JSBridge().setCustomEditorFont(font) end)
+					local opt = csubmenu:AddOption(font, function()
+						gace.JSBridge().setCustomEditorFont(font)
+						cookie.Set("gace-font", font)
+					end)
 				end
 			end
 
@@ -64,7 +67,10 @@ gace.AddHook("AddActionBarComponents", "ActionBar_AceEditor", function(comps)
 			csmpnl:SetIcon("icon16/text_smallcaps.png")
 			do
 				for s=10, 22 do
-					local opt = csubmenu:AddOption(tostring(s), function() gace.JSBridge().setCustomEditorFontSize(s) end)
+					local opt = csubmenu:AddOption(tostring(s), function()
+						gace.JSBridge().setCustomEditorFontSize(s)
+						cookie.Set("gace-fontSize", s)
+					end)
 				end
 			end
 
