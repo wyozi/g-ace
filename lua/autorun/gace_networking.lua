@@ -1,4 +1,4 @@
-if SERVER then util.AddNetworkString("gace_fileacc") end
+if SERVER then util.AddNetworkString("gace_net") end
 
 local NETMSG_SPLIT_THRESHOLD = 58000
 
@@ -26,7 +26,7 @@ local function GetChunkBuffer(cl, reqid)
 	end
 end
 
-net.Receive("gace_fileacc", function(len, cl)
+net.Receive("gace_net", function(len, cl)
 	local reqid = net.ReadString()
 	local op = net.ReadString()
 	local flags = net.ReadUInt(32)
@@ -105,7 +105,7 @@ function gace.SendNetMessage(netmsg, flags)
 		return
 	end
 
-	net.Start("gace_fileacc")
+	net.Start("gace_net")
 
 	net.WriteString(reqid)
 	net.WriteString(op)
