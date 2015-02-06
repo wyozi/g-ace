@@ -170,9 +170,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
             anim(document.querySelector(".gace-highlight"), {opacity: 0}, 3, "ease-in");
         }, 100);
 
-		setTimeout(function() {
-			editor.getSession().removeMarker(marker);
-		}, 3100);
+        setTimeout(function() {
+            editor.getSession().removeMarker(marker);
+        }, 3100);
     }
 
     // Add context menu
@@ -383,7 +383,7 @@ Press Ctrl-N to create a new file and open it in a new tab.
         var cursors = 12;
 
         var colors = Please.make_color({
-        	colors_returned: cursors
+            colors_returned: cursors
         });
 
         for (var i = 0; i < cursors; i++) {
@@ -685,17 +685,19 @@ Press Ctrl-N to create a new file and open it in a new tab.
         changingToTheme = e.theme;
     });
     editor.renderer.on("themeLoaded", function(e) {
-        var editorStyle = getComputedStyle(document.querySelector(".ace_editor"));
-        var gutterStyle = getComputedStyle(document.querySelector(".ace_gutter"));
+        setTimeout(function() {
+            var editorStyle = getComputedStyle(document.querySelector(".ace_editor"));
+            var gutterStyle = getComputedStyle(document.querySelector(".ace_gutter"));
 
-        var bgColor = editorStyle.backgroundColor.match(/\d+/g).slice(0,3);
-        var fgColor = editorStyle.color.match(/\d+/g).slice(0,3);
+            var bgColor = editorStyle.backgroundColor.match(/\d+/g).slice(0,3);
+            var fgColor = editorStyle.color.match(/\d+/g).slice(0,3);
 
-        var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
+            var gutterBgColor = gutterStyle.backgroundColor.match(/\d+/g).slice(0,3);
 
-        if ("gace" in window) {
-            gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
-        }
+            if ("gace" in window) {
+                gace.ThemeChanged(changingToTheme, bgColor.join(":"), fgColor.join(":"), gutterBgColor.join(":"));
+            }
+        }, 500);
     });
 
     editor.on("changeMode", function(e) {
