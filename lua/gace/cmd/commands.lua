@@ -1,12 +1,6 @@
 gace.cmd = gace.cmd or {}
 gace.cmd.Commands = gace.cmd.Commands or {}
 
--- Umm
-gace.LOG_ERROR = Color(255, 0, 0)
-gace.LOG_WARN = Color(255, 127, 0)
-gace.LOG_SUCCESS = Color(0, 255, 0)
-gace.LOG_INFO = Color(170, 255, 255)
-
 setmetatable(gace.cmd, {
     __index = function(tbl, key)
         local thecmd = gace.cmd.Commands[key]
