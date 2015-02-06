@@ -29,6 +29,10 @@ load("gace/_libs/utf8.lua", "shared")
 load("gace/_libs/luajsbridge.lua", "client")
 
 -- Load GAce files
+
+-- Schemas can be registered by all files so this needs to be first
+load("gace/netmsg/schemas.lua")
+
 load("gace/util/logging.lua")
 load("gace/util/miscutils.lua")
 load("gace/util/hooks.lua")

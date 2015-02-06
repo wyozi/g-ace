@@ -66,7 +66,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     local reqid = netmsg:GetReqId()
     local payload = netmsg:GetPayload()
 
-    if op == "ot-apply" then
+    if op == "ot-applysv" then
         local ret = {
             id = payload.id,
             op = payload.op
@@ -76,7 +76,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
         end
 
         gace.JSBridge().gaceCollaborate.operationReceived(ret)
-    elseif op == "ot-cursor" then
+    elseif op == "ot-cursorsv" then
         local cursor = payload.cursor
         gace.JSBridge().gaceCollaborate.updateCursor(payload.id, tostring(payload.cursorid), cursor.start, cursor["end"])
     end

@@ -15,6 +15,8 @@ netmsg_meta.__index = netmsg_meta
 AccessorFunc(netmsg_meta, "reqid", "ReqId")
 AccessorFunc(netmsg_meta, "op", "Opcode")
 
+AccessorFunc(netmsg_meta, "response", "IsResponse")
+
 function netmsg_meta:IsOpcode(op)
     return self:GetOpcode() == op
 end
@@ -78,6 +80,7 @@ function netmsg_in_meta:CreateResponseMessage(op, payload)
     if not gace.reqid.validate(self:GetReqId()) then return error("creating a response message with invalid reqid") end
     local netmsg = gace.NetMessageOut(op or self:GetOpcode(), payload)
     netmsg:SetReqId(self:GetReqId())
+    netmsg:SetIsResponse(true)
 
     if SERVER then netmsg:SetTarget(self:GetSender()) end
 

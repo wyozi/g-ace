@@ -562,7 +562,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
             local filtered = _u.filter(sess.clients, function(cl) return IsValid(cl) and cl ~= ply end)
             _u.each(filtered, function(cl)
-                gace.NetMessageOut("ot-cursor", {
+                gace.NetMessageOut("ot-cursorsv", {
                     cursorid = ply:UserID(),
                     id = normpath,
                     cursor = sess.cursors[ply:UserID()]
@@ -599,7 +599,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
 
             local filtered = _u.filter(sess.clients, function(cl) return IsValid(cl) end)
             _u.each(filtered, function(cl)
-                gace.NetMessageOut("ot-apply", pl):Send(cl)
+                gace.NetMessageOut("ot-applysv", pl):Send(cl)
             end)
         end):catch(function(e)
             gace.Log(gace.LOG_ERROR, "ot-apply failed: ", e)

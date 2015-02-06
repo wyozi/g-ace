@@ -5,6 +5,8 @@ local NETMSG_SPLIT_THRESHOLD = 58000
 local NETMSG_FLAG_CHUNKED = 1 -- if sent in multiple parts
 local NETMSG_FLAG_LASTCHUNK = 2 -- if this is the last part
 
+local NETMSG_FLAG_RESPONSE = 4 -- if this is a response
+
 --- Stores incomplete chunks
 -- On CLIENT this is a simple key value map of reqid and incomplete chunks
 -- On SERVER this is a map where key is player and value is a k-v map
@@ -31,7 +33,12 @@ net.Receive("gace_net", function(len, cl)
 	local op = net.ReadString()
 	local flags = net.ReadUInt(32)
 
-	local payload = net.ReadTable()
+	-- Responses should not have opcodes
+	if bit.band(flags, NETMSG_FLAG_RESPONSE) == NETMSG_FLAG_RESPONSE then
+		op = ""
+	end
+
+	local payload = gace.netschemas.Read(op)
 
 	gace.Debug("Received net message ", op, " with reqid: ", reqid, "; length: ", len, "; ", (bit.band(flags, NETMSG_FLAG_CHUNKED) == NETMSG_FLAG_CHUNKED) and "CHUNKED" or "")
 	-- TODO this should be shown if another cvar is on? or maybe written to a file
@@ -74,6 +81,11 @@ function gace.SendNetMessage(netmsg, flags)
 	local flags = flags or 0
 	local payload = netmsg:GetPayload()
 
+	if netmsg:GetIsResponse() then
+		op = ""
+		flags = bit.bor(flags, NETMSG_FLAG_RESPONSE)
+	end
+
 	-- See if we need to split this netmsg
 	local estsize = gace.tablesplit.ComputeSize(payload, 1)
 
@@ -110,7 +122,7 @@ function gace.SendNetMessage(netmsg, flags)
 	net.WriteString(reqid)
 	net.WriteString(op)
 	net.WriteUInt(flags, 32)
-	net.WriteTable(payload)
+	gace.netschemas.Write(op, payload)
 
 	gace.Debug("Sending net message ", netmsg:GetOpcode(), " with reqid ", netmsg:GetReqId(), "; estimated size: ", estsize, "; actual size: ", net.BytesWritten())
 
