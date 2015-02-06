@@ -537,7 +537,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
             return
         end
 
-        local sess = GetSession(normpath, {dontCreate = true})
+        local sess = GetSession(normpath)
         if sess then
             table.RemoveByValue(sess.clients, ply)
 
