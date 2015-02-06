@@ -649,6 +649,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
                 return otSessions[id];
             },
             removeSession: function(id) {
+                if(!(id in otSessions)) {
+                    return;
+                }
                 delete otSessions[id];
 
                 if ("gaceot" in window) {
