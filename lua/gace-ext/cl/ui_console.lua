@@ -21,8 +21,8 @@ gace.AddHook("AddPanels", "Editor_AddConsole", function(frame, basepnl)
 end)
 
 gace.AddHook("LogMessage", "Console_OverrideOldLogSystem", function(...)
-
 	local console = gace.GetPanel("Console")
+	if not console then return end
 
 	local function setclr(r, g, b)
 		if type(r) == "table" then
