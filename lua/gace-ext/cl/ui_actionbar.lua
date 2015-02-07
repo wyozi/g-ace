@@ -22,9 +22,9 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 	local horiz_scroller = vgui.Create("DHorizontalScroller", frame)
 	local opl = horiz_scroller.PerformLayout
 	horiz_scroller.PerformLayout = function(self)
-		self:SetPos(0, 0)
+		self:SetPos(30, 0)
 
-		local max_width = frame:GetWide() - 100
+		local max_width = frame:GetWide() - 100 - 30
 
 		-- Compute horizscroller width
 		local w = 0
