@@ -84,6 +84,16 @@ local VGUI_GACETREE = {
         self:VerifyHasParent(id)
 
         self.Items[id] = {type = type or "file", userobj = userobj}
+
+        -- Unexpand newly added item
+        self:SetExpanded(id, false)
+        -- But expand all the parents..
+        local s = par_comp(id)
+        while s do
+            self:SetExpanded(s, true)
+            s = par_comp(s)
+        end
+
         self:RelayoutItems()
         self.IsDirty = true
     end,
