@@ -1,0 +1,9 @@
+{
+  "name": "g-ace-webeditor",
+  "version": "1.0.0",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-uglify": "~0.2.4",
+    "grunt-contrib-watch" : "~0.5.3"
+  }
+}
