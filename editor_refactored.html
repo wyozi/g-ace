@@ -77,6 +77,11 @@ Press Ctrl-N to create a new file and open it in a new tab.
     ace.require('ace/ext/settings_menu').init(editor);
     ace.require('ace/ext/keybinding_menu').init(editor);
 
+	var snippetManager = ace.require("ace/snippets").snippetManager;
+	function insertSnippet(snippet) {
+		snippetManager.insertSnippetForSelection(editor, snippet);
+	}
+
     var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
     var statusBar = new StatusBar(editor, document.getElementById("status-bar"));
     statusBar.updateStatus = function(editor) {
