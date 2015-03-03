@@ -99,7 +99,7 @@ function gace.ParseArguments(target_args, ...)
 
         local incr_iarg = true
 
-        if not p_arg then
+        if p_arg == nil then
             if parsed_args[i_target] and t_arg.take_rest then
                 break
             elseif t_arg.default then
@@ -133,6 +133,10 @@ function gace.ParseArguments(target_args, ...)
         if t_arg.type == "string" and t_arg.take_rest then
             incr_iarg = false
             p_arg = (parsed_args[i_target] or "") .. p_arg
+        end
+
+        if t_arg.type == "bool" then
+            p_arg = p_arg == "true"
         end
 
         parsed_args[i_target] = p_arg

@@ -25,6 +25,7 @@ if SERVER then
 
         for _,cmd in pairs(gace.cmd.Commands) do
             if cmd.ipc == op then
+                gace.Debug("RECV IPC ", table.ToString(payload.args))
                 cmd.callback_ipc(ply, netmsg, unpack(payload.args))
                 break
             end
