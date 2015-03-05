@@ -3,6 +3,10 @@ local luagit_available = git ~= nil
 
 gace.git = {}
 
+function gace.git.available()
+	return luagit_available
+end
+
 -- Helper function
 function gace.git.virt_to_real(path, dont_find_root, return_node_instead)
 	local normpath = gace.path.normalize(path)

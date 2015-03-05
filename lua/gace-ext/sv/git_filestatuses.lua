@@ -5,6 +5,11 @@ function gace.GitBroadcastRepoStatus(ply, path)
         return
     end
 
+    -- luagit not installed
+    if not gace.git.available() then
+        return
+    end
+
     gace.git.virt_to_real(path, false, true):then_(function(fsRootNode)
         return fsRootNode:realPath():then_(function(realPath)
             if not gace.git.is_repo(realPath) then
