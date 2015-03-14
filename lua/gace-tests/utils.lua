@@ -23,3 +23,27 @@ gat("Utils", function(t)
 		"escape a JSON string"
 	)
 end)
+
+-- Return second element from varargs
+local function sec(...)
+	return select(2, ...)
+end
+
+gat("Utils: entitypath", function(t)
+	local analyze = gace.entitypath.Analyze
+
+	t.assertEquals(analyze("testent.lua"), "testent", "single-comp entity file")
+	t.assertEquals(analyze("shared.lua"), "shared", "single-comp entity file (shared)")
+
+	t.assertEquals(analyze("testent/shared.lua"), "testent", "double-comp entity folder (sh)")
+	t.assertEquals(analyze("testent/cl_init.lua"), "testent", "double-comp entity folder (cl)")
+	t.assertEquals(analyze("testent/init.lua"), "testent", "double-comp entity folder (sv)")
+
+	t.assertEquals(analyze("this/is/a/path/testent.lua"), "testent", "multi-comp entity file")
+	t.assertEquals(analyze("this/is/a/path/testent/shared.lua"), "testent", "multi-comp entity folder")
+
+	t.assertEquals(sec(analyze("testent.lua")), "sh", "entity file realm")
+	t.assertEquals(sec(analyze("testent/shared.lua")), "sh", "entity folder realm (sh)")
+	t.assertEquals(sec(analyze("testent/cl_init.lua")), "cl", "entity folder realm (cl)")
+	t.assertEquals(sec(analyze("testent/init.lua")), "sv", "entity folder realm (sv)")
+end)

@@ -22,7 +22,8 @@ SWEP.Secondary = {}
 weapons.Register(SWEP, "%s", true)
 			]]
 
-			CreateRequest("lua-runsh", string.format(base, gace.GetOpenSession().Content, gace.GetOpenSession():GetExtensionlessName()))
+			local entname, realm = gace.entitypath.Analyze(gace.GetSessionId())
+			CreateRequest("lua-run" .. realm, string.format(base, gace.GetOpenSession().Content, entname))
 		end,
 		enabled = function() return gace.IsSessionOpen() end,
 		tt = "Runs the code as SWEP. SWEP name is equal to extensionless file name"
@@ -36,7 +37,8 @@ local ENT = {}
 scripted_ents.Register(ENT, "%s")
 			]]
 
-			CreateRequest("lua-runsh", string.format(base, gace.GetOpenSession().Content, gace.GetOpenSession():GetExtensionlessName()))
+			local entname, realm = gace.entitypath.Analyze(gace.GetSessionId())
+			CreateRequest("lua-run" .. realm, string.format(base, gace.GetOpenSession().Content, entname))
 		end,
 		enabled = function() return gace.IsSessionOpen() end,
 		tt = "Runs the code as SENT. SENT name is equal to extensionless file name"

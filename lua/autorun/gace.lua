@@ -36,6 +36,7 @@ load("gace/netmsg/schemas.lua")
 load("gace/util/logging.lua")
 load("gace/util/miscutils.lua")
 load("gace/util/hooks.lua")
+load("gace/util/entitypath.lua")
 
 load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
