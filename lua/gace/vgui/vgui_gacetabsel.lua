@@ -45,8 +45,7 @@ local VGUI_EDITOR_TAB_SEL = {
 		end)
 		menu:AddSpacer()
 
-		local tabs = gace.GetPanel("Tabs")
-		for _,pnl in pairs(tabs.Panels) do
+		for _,pnl in pairs(gace.tab.GetPanels()) do
 			if pnl.SessionId then
 				menu:AddOption(pnl.SessionId, function() gace.OpenSession(pnl.SessionId) end)
 			end

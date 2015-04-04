@@ -146,8 +146,7 @@ local VGUI_EDITOR_TAB = {
 		local menu = DermaMenu()
 		menu:AddOption("Close", function() timer.Simple(0, function() self:CloseTab() end) end)
 		menu:AddOption("Close others", function()
-			local tabs = gace.GetPanel("Tabs")
-			local to_be_closed = _u.filter(tabs.Panels, function(x) return x.SessionId ~= nil and x ~= self end)
+			local to_be_closed = _u.filter(gace.tab.GetPanels(), function(x) return x.SessionId ~= nil and x ~= self end)
 
 			local function CloseAnother()
 				local tab = table.remove(to_be_closed, 1)
