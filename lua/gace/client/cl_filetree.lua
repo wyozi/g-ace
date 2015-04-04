@@ -33,7 +33,7 @@ function ft.RefreshPath(path)
 		local existing_names = {}
 
 		for _, id in pairs(filetree:QueryItemChildren(path)) do
-			local name = id:match("/?([^/]*)$")
+			local name = gace.path.tail(id)
 			if not t.entries[name] then
 				filetree:RemoveItem(id)
 			else
@@ -60,6 +60,16 @@ function ft.RefreshPath(path)
 				gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
 			end
 		end
+
+		-- If parent path has not been fetched, we need to fetch that as well
+		-- TODO: this is disabled because it doesn't work well with restore_openpaths
+		-- probably need to add a varialbe isOpenPath to this func and then not call this
+		--[[
+		local _, par_path = gace.path.tail(path)
+		if not ft.FetchedFolders[par_path] then
+			ft.RefreshPath(par_path)
+		end
+		]]
 
 		ft.FetchedFolders[path] = CurTime()
 	end, function(err)

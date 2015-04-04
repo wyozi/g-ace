@@ -70,14 +70,20 @@ local VGUI_GACETREE = {
         self.IsDirty = true
     end,
 
+    HasItem = function(self, id)
+        return self.Items[id] ~= nil
+    end,
+
     VerifyHasParent = function(self, id)
         local parid = id:match("(.*)/[^/]*$")
-        if parid and not self.Items[parid] then
+        if parid and not self:HasItem(parid) then
             self:VerifyHasParent(parid)
 
             print(id, " is missing parent. Adding ", parid)
-            self.Items[parid] = {}
+            self:AddItem(parid, "folder")
+            return false
         end
+        return true
     end,
 
     AddItem = function(self, id, type, userobj)
@@ -225,7 +231,26 @@ local VGUI_GACETREE = {
 
     SetExpanded = function(self, id, b)
         self.ExpandedItems[id] = b
-    end
+    end,
+
+    ExpandedItemDump = function(self, checkParentVisiblity)
+        local dump = {}
+
+        for id, _ in pairs(self.Items) do
+            local vis = self:IsExpanded(id)
+
+            -- If true, we need to check for visibility as well
+            if checkParentVisiblity then 
+                vis = vis and self:IsIdVisible(id)
+            end
+
+            if vis then
+                table.insert(dump, id)
+            end
+        end
+
+        return dump
+    end,
 }
 
 derma.DefineControl( "GAceTree", "File/Item tree for G-Ace", VGUI_GACETREE, "DPanel" )
