@@ -19,31 +19,16 @@ function gace.luarun.test_compile(code, code_id)
 end
 
 function gace.luarun.server(code, code_id)
-    local status, ret = gace.luarun.test_compile(code, code_id)
-    if not status then
-        return status, ret
-    end
-
-    ret()
-
+    RunString(code, code_id)
+    
     return true
 end
 function gace.luarun.client(cl, code, code_id)
-    local status, ret = gace.luarun.test_compile(code, code_id)
-    if not status then
-        return status, ret
-    end
-
     gace.NetMessageOut("lua-runclient", {code = code, code_id = code_id}):Send(cl)
 
     return true
 end
 function gace.luarun.clients(code, code_id)
-    local status, ret = gace.luarun.test_compile(code, code_id)
-    if not status then
-        return status, ret
-    end
-
     for _,ply in pairs(player.GetAll()) do
         gace.NetMessageOut("lua-runclient", {code = code, code_id = code_id}):Send(ply)
     end
