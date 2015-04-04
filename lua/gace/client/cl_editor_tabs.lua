@@ -57,14 +57,15 @@ gace.CreateTab = gace.tab.Create -- alias
 
 function gace.tab.Remove(id)
 	local tabs = gace.tab.GetScroller()
-	
+
 	local tab = gace.GetTabFor(id)
 	if tab then
 		local panels = gace.tab.GetPanels()
 
+		-- Find tab to open after closing this session
 		local prev_tab = table.FindPrev(panels, tab)
 		local set_session
-		if prev_tab and prev_tab.SessionId then
+		if prev_tab and prev_tab.SessionId and prev_tab.SessionId ~= id then
 			set_session = prev_tab.SessionId
 		end
 
