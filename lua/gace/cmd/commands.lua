@@ -136,7 +136,7 @@ function gace.ParseArguments(target_args, ...)
         end
 
         if t_arg.type == "bool" then
-            p_arg = p_arg == "true"
+            p_arg = p_arg == true or (type(p_arg) == "string" and string.lower(string.Trim(p_arg)) == "true")
         end
 
         parsed_args[i_target] = p_arg
