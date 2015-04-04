@@ -9,7 +9,8 @@ gace.AddHook("OnSessionContentUpdated", "RestoreUnsavedFiles", function(id, cont
     if equal_to_saved then
         unsaved_files_cache[id] = nil
     else
-        unsaved_files_cache[id] = content
+        local tabIndex = gace.tab.GetTabIndex(id)
+        unsaved_files_cache[id] = {content = content, tabIndex = tabIndex}
     end
 
     gace.ClientCache:set("unsavedfiles", unsaved_files_cache)
@@ -39,8 +40,23 @@ gace.AddHook("PostEditorCreated", "RestoreUnsavedFiles", function()
 
         -- TODO check if root folder exists in current editor
 
-        for id,content in pairs(unsaved_files_cache) do
-            gace.OpenSession(id, {content=content, mark_unsaved = true})
+        local contents = {}
+
+        for id, val in pairs(unsaved_files_cache) do
+            local t
+            if type(val) == "table" then
+                t = {id = id, content = val.content, tabIndex = val.tabIndex or 0}
+            else
+                t = {id = id, content = val, tabIndex = 0}
+            end
+
+            table.insert(contents, t)
+        end
+
+        table.SortByMember(contents, "tabIndex", true)
+
+        for _,c in ipairs(contents) do
+            gace.OpenSession(c.id, {content = c.content, mark_unsaved = true})
         end
     end)
 end)
