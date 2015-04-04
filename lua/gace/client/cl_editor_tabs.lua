@@ -20,8 +20,11 @@ end
 
 gace.tab = {}
 
+function gace.tab.GetScroller()
+	return gace.GetPanel("Tabs").Scroller
+end
 function gace.tab.GetPanels()
-	return gace.GetPanel("Tabs").Scroller.Panels
+	return gace.tab.GetScroller().Panels
 end
 
 function gace.tab.GetById(id)
@@ -44,7 +47,7 @@ function gace.tab.Create(id)
 	local btn = vgui.Create("GAceTab", gace.Tabs)
 	btn:Setup(id)
 
-	local tabs = gace.GetPanel("Tabs").Scroller
+	local tabs = gace.tab.GetScroller()
 	tabs:AddPanel(btn)
 
 	-- In case there are duplicate filenames
@@ -77,8 +80,28 @@ function gace.tab.Remove(id)
 	end
 end
 
+function gace.tab.ShowTabOnScroller(id)
+	local tab = gace.tab.GetById(id)
+	if not tab then return end
+
+	local scroller = gace.tab.GetScroller()
+
+	local midx = tab:GetPos() + tab:GetWide()/2
+
+	-- Check if midx is visible
+	local visMin = scroller.OffsetX + 30
+	local visMax = scroller.OffsetX + scroller:GetWide() - 30
+
+	-- midx is visible, all gucci
+	if midx >= visMin and midx <= visMax then return end
+
+	scroller.OffsetX = midx
+	scroller:InvalidateLayout(true)
+end
+
 gace.AddHook("OnSessionOpened", "Editor_KeepTabsUpdated", function(id)
 	gace.tab.Create(id)
+	gace.tab.ShowTabOnScroller(id)
 end)
 
 gace.AddHook("OnSessionClosed", "Editor_KeepTabsUpdated", function(id)
