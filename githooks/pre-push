@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if [ -e "gace-tests-pending" ]
-then
-	echo "gace-tests-pending file exists! Remove it (or run the tests, lazy) to push."
-	exit 1
-fi
-
-exit 0
