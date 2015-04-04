@@ -56,6 +56,8 @@ end
 gace.CreateTab = gace.tab.Create -- alias
 
 function gace.tab.Remove(id)
+	local tabs = gace.tab.GetScroller()
+	
 	local tab = gace.GetTabFor(id)
 	if tab then
 		local panels = gace.tab.GetPanels()
@@ -78,6 +80,13 @@ function gace.tab.Remove(id)
 			gace.OpenSession(set_session)
 		end
 	end
+end
+
+function gace.tab.GetTabIndex(id)
+	-- This is quite inefficient. TODO optimize
+
+	local pnl = gace.tab.GetById(id)
+	return table.KeyFromValue(gace.tab.GetPanels(), pnl)
 end
 
 function gace.tab.ShowTabOnScroller(id)
