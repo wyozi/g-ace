@@ -18,7 +18,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 
 		return Promise(function(res)
 			local entname, realm = gace.entitypath.Analyze(id)
-			local formatted = string.format(base, code, entname)
+			local formatted = string.format(template, code, entname)
 			res:resolve(formatted)
 		end)
 	end
