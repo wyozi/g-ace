@@ -21,8 +21,10 @@ function gace.GetFrameDimensions()
 							   cookie.GetNumber("gace-frame-w"),
 							   cookie.GetNumber("gace-frame-h")
 
-	if c_w == 0 then c_w = 900 end
-	if c_h == 0 then c_h = 600 end
+	if not c_x then c_x = 0 end
+	if not c_y then c_y = 0 end
+	if not c_w or c_w <= 0 then c_w = 900 end
+	if not c_h or c_h <= 0 then c_h = 600 end
 
 	return c_x, c_y, c_w, c_h
 end
