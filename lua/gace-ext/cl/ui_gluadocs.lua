@@ -9,12 +9,27 @@ gace.AddHook("AddPanels", "Editor_AddDocsSideBar", function(frame, basepnl)
 	docshtml:Dock(FILL)
 	docshtml.Loaded = false
 
+	docshtml:AddFunction("gace", "OpenUrl", function(url)
+		gui.OpenURL(url);
+	end)
+
 	pnl.SetOpened = function(self, b)
 		if self.IsOpened == b then return end
 
 		if b and not docshtml.Loaded then
 			docshtml:OpenURL("http://samuelmaddock.github.io/glua-docs/")
 			docshtml.Loaded = true
+
+			docshtml:QueueJavascript([[
+				document.body.onclick = function(e) {
+					var targ = e.target;
+					if (targ.tagName == "A") {
+						gace.OpenUrl(targ.getAttribute("href"));
+						e.stopPropagation();
+					}
+					
+				}
+			]])
 		end
 		self.IsOpened = b
 
