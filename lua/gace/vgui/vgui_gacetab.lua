@@ -76,7 +76,15 @@ local VGUI_EDITOR_TAB = {
 		self.CloseButton:SetSize(self:GetTall(), self:GetTall() - 2)
 
 		surface.SetFont("EditorTabFont")
-		local w = surface.GetTextSize(self.FileName) + (self.TextLeftPadding or 0) + 35 --[[close btn]]
+
+		-- If there are duplicate filenames, we need to add extra space
+		local fnameCount = gace.tab.GetFilenameCount(self.FileName)
+
+		local w = surface.GetTextSize(self.FileName)
+					+ (self.TextLeftPadding or 0)
+					+ 35 -- Close button
+					+ (fnameCount > 1 and surface.GetTextSize(" — " .. self.FilePath) or 0) -- Extra space from path
+
 		self:SetWide(math.max(w, 120))
 	end,
 	Paint = function(self, w, h)
@@ -91,7 +99,14 @@ local VGUI_EDITOR_TAB = {
 		end
 		surface.DrawRect(0, 0, w, h)
 
-		draw.SimpleText(self.FileName, "EditorTabFont", 5 + (self.TextLeftPadding or 0), h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		local showName = self.FileName
+
+		-- If there are multiple files with same filename, we need to show path as well
+		if gace.tab.GetFilenameCount(self.FileName) > 1 then
+			showName = showName .. " — " .. self.FilePath
+		end
+
+		draw.SimpleText(showName, "EditorTabFont", 5 + (self.TextLeftPadding or 0), h/2, gace.UIColors.tab_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 		local sess = gace.GetSession(self.SessionId)
 		if sess and not sess:IsSaved() then
@@ -116,7 +131,7 @@ local VGUI_EDITOR_TAB = {
 		self.SessionId = id
 		self:SetToolTip(id)
 
-		self.FileName = gace.Path(self.SessionId):GetFile()
+		self.FileName, self.FilePath = gace.path.tail(self.SessionId)
 
 		surface.SetFont("EditorTabFont")
 		local w = surface.GetTextSize(self.SessionId)

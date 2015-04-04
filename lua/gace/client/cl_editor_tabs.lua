@@ -27,7 +27,7 @@ function gace.tab.GetFilenameCount(fname)
 	end)
 end
 
-function gace.CreateTab(id)
+function gace.tab.Create(id)
 	if gace.GetTabFor(id) then return end
 
 	local btn = vgui.Create("GAceTab", gace.Tabs)
@@ -35,13 +35,13 @@ function gace.CreateTab(id)
 
 	local tabs = gace.GetPanel("Tabs")
 	tabs:AddPanel(btn)
+
+	-- In case there are duplicate filenames
+	tabs:InvalidateChildren()
 end
+gace.CreateTab = gace.tab.Create -- alias
 
-gace.AddHook("OnSessionOpened", "Editor_KeepTabsUpdated", function(id)
-	gace.CreateTab(id)
-end)
-
-gace.AddHook("OnSessionClosed", "Editor_KeepTabsUpdated", function(id)
+function gace.tab.Remove(id)
 	local tabs = gace.GetPanel("Tabs")
 
 	local tab = gace.GetTabFor(id)
@@ -54,10 +54,22 @@ gace.AddHook("OnSessionClosed", "Editor_KeepTabsUpdated", function(id)
 
 		tab:Remove()
 		table.RemoveByValue(tabs.Panels, tab) -- uhh, a hack
+
 		tabs:InvalidateLayout()
+
+		-- In case there were duplicate filenames
+		tabs:InvalidateChildren()
 
 		if set_session then
 			gace.OpenSession(set_session)
 		end
 	end
+end
+
+gace.AddHook("OnSessionOpened", "Editor_KeepTabsUpdated", function(id)
+	gace.tab.Create(id)
+end)
+
+gace.AddHook("OnSessionClosed", "Editor_KeepTabsUpdated", function(id)
+	gace.tab.Remove(id)
 end)
