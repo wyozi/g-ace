@@ -37,3 +37,17 @@ gat("Path library: normalization", function(t)
 
     t.assertTrue(gpn("abc/def/./ghi") == "abc/def/ghi", "dot notation")
 end)
+
+gat("Path library: head/tail", function(t)
+    local head, tail = gace.path.head, gace.path.tail
+
+    t.assertTrue(head("a/b/c") == "a", "return valid head")
+    t.assertTrue(select(2, head("a/b/c")) == "b/c", "return valid head rest")
+    t.assertTrue(head("a") == "a", "return valid head (1-comp)")
+    t.assertTrue(select(2, head("a")) == nil, "return valid head rest (1-comp)")
+
+    t.assertTrue(tail("a/b/c") == "c", "return valid tail")
+    t.assertTrue(select(2, tail("a/b/c")) == "a/b", "return valid tail rest")
+    t.assertTrue(tail("c") == "c", "return valid tail (1-comp)")
+    t.assertTrue(select(2, tail("c")) == nil, "return valid tail rest (1-comp)")
+end)

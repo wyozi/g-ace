@@ -19,18 +19,16 @@ function gace.path.normalize(path)
     return table.concat(finalPathComps, "/")
 end
 
+-- Returns [first path component], [(first+1=>last) path comps concatenated]
 function gace.path.head(path)
-    local comps = path:Split("/", 2)
-    local first = comps[1]
-    table.remove(comps, 1)
-    return first, table.concat(comps, "/")
+    local head, rest = string.match(path, "([^/]*)/(.*)")
+    return (head or path), rest
 end
 
+-- Returns [last path component], [(first=>last-1) path comps concatenated]
 function gace.path.tail(path)
-    local comps = path:Split("/", 2)
-    local last = comps[#comps]
-    table.remove(comps, #comps)
-    return table.concat(comps, "/"), last
+    local rest, tail = string.match(path, "(.*)/([^/]*)")
+    return (tail or path), rest
 end
 
 local validator_pattern = "[^%a%d%_%- %./]"
