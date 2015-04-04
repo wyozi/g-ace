@@ -63,6 +63,6 @@ function ft.RefreshPath(path)
 
 		ft.FetchedFolders[path] = CurTime()
 	end, function(err)
-		gace.Log(gace.LOG_WARN, "Attempted to refresh inexistent folder '" .. path .. "'")
+		gace.Log(gace.LOG_WARN, "Refreshing path '" .. tostring(path) .. "' failed: ", err)
 	end)
 end

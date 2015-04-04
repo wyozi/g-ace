@@ -95,23 +95,35 @@ local VGUI_GACETREE = {
         end
 
         self:RelayoutItems()
-        self.IsDirty = true
     end,
 
-    RemoveItem = function(self, id)
+    RemoveItem = function(self, id, noRelayout)
+        local children = self:QueryItemChildren(id, true)
+        for _,c in pairs(children) do
+            self:RemoveItem(c, true)
+        end
+
         if self.Items[id] then
             self.Items[id] = nil
         end
 
-        self:RelayoutItems()
-        self.IsDirty = true
+        if not noRelayout then
+            self:RelayoutItems()
+        end
     end,
 
-    QueryItemChildren = function(self, id)
-        local id_pattern = id .. "/[^/]*$"
+    QueryItemChildren = function(self, id, includeGrandChildren)
+        local id_pattern
+
+        if includeGrandChildren then
+            id_pattern = id .. "/(.*)$"
+        else
+            id_pattern = id .. "/([^/]*)"
+        end
+
         local ret = {}
         for nm,_ in pairs(self.Items) do
-            if nm:match(id_pattern) then
+            if string.match(nm, id_pattern) then
                 ret[#ret+1] = nm
             end
         end
@@ -163,11 +175,16 @@ local VGUI_GACETREE = {
         end
 
         self.OrderedChildren = ordered_children
+
+        -- Mark as dirty; need to hide/show on next Think
+        self.IsDirty = true
     end,
 
     Think = function(self)
         if self.IsDirty then
             self:PerformLayout()
+
+            self.IsDirty = false
         end
     end,
 
