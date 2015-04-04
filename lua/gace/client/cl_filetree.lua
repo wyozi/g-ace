@@ -27,34 +27,40 @@ end
 
 -- Sends a request to server to send back a tree of the given path
 function ft.RefreshPath(path)
-	gace.cmd.ls(LocalPlayer(), path):then_(function(t)
+	gace.cmd.ls(LocalPlayer(), path):done(function(t)
 		local filetree = gace.GetPanel("FileTree")
+
+		local existing_names = {}
 
 		for _, id in pairs(filetree:QueryItemChildren(path)) do
 			local name = id:match("/?([^/]*)$")
 			if not t.entries[name] then
 				filetree:RemoveItem(id)
+			else
+				existing_names[name] = true
 			end
 		end
 
 		for ename,e in pairs(t.entries) do
-			local fpath = gace.path.normalize(path .. "/" .. ename)
-			filetree:AddItem(fpath, e.type, e)
+			local already_exists = existing_names[ename] == true
+			if not already_exists then
+				local fpath = gace.path.normalize(path .. "/" .. ename)
+				filetree:AddItem(fpath, e.type, e)
 
-			local node = filetree:QueryItemComponent(fpath)
-			function node:OnClick()
-				ft.OnNodeClick(self.NodeId, self.UserObject.type)
+				local node = filetree:QueryItemComponent(fpath)
+				function node:OnClick()
+					ft.OnNodeClick(self.NodeId, self.UserObject.type)
+				end
+				function node:OnRightClick()
+					ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
+				end
+
+				node:Droppable("gace" .. e.type)
+
+				gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
 			end
-			function node:OnRightClick()
-				ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
-			end
-
-			node:Droppable("gace" .. e.type)
-
-			gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
 		end
 
 		ft.FetchedFolders[path] = CurTime()
-	end):catch(print)
-
+	end)
 end

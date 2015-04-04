@@ -11,7 +11,7 @@ function gace.GitBroadcastRepoStatus(ply, path)
     end
 
     gace.git.virt_to_real(path, false, true):then_(function(fsRootNode)
-        return fsRootNode:realPath():then_(function(realPath)
+        return fsRootNode:realPath():done(function(realPath)
             if not gace.git.is_repo(realPath) then
                 return
             end

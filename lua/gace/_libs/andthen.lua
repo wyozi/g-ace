@@ -165,8 +165,15 @@ end
 -- If the incoming promise is rejected, throws an error
 -- in the next turn of the event loop
 
-function PROMISE:done()
-	self:then_(nil,function(value)
+function PROMISE:done(resolved)
+	self:then_(function(value)
+		if not resolved then return end
+
+		local stat, err = pcall(resolved, value)
+		if not stat then
+			queue(error, err)
+		end
+	end, function(value)
 		queue(error, value)
 	end)
 end
