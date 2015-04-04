@@ -47,3 +47,16 @@ gat("Utils: entitypath", function(t)
 	t.assertEquals(sec(analyze("testent/cl_init.lua")), "cl", "entity folder realm (cl)")
 	t.assertEquals(sec(analyze("testent/init.lua")), "sv", "entity folder realm (sv)")
 end)
+
+gat("Utils: entitypath includes", function(t)
+	local finc = gace.entitypath.FindIncludes
+
+	t.assertDeepEquals(finc([[ include("shared.lua") ]]), {"shared.lua"}, "normal file")
+	t.assertDeepEquals(finc([[ include("cl_init.lua") ]]), {"cl_init.lua"}, "underscore file")
+	t.assertDeepEquals(finc([[ include("shared.lua") include("cl_init.lua") ]]), {"shared.lua", "cl_init.lua"}, "double include")
+
+	t.assertDeepEquals(finc([[ include( "cl_init.lua" ) ]]), {"cl_init.lua"}, "spaces around filename")
+	t.assertDeepEquals(finc([[ include"cl_init.lua" ]]), {"cl_init.lua"}, "omitted braces")
+
+	t.assertDeepEquals(finc([[ include"folder/cl_init.lua" ]]), {}, "omitted subfolder include")
+end)

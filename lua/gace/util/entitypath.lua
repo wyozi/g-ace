@@ -13,3 +13,19 @@ function gace.entitypath.Analyze(path)
 	end
 	return string.match(path, ".-([^/]+)%.lua$"), "sh"
 end
+
+-- Finds includes in code
+-- List of what kind of includes are found:
+--    include("shared.lua")
+--    include("init.lua")
+--    include( "cl_init.lua" )
+--    include"init2.lua"
+function gace.entitypath.FindIncludes(code)
+	local t = {}
+
+	for inc in string.gmatch(code, "include%s?%(?%s?\"([%a%.%d-_]+)\"%s?%)?") do
+		table.insert(t, inc)
+	end
+
+	return t
+end
