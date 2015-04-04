@@ -496,7 +496,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     local function CheckPath(normpath)
         if not gace.path.validate(normpath) then return gace.RejectedPromise(gace.VFS.ErrorCode.INVALID_NAME) end
 
-        local normpath_folder = gace.path.tail(normpath)
+        local _, normpath_folder = gace.path.tail(normpath)
         return gace.fs.resolve(normpath_folder):then_(function(node)
             if not node:hasPermission(ply, gace.VFS.Permission.READ) or not node:hasPermission(ply, gace.VFS.Permission.WRITE) then
                 return error(gace.VFS.ErrorCode.ACCESS_DENIED)

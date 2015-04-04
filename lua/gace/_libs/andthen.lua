@@ -171,10 +171,18 @@ function PROMISE:done(resolved)
 
 		local stat, err = pcall(resolved, value)
 		if not stat then
-			queue(error, err)
+			local tb = debug.traceback()
+			queue(function()
+				print(tb)
+				error(err)
+			end, value)
 		end
 	end, function(value)
-		queue(error, value)
+		local tb = debug.traceback()
+		queue(function()
+			print(tb)
+			error(value)
+		end)
 	end)
 end
 

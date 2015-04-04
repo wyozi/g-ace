@@ -18,7 +18,7 @@ gace.RegisterCommand("mv", {
 
             source_node = node
 
-            local target_folder = gace.path.tail(target)
+            local _, target_folder = gace.path.tail(target)
             return gace.fs.resolve(gace.path.normalize(target_folder))
     	end):then_(function(target_node)
 			if not target_node:hasPermission(caller, gace.VFS.Permission.WRITE) then
@@ -28,7 +28,7 @@ gace.RegisterCommand("mv", {
                 return error(gace.VFS.ErrorCode.INVALID_TYPE)
             end
 
-            local _, filename = gace.path.tail(target)
+            local filename = gace.path.tail(target)
             return target_node:createChildNode(filename, "file")
         end):then_(function(created_node)
             return source_node:read():then_(function(data)

@@ -21,14 +21,18 @@ end
 
 -- Returns [first path component], [(first+1=>last) path comps concatenated]
 function gace.path.head(path)
+    if not path then return end
+
     local head, rest = string.match(path, "([^/]*)/(.*)")
-    return (head or path), rest
+    return (head or path), (rest or "")
 end
 
 -- Returns [last path component], [(first=>last-1) path comps concatenated]
 function gace.path.tail(path)
+    if not path then return end
+    
     local rest, tail = string.match(path, "(.*)/([^/]*)")
-    return (tail or path), rest
+    return (tail or path), (rest or "")
 end
 
 local validator_pattern = "[^%a%d%_%- %./]"

@@ -64,8 +64,8 @@ gace.AddHook("HandleNetMessage", "HandleFileAccess", function(netmsg)
 	end
 
 	if op == "mkdir" then
-		local par_folder, folder_name = gace.path.tail(gace.path.normalize(payload.path))
-		ResolveNode(par_folder, gace.VFS.Permission.WRITE):then_(function(node)
+		local folder_name, par_path = gace.path.tail(gace.path.normalize(payload.path))
+		ResolveNode(par_path, gace.VFS.Permission.WRITE):then_(function(node)
 			if node:type() ~= "folder" then return error(gace.VFS.ErrorCode.INVALID_TYPE) end
 
 			return node:createChildNode(folder_name, "folder")

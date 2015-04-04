@@ -12,9 +12,18 @@ function gace.CreateTabPanel()
 	return tabs
 end
 
-function gace.GetTabFor(id)
+gace.tab = {}
+function gace.tab.GetById(id)
 	return _u.detect(gace.GetPanel("Tabs").Panels, function(pnl)
 		return pnl.SessionId == id
+	end)
+end
+gace.GetTabFor = gace.tab.GetById -- alias
+
+function gace.tab.GetFilenameCount(fname)
+	return _u.reduce(gace.GetPanel("Tabs").Panels, 0, function(old, pnl)
+		if pnl.FileName == fname then return old + 1 end
+		return old
 	end)
 end
 

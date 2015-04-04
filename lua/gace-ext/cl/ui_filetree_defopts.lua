@@ -11,7 +11,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 
 	menu:AddOption("Duplicate", function()
 		gace.ext.ShowTextInputPrompt("Filename? Needs to end in .txt", function(nm)
-			local folderpath = gace.path.tail(path)
+			local _, folderpath = gace.path.tail(path)
 			local newpath = folderpath .. "/" .. nm
 
 			gace.cmd.cp(LocalPlayer(), path, newpath):then_(function()
@@ -23,7 +23,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 	end):SetIcon("icon16/page_copy.png")
 
 	menu:AddOption("Rename", function()
-		local folderpath, filename = gace.path.tail(path)
+		local filename, folderpath = gace.path.tail(path)
 
 		local function DoRename(tab_was_open)
 			gace.ext.ShowTextInputPrompt("Filename", function(nm)
@@ -63,7 +63,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFileOptions", function(path, me
 				gace.Log(gace.LOG_ERROR, "Failed to delete file: ", pl.err)
 				return
 			end
-			local folderpath = gace.path.tail(path)
+			local _, folderpath = gace.path.tail(path)
 			ft.RefreshPath(folderpath)
 		end)
 	end):SetIcon("icon16/stop.png")
@@ -109,7 +109,7 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 			end
 			gace.Log(gace.LOG_INFO, "Note: if folder wasn't deleted, make sure it is empty!")
 
-			local folderpath = gace.path.tail(path)
+			local _, folderpath = gace.path.tail(path)
 			ft.RefreshPath(folderpath)
 		end)
 	end):SetIcon("icon16/stop.png")

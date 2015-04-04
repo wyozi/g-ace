@@ -25,7 +25,7 @@ gace.RegisterCommand("write", {
 
             local normpath = gace.path.normalize(eventobj.path)
 
-            local par_path, file_name = gace.path.tail(normpath)
+            local file_name, par_path = gace.path.tail(normpath)
         	return gace.fs.resolve(par_path):then_(function(node)
     			if not node:hasPermission(caller, gace.VFS.Permission.WRITE) then
     				return error(gace.VFS.ErrorCode.ACCESS_DENIED)

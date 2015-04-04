@@ -9,7 +9,7 @@ gace.AddHook("FileTreePostNodeCreation", "FileTree_MoveFile", function(target_fo
 		-- Files getting moved to this folder
 		for _,fp in pairs(filepanels) do
 			local path = fp.NodeId
-			local source_folder = gace.path.tail(path)
+			local _, source_folder = gace.path.tail(path)
 			local newpath = target_folderpath .. "/" .. fp.NodeId:match("/?([^/]*)$")
 
 			local sess = gace.GetSession(path)
