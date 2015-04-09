@@ -124,7 +124,7 @@ local VGUI_GACETREE = {
         if includeGrandChildren then
             id_pattern = id .. "/(.*)$"
         else
-            id_pattern = id .. "/([^/]*)"
+            id_pattern = id .. "/([^/]*)$"
         end
 
         local ret = {}

@@ -32,10 +32,13 @@ function ft.RefreshPath(path)
 
 		local existing_names = {}
 
+		gace.Debug("[RefreshPath] Parsing results of refreshing ", path)
+
 		for _, id in pairs(filetree:QueryItemChildren(path)) do
 			local name = gace.path.tail(id)
 			if not t.entries[name] then
 				filetree:RemoveItem(id)
+				gace.Debug("[RefreshPath] Removing item ", id)
 			else
 				existing_names[name] = true
 			end
@@ -45,6 +48,8 @@ function ft.RefreshPath(path)
 			local already_exists = existing_names[ename] == true
 			if not already_exists then
 				local fpath = gace.path.normalize(path .. "/" .. ename)
+				gace.Debug("[RefreshPath] Readding ", fpath)
+
 				filetree:AddItem(fpath, e.type, e)
 
 				local node = filetree:QueryItemComponent(fpath)
