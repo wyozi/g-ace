@@ -50,9 +50,8 @@ function ft.RefreshPath(path)
 				local fpath = gace.path.normalize(path .. "/" .. ename)
 				gace.Debug("[RefreshPath] Readding ", fpath)
 
-				filetree:AddItem(fpath, e.type, e)
-
-				local node = filetree:QueryItemComponent(fpath)
+				local node = filetree:AddItem(fpath, e.type, e)
+				
 				function node:OnClick()
 					ft.OnNodeClick(self.NodeId, self.UserObject.type)
 				end

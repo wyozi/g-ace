@@ -101,6 +101,8 @@ local VGUI_GACETREE = {
         end
 
         self:RelayoutItems()
+
+        return self:QueryItemComponent(id)
     end,
 
     RemoveItem = function(self, id, noRelayout)
@@ -267,9 +269,10 @@ local VGUI_GACETREENODE = {
     end,
 
     DoClick = function(self)
-        self.Tree:SetExpanded(self.NodeId, not self.Tree:IsExpanded(self.NodeId))
-
-        self.Tree.IsDirty = true
+        if self.Item.type == "folder" then
+            self.Tree:SetExpanded(self.NodeId, not self.Tree:IsExpanded(self.NodeId))
+            self.Tree.IsDirty = true
+        end
 
         if self.OnClick then self:OnClick() end
     end,
