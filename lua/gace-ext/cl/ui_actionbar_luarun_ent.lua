@@ -11,6 +11,11 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 		end)
 	end
 
+	-- source: http://lua-users.org/wiki/StringInterpolation
+	local function interp(s, tab)
+		return (s:gsub('($%b{})', function(w) return tab[w:sub(3, -2)] or w end))
+	end
+
 	local function FormatCode(template, code, id)
 		local includes = gace.entitypath.FindIncludes(template)
 
@@ -18,7 +23,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 
 		return Promise(function(res)
 			local entname, realm = gace.entitypath.Analyze(id)
-			local formatted = string.format(template, code, entname)
+			local formatted = interp(template, {code = code, entname = entname})
 			res:resolve(formatted)
 		end)
 	end
@@ -27,11 +32,11 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 		text = "SWEP",
 		fn = function(state)
 			local base = [[
-local SWEP = {}
-SWEP.Primary = {}
-SWEP.Secondary = {}
-%s
-weapons.Register(SWEP, "%s", true)
+local SWEP = weapons.GetStored("${entname}") or {}
+SWEP.Primary = SWEP.Primary or {}
+SWEP.Secondary = SWEP.Secondary or {}
+${code}
+weapons.Register(SWEP, "${entname}", true)
 			]]
 
 			local code = gace.GetOpenSession().Content
@@ -48,9 +53,9 @@ weapons.Register(SWEP, "%s", true)
 		text = "SENT",
 		fn = function(state)
 			local base = [[
-local ENT = {}
-%s
-scripted_ents.Register(ENT, "%s")
+local ENT = scripted_ents.GetStored("${entname}") or {}
+${code}
+scripted_ents.Register(ENT, "${entname}")
 			]]
 
 
