@@ -32,7 +32,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 		text = "SWEP",
 		fn = function(state)
 			local base = [[
-local SWEP = weapons.GetStored("${entname}") or {}
+local SWEP = weapons.Get("${entname}") or {}
 SWEP.Primary = SWEP.Primary or {}
 SWEP.Secondary = SWEP.Secondary or {}
 ${code}
@@ -53,7 +53,7 @@ weapons.Register(SWEP, "${entname}", true)
 		text = "SENT",
 		fn = function(state)
 			local base = [[
-local ENT = scripted_ents.GetStored("${entname}") or {}
+local ENT = scripted_ents.Get("${entname}") or {}
 ${code}
 scripted_ents.Register(ENT, "${entname}")
 			]]
