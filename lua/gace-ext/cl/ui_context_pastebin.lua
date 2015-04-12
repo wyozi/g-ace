@@ -7,7 +7,7 @@ local function SendToPaste(code)
 	}, function(body)
 		local json = util.JSONToTable(body)
 		if json.status == "success" then
-			local link = json.paste.raw
+			local link = json.paste.link
 			SetClipboardText(link)
 			gace.Log("Succesfully uploaded. Link: " .. link .. " (already copied to your clipboard)")
 		else
