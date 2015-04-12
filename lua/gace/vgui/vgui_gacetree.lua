@@ -121,12 +121,17 @@ local VGUI_GACETREE = {
     end,
 
     QueryItemChildren = function(self, id, includeGrandChildren)
-        local id_pattern
+        local id_pattern = "^"
+
+        -- If not querying root we need to add some stuff
+        if id ~= "" then
+            id_pattern = id_pattern .. id .. "/"
+        end
 
         if includeGrandChildren then
-            id_pattern = id .. "/(.*)$"
+            id_pattern = id_pattern .. "(.*)$"
         else
-            id_pattern = id .. "/([^/]*)$"
+            id_pattern = id_pattern .. "([^/]*)$"
         end
 
         local ret = {}
