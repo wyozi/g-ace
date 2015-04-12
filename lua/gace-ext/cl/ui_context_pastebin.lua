@@ -3,6 +3,7 @@ local function SendToPaste(code)
 		key = "public",
 		description = "G-Ace paste",
 		paste = code,
+		language = "lua",
 		format = "json"
 	}, function(body)
 		local json = util.JSONToTable(body)
