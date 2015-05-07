@@ -96,7 +96,7 @@ function gace.repl.RunCommand(cmd)
 	-- Remove success bool
 	table.remove(ret, 1)
 
-	local replcolor = Color(144, 198, 149)
+	local replcolor = Color(124, 178, 129)
 	local fout = {replcolor}
 
 	if #ret == 0 then
@@ -163,9 +163,10 @@ gace.AddHook("AddPanels", "Editor_AddREPLPanel", function(frame, basepnl)
 	pnl:AddDocked("REPLInput", consoleinput, BOTTOM)
 
 	-- Print help messages
-	replout(Color(210, 215, 211), "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
-	replout(Color(210, 215, 211), "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
-	replout(Color(210, 215, 211), "[REPL Help] Lua environment has some implicit upvalues: 'me', 'that', 'here', 'there'")
+	local helpclr = Color(127, 127, 127)
+	replout(helpclr, "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
+	replout(helpclr, "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
+	replout(helpclr, "[REPL Help] Lua environment has some implicit upvalues: 'me', 'that', 'here', 'there'")
 end)
 
 gace.AddHook("AddActionBarComponents", "ActionBar_REPL", function(comps)

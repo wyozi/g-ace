@@ -140,6 +140,7 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		return Color(tonumber(r), tonumber(g), tonumber(b))
 	end
 	html:AddFunction("gace", "ThemeChanged", function(theme, bgColor, fgColor, gutterBgColor)
+		local oldTheme = cookie.GetString("gace-theme")
 		gace.UIColors.frame_bg = RGBStringToColor(bgColor)
 		gace.UIColors.frame_fg = RGBStringToColor(fgColor)
 
@@ -147,6 +148,8 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		gace.UIColors.tab_fg = RGBStringToColor(fgColor)
 
 		cookie.Set("gace-theme", theme)
+
+		gace.CallHook("EditorThemeChanged", theme, oldTheme)
 	end)
 
 	html:AddFunction("gace", "ModeChanged", function(mode)

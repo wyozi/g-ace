@@ -70,6 +70,7 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 		local comp = vgui.Create("GAceButton", actbar_wrapper)
 		comp:SetSize(v.width or 60, 24)
 		comp:SetColorOverride("tab_bg", v.color or (cur_cat and cur_cat.color))
+		comp:SetColorOverride("tab_fg", Color(255, 255, 255))
 
 		comp.Think = function(self)
 			if v.enabled then
