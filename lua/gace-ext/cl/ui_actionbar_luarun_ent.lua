@@ -1,5 +1,5 @@
 gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
-	comps:AddCategory("Run as", Color(39, 174, 96))
+	comps:AddCategory("Run as", Color(102, 51, 153))
 
 	local function CreateRequest(op, code)
 		gace.SendRequest(op, {code = code}, function(_, _, pl)
