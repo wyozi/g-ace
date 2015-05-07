@@ -1,7 +1,7 @@
 local base_url = "https://obscure-waters-1458.herokuapp.com/"
 
 gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comps)
-	comps:AddCategory("Snippet", Color(3, 201, 169), 75)
+	comps:AddCategory("Snippet", Color(51, 110, 123), 75)
 	comps:AddComponent {
 		text = "Snippet repo",
 		width = 100,
