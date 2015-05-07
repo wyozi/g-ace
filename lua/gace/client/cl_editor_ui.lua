@@ -30,11 +30,11 @@ local function MatchThemeColors()
 	-- source: http://stackoverflow.com/a/24261119
 	local is_light = (1-(0.299*frame_bg.r + 0.587*frame_bg.g + 0.114*frame_bg.b)/255) < 0.5
 
-	gace.UIColors.tab_bg_active = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.1)
 	gace.UIColors.tab_bg_hover = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.25)
+	gace.UIColors.tab_bg_active = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.2)
 
-	gace.UIColors.treenode_bg_active = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.1)
 	gace.UIColors.treenode_bg_hover = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.25)
+	gace.UIColors.treenode_bg_active = HSVMod(tab_bg, 0, 0, (is_light and -1 or 1) * 0.2)
 end
 gace.AddHook("EditorThemeChanged", "Editor_MatchThemeColors", MatchThemeColors)
 
