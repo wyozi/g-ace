@@ -19,7 +19,12 @@ end
 
 local FGCLR = {}
 function gace.repl.Out(...)
-	local replout = gace.GetPanel("REPLOutput")
+	local replout
+	if IsValid(gace.repl.FloatingREPLFrame) then
+		replout = gace.repl.FloatingREPLFrame.REPLBase:GetById("REPLOutput")
+	else
+		replout = gace.GetPanel("REPLOutput")
+	end
 
 	local function setclr(r, g, b)
 		if type(r) == "table" then
@@ -118,6 +123,77 @@ function gace.repl.RunCommand(cmd)
 	replout(unpack(fout))
 end
 
+local function AddREPLComps(par)
+	local console = vgui.Create("RichText")
+	console:SetTall(150)
+	par:AddDocked("REPLOutput", console, FILL)
+
+	local consoleinput = vgui.Create("GAceInput")
+	consoleinput:EnableHistory()
+	consoleinput.OnEnter = function()
+		gace.repl.RunCommand(consoleinput:GetText())
+
+		consoleinput:SetText("")
+		consoleinput:RequestFocus()
+	end
+	par:AddDocked("REPLInput", consoleinput, BOTTOM)
+
+	-- Print help messages
+	local helpclr = Color(127, 127, 127)
+	replout(helpclr, "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
+	replout(helpclr, "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
+	replout(helpclr, "[REPL Help] Lua environment has some implicit upvalues: 'me', 'that', 'here', 'there'")
+end
+
+concommand.Add("gace-repl", function()
+	local fr = gace.repl.FloatingREPLFrame
+	if IsValid(fr) then
+		fr:Show()
+	else
+		fr = vgui.Create("DFrame")
+		fr:SetTitle("G-Ace REPL")
+		fr:SetSizable(true)
+		fr.Paint = function(_, w, h)
+			surface.SetDrawColor(gace.UIColors.frame_bg)
+			surface.DrawRect(0, 0, w, h)
+		end
+
+		-- Kind of hacky
+		gace.repl.FloatingREPLFrame = fr
+
+		local base = fr:Add("DDynPanel")
+		fr.REPLBase = base
+		base:Dock(FILL)
+
+		AddREPLComps(base)
+
+		fr:SetSize(600, 200)
+		fr:Center()
+		fr:MakePopup()
+
+	end
+
+	-- ESTListener stack is only available while g-ace is open, so we need to dupe functionality
+	local was_esc_down
+	fr.Think = function()
+		local is_esc_down = input.IsKeyDown(KEY_ESCAPE)
+		local esc_pressed = is_esc_down ~= was_esc_down and is_esc_down
+		was_esc_down = is_esc_down
+
+		if esc_pressed then
+			if gui.IsGameUIVisible() then
+				gui.HideGameUI()
+			else
+				gui.ActivateGameUI()
+			end
+
+			fr:SetVisible(false)
+		end
+	end
+
+	fr.REPLBase:GetById("REPLInput"):RequestFocus()
+end)
+
 gace.AddHook("AddPanels", "Editor_AddREPLPanel", function(frame, basepnl)
 	local sb = basepnl:GetById("EditorPanel")
 
@@ -148,25 +224,7 @@ gace.AddHook("AddPanels", "Editor_AddREPLPanel", function(frame, basepnl)
 	end
 	pnl:SetOpened(false)
 
-	local console = vgui.Create("RichText")
-	console:SetTall(150)
-	pnl:AddDocked("REPLOutput", console, FILL)
-
-	local consoleinput = vgui.Create("GAceInput")
-	consoleinput:EnableHistory()
-	consoleinput.OnEnter = function()
-		gace.repl.RunCommand(consoleinput:GetText())
-
-		consoleinput:SetText("")
-		consoleinput:RequestFocus()
-	end
-	pnl:AddDocked("REPLInput", consoleinput, BOTTOM)
-
-	-- Print help messages
-	local helpclr = Color(127, 127, 127)
-	replout(helpclr, "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
-	replout(helpclr, "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
-	replout(helpclr, "[REPL Help] Lua environment has some implicit upvalues: 'me', 'that', 'here', 'there'")
+	AddREPLComps(pnl)
 end)
 
 gace.AddHook("AddActionBarComponents", "ActionBar_REPL", function(comps)
