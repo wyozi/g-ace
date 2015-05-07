@@ -148,7 +148,8 @@ end
 concommand.Add("gace-repl", function()
 	local fr = gace.repl.FloatingREPLFrame
 	if IsValid(fr) then
-		fr:Show()
+		fr:MakePopup()
+		fr:SetVisible(true)
 	else
 		fr = vgui.Create("DFrame")
 		fr:SetTitle("G-Ace REPL")
@@ -167,28 +168,31 @@ concommand.Add("gace-repl", function()
 
 		AddREPLComps(base)
 
+		fr:SetDeleteOnClose(false)
 		fr:SetSize(600, 200)
 		fr:Center()
-		fr:MakePopup()
 
-	end
+		-- ESTListener stack is only available while g-ace is open, so we need to dupe functionality
+		local was_esc_down
+		local oldthink = fr.Think
+		fr.Think = function(self)
+			oldthink(self)
+			local is_esc_down = input.IsKeyDown(KEY_ESCAPE)
+			local esc_pressed = is_esc_down ~= was_esc_down and is_esc_down
+			was_esc_down = is_esc_down
 
-	-- ESTListener stack is only available while g-ace is open, so we need to dupe functionality
-	local was_esc_down
-	fr.Think = function()
-		local is_esc_down = input.IsKeyDown(KEY_ESCAPE)
-		local esc_pressed = is_esc_down ~= was_esc_down and is_esc_down
-		was_esc_down = is_esc_down
+			if esc_pressed then
+				if gui.IsGameUIVisible() then
+					gui.HideGameUI()
+				else
+					gui.ActivateGameUI()
+				end
 
-		if esc_pressed then
-			if gui.IsGameUIVisible() then
-				gui.HideGameUI()
-			else
-				gui.ActivateGameUI()
+				fr:Close()
 			end
-
-			fr:SetVisible(false)
 		end
+
+		fr:MakePopup()
 	end
 
 	fr.REPLBase:GetById("REPLInput"):RequestFocus()
