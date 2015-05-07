@@ -43,9 +43,10 @@ function gace.AddBasePanels(frame)
 
 	-- The actual editor
 	do
+		local editorpnl = basepnl:AddSubPanel("EditorPanel", FILL)
 		local html = vgui.Create("DHTML")
 
-		basepnl:AddDocked("Editor", html, FILL)
+		editorpnl:AddDocked("Editor", html, FILL)
 
 		gace.CallHook("SetupHTMLPanel", html)
 
