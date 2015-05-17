@@ -23,6 +23,42 @@ function gace.luarun.server(code, code_id)
     
     return true
 end
+
+local upvals = {}
+upvals[#upvals+1] = "local me,wep,tr,that,here,there"
+upvals[#upvals+1] = "do"
+upvals[#upvals+1] = ("me = player.GetByUniqueID('$UNIQID')")
+upvals[#upvals+1] = "wep = me:GetActiveWeapon()"
+upvals[#upvals+1] = "tr = me:GetEyeTrace()"
+upvals[#upvals+1] = "that = tr.Entity"
+upvals[#upvals+1] = "here = me:EyePos()"
+upvals[#upvals+1] = "there = tr.HitPos"
+upvals[#upvals+1] = "end"
+upvals = table.concat(upvals, "\n")
+
+function gace.luarun.serverrepl(ply, code, code_id)
+    local upvals2 = upvals:Replace("$UNIQID", ply:UniqueID())
+
+    -- First try as expression
+    local f = CompileString(upvals2 .. "\n return " .. code, code_id, false)
+
+    -- If expression failed, try as is
+    if type(f) == "string" then
+        f = CompileString(upvals2 .. "\n" .. code, code_id, false)
+    end
+
+    -- Nope, we're all dead
+    if type(f) == "string" then
+        return false, "Compile error: " .. f
+    end
+
+    local ret = {pcall(f)}
+    if ret[1] == false then
+        return false, "Run error: " .. tostring(ret[2])
+    end
+    
+    return true, unpack(ret, 2)
+end
 function gace.luarun.client(cl, code, code_id)
     gace.NetMessageOut("lua-runclient", {code = code, code_id = code_id}):Send(cl)
 
@@ -75,7 +111,7 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
                 return gace.RejectedPromise(e)
             end
 
-            netmsg:CreateResponsePacket(op, {}):Send()
+            netmsg:CreateResponsePacket(op, {out = {e}}):Send()
         end):catch(function(e)
             netmsg:CreateResponsePacket(op, {err = e}):Send()
         end)
@@ -85,6 +121,10 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
     if op == "lua-runsv" then
         HandleOp(function(code, code_id)
             return gace.luarun.server(code, code_id)
+        end)
+    elseif op == "lua-runsvrepl" then
+        HandleOp(function(code, code_id)
+            return gace.luarun.serverrepl(ply, code, code_id)
         end)
     elseif op == "lua-runsh" then
         HandleOp(function(code, code_id)

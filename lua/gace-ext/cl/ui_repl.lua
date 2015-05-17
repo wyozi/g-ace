@@ -56,21 +56,50 @@ function gace.repl.Out(...)
 end
 local replout = gace.repl.Out
 
+function gace.repl.PrintReplOut(isServer, ...)
+	local replcolor = isServer and Color(255, 127, 0) or Color(124, 178, 129)
+	local fout = {replcolor}
+
+	local ret = {...}
+	if #ret == 0 then
+		fout[2] = "nil"
+	else
+		-- Stringify all
+		for k,v in pairs(ret) do
+			-- Separate multiple results
+			if k > 1 then fout[#fout+1] = "\t" end
+
+			local str, clr = gace.repl.ToString(v)
+
+			-- Set color
+			fout[#fout+1] = clr or replcolor
+			fout[#fout+1] = str
+		end
+	end
+
+	gace.repl.Out(unpack(fout))
+end
+
 local upvals = {}
-upvals[#upvals+1] = "local me,tr,that,here,there,print"
+upvals[#upvals+1] = "local me,wep,tr,that,here,there"
 upvals[#upvals+1] = "do"
 upvals[#upvals+1] = "me = LocalPlayer()"
+upvals[#upvals+1] = "wep = me:GetActiveWeapon()"
 upvals[#upvals+1] = "tr = me:GetEyeTrace()"
 upvals[#upvals+1] = "that = tr.Entity"
 upvals[#upvals+1] = "here = me:EyePos()"
 upvals[#upvals+1] = "there = tr.HitPos"
-upvals[#upvals+1] = "print = gace.repl.Out"
 upvals[#upvals+1] = "end"
+
+-- Override print functions
+upvals[#upvals+1] = "local print, MsgN"
+upvals[#upvals+1] = "do"
+upvals[#upvals+1] = "print, MsgN = gace.repl.Out, gace.repl.Out"
+upvals[#upvals+1] = "end"
+
 upvals = table.concat(upvals, "\n")
 
 function gace.repl.RunCommand(cmd)
-	replout(Color(135, 211, 124), "> ", FGCLR, cmd)
-
 	local allowed = LocalPlayer():IsSuperAdmin() -- we're achieving higher level of using dirty hacks
 
 	if not allowed then
@@ -101,26 +130,7 @@ function gace.repl.RunCommand(cmd)
 	-- Remove success bool
 	table.remove(ret, 1)
 
-	local replcolor = Color(124, 178, 129)
-	local fout = {replcolor}
-
-	if #ret == 0 then
-		fout[2] = "nil"
-	else
-		-- Stringify all
-		for k,v in pairs(ret) do
-			-- Separate multiple results
-			if k > 1 then fout[#fout+1] = "\t" end
-
-			local str, clr = gace.repl.ToString(v)
-
-			-- Set color
-			fout[#fout+1] = clr or replcolor
-			fout[#fout+1] = str
-		end
-	end
-
-	replout(unpack(fout))
+	gace.repl.PrintReplOut(false, unpack(ret))
 end
 
 local function AddREPLComps(par)
@@ -131,7 +141,23 @@ local function AddREPLComps(par)
 	local consoleinput = vgui.Create("GAceInput")
 	consoleinput:EnableHistory()
 	consoleinput.OnEnter = function()
-		gace.repl.RunCommand(consoleinput:GetText())
+		local code = consoleinput:GetText()
+		local runOnServer = input.IsShiftDown()
+
+		replout(runOnServer and Color(255, 127, 0) or Color(135, 211, 124), "> ", FGCLR, code)
+
+		if runOnServer then
+			local fcode = code
+			gace.SendRequest("lua-runsvrepl", {code = fcode}, function(_, _, pl)
+				if pl.err then
+					gace.repl.Out("Running code on server failed: ", pl.err)
+				else
+					gace.repl.PrintReplOut(true, unpack(pl.out or {}))
+				end
+			end)
+		else
+			gace.repl.RunCommand(code)
+		end
 
 		consoleinput:SetText("")
 		consoleinput:RequestFocus()
