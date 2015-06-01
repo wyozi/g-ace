@@ -8,6 +8,7 @@ function gace.CreateTabPanel()
 		surface.SetDrawColor(gace.UIColors.tab_border)
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
+	tabs:SetShowDropTargets(true)
 	tabs:MakeDroppable("GAceTabs")
 	tabs:SetOverlap(-1)
 
