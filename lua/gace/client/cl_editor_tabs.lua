@@ -8,6 +8,7 @@ function gace.CreateTabPanel()
 		surface.SetDrawColor(gace.UIColors.tab_border)
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
+	tabs:MakeDroppable("GAceTabs")
 	tabs:SetOverlap(-1)
 
 	local tabsel = vgui.Create("GAceTabSelector", pnl)
