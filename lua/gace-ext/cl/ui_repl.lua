@@ -1,7 +1,7 @@
 gace.repl = {}
 
 -- A tostring that works better with REPL
-function gace.repl.ToString(o)
+function gace.repl.ToString(o, noTableRecursion)
 	if type(o) == "Vector" then
 		return string.format("Vector(%f, %f, %f)", o.x, o.y, o.z)
 	end
@@ -13,6 +13,24 @@ function gace.repl.ToString(o)
 			return string.format("Color(%d, %d, %d, %d)", o.r, o.g, o.b, o.a), o
 		end
 		return string.format("Color(%d, %d, %d)", o.r, o.g, o.b), o
+	end
+	if not noTableRecursion and type(o) == "table" and (not getmetatable(o) or not getmetatable(o).__tostring) then
+		local ret = {}
+		table.insert(ret, {clr = Color(145, 61, 136), str = string.format("%s\n", tostring(o))})
+
+		for k,v in pairs(o) do
+			local kstr, kclr = gace.repl.ToString(k, true)
+			table.insert(ret, {str = string.format("%-25s", kstr), clr = kclr})
+
+			table.insert(ret, {str = " = "})
+
+			local vstr, vclr = gace.repl.ToString(v, true)
+			table.insert(ret, {str = vstr, clr = vclr})
+
+			table.insert(ret, {str = "\n"})
+		end
+
+		return ret
 	end
 	return tostring(o)
 end
@@ -71,9 +89,17 @@ function gace.repl.PrintReplOut(isServer, ...)
 
 			local str, clr = gace.repl.ToString(v)
 
-			-- Set color
-			fout[#fout+1] = clr or replcolor
-			fout[#fout+1] = str
+			if type(str) == "table" then
+				for _,v in pairs(str) do
+					-- Set color
+					fout[#fout+1] = v.clr or replcolor
+					fout[#fout+1] = v.str
+				end
+			else
+				-- Set color
+				fout[#fout+1] = clr or replcolor
+				fout[#fout+1] = str
+			end
 		end
 	end
 
