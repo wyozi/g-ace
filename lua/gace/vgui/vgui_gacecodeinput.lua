@@ -106,11 +106,22 @@ function PANEL:GetAutoComplete(text)
 	local cursorIdentifier = btext:match("[%w%.]+$") or ""
 
 	local completions = gace.autocompletion.Complete(cursorIdentifier)
-	if #completions > 25 then return end -- TOO MANY
+	if #completions > 20 then
+		local _comp = {}
+		for i=1, 20 do
+			_comp[i] = completions[i]
+		end
+		completions = _comp
+	end
 
 	return _u.map(completions, function(x)
 		local c = btext
-		c = string.gsub(c, "%w+$", x.value)
+		if cursorIdentifier == "" or c:sub(-1) == "." then
+			c = c .. x.value
+		else
+			c = string.gsub(c, "%w+$", x.value)
+		end
+
 		return c
 	end)
 end

@@ -23,7 +23,7 @@ function gace.autocompletion.Complete(snip)
 		elseif lookedup_val == nil and is_last then
 			local completions = {}
 			for key,_ in pairs(cur_table) do
-				if key:lower():StartWith(val) then
+				if type(key) == "string" and (val == "" or key:lower():StartWith(val)) then
 					table.insert(completions, {
 						name = key,
 						value = key
