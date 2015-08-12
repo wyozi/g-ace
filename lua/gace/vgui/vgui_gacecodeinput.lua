@@ -73,7 +73,7 @@ function PANEL:DrawText(textcolor)
 	surface.SetFont("DermaDefault")
 
 	local caretPos = self:GetCaretPos()
-	local drawCaret = true --math.floor(CurTime() * 2) % 2 == 0
+	local drawCaret = self:HasFocus() --math.floor(CurTime() * 2) % 2 == 0
 
 	local char = 0
 	local x = 3
@@ -100,5 +100,28 @@ function PANEL:DrawText(textcolor)
 	local invis = Color(0, 0, 0, 0)
 	self:DrawTextEntryText(invis, self.m_colHighlight, invis)
 end
+
+function PANEL:GetAutoComplete(text)
+	local btext = text:sub(1, self:GetCaretPos())
+	local cursorIdentifier = btext:match("[%w%.]+$") or ""
+
+	local completions = gace.autocompletion.Complete(cursorIdentifier)
+	if #completions > 25 then return end -- TOO MANY
+
+	return _u.map(completions, function(x)
+		local c = btext
+		c = string.gsub(c, "%w+$", x.value)
+		return c
+	end)
+end
+
+--[[
+function PANEL:OnKeyCode(keycode)
+	if keycode == KEY_SPACE and input.IsControlDown() then
+		local cursorIdentifier = self:GetText():sub(1, self:GetCaretPos()):match("[%w%.]+$") or ""
+
+		PrintTable(gace.autocompletion.Complete(cursorIdentifier))
+	end
+end]]
 
 derma.DefineControl("GAceCodeInput", "Code input for GAce", PANEL, "GAceInput")
