@@ -1,23 +1,23 @@
 gace = gace or {}
 
 local function load(file, type)
-    type = type or "shared"
+	type = type or "shared"
 
-    local _server = type == "server" or type == "shared"
-    local _client = type == "client" or type == "shared"
+	local _server = type == "server" or type == "shared"
+	local _client = type == "client" or type == "shared"
 
-    if SERVER then
-        if _client then AddCSLuaFile(file) end
-        if _server then include(file) end
-    end
-    if CLIENT then
-        if _client then include(file) end
-    end
+	if SERVER then
+		if _client then AddCSLuaFile(file) end
+		if _server then include(file) end
+	end
+	if CLIENT then
+		if _client then include(file) end
+	end
 end
 
 -- TODO move somewhere else
 function gace.Error(str)
-    ErrorNoHalt(str)
+	ErrorNoHalt(str)
 end
 
 -- Load libraries
@@ -102,6 +102,7 @@ load("gace/vgui/vgui_gacesplitter.lua", "client")
 load("gace/vgui/vgui_gacetab.lua", "client")
 load("gace/vgui/vgui_gacetabsel.lua", "client")
 load("gace/vgui/vgui_gacetextinput.lua", "client")
+load("gace/vgui/vgui_gacecodeinput.lua", "client")
 load("gace/vgui/vgui_gacetree.lua", "client")
 
 -- Load GAce testing lib and tests

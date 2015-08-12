@@ -28,9 +28,13 @@ local VGUI_GACEINPUT = {
 		surface.DrawRect(1, 1, w-2, h-2)
 
 		local textcolor = fg
+		self:DrawText(textcolor)
 
-		self:DrawTextEntryText(textcolor, self.m_colHighlight, textcolor)
 		return true
+	end,
+
+	DrawText = function(self, textcolor)
+		self:DrawTextEntryText(textcolor, self.m_colHighlight, textcolor)
 	end,
 
 	-- Enabling history requires some hacks, so we'll have a method for that

@@ -138,7 +138,7 @@ local function AddREPLComps(par)
 	console:SetTall(150)
 	par:AddDocked("REPLOutput", console, FILL)
 
-	local consoleinput = vgui.Create("GAceInput")
+	local consoleinput = vgui.Create("GAceCodeInput")
 	consoleinput:EnableHistory()
 	consoleinput.OnEnter = function()
 		local code = consoleinput:GetText()
