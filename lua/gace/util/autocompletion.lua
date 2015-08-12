@@ -1,7 +1,7 @@
 gace.autocompletion = {}
 
 function gace.autocompletion.Complete(snip)
-	local spl = snip:Split(".")
+	local spl = snip:lower():Split(".")
 
 	local cur_table = _G
 
@@ -23,7 +23,7 @@ function gace.autocompletion.Complete(snip)
 		elseif lookedup_val == nil and is_last then
 			local completions = {}
 			for key,_ in pairs(cur_table) do
-				if key:StartWith(val) then
+				if key:lower():StartWith(val) then
 					table.insert(completions, {
 						name = key,
 						value = key
