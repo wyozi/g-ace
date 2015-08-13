@@ -95,7 +95,7 @@ end
 
 function PROMISE:then_(resolved, rejected)
 	local incoming = self
-	return Promise(function(handler)
+	return ATPromise(function(handler)
 		local function fulfill(promise)
 			assert(promise:is_done())
 			-- If there is a callback (either resolved or rejected passed in)
@@ -199,7 +199,7 @@ end
 
 function PROMISE:delay(ms)
 	return self:then_(function(value)
-		return Promise(function(handler)
+		return ATPromise(function(handler)
 			doafter(ms, function()
 				handler:resolve(value)
 			end)
@@ -246,7 +246,7 @@ end
 
 function PROMISE:all()
 	return self:then_(function(promises)
-		return Promise(function(handler)
+		return ATPromise(function(handler)
 			local count = #promises
 			local results = {}
 			if count == 0 then
@@ -277,7 +277,7 @@ end
 
 function PROMISE:all_settled()
 	return self:then_(function(promises)
-		return Promise(function(handler)
+		return ATPromise(function(handler)
 			local count = #promises
 			local results = {}
 			if count == 0 then
@@ -396,7 +396,7 @@ end
 
 local N = 1
 
-function Promise(handler)
+function ATPromise(handler)
 
 	log('Created promise', N)
 	N = N +1
@@ -416,5 +416,5 @@ function Promise(handler)
 end
 
 function PromiseThen(resolved, rejected)
-	return Promise():and_then(resolved, rejected)
+	return ATPromise():and_then(resolved, rejected)
 end

@@ -21,7 +21,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 
 		-- TODO include 'includes' files to code
 
-		return Promise(function(res)
+		return ATPromise(function(res)
 			local entname, realm = gace.entitypath.Analyze(id)
 			local formatted = interp(template, {code = code, entname = entname})
 			res:resolve(formatted)

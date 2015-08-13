@@ -28,7 +28,7 @@ local function GrepFolder(node, query, results)
             end
         end
 
-        return Promise(promises):all()
+        return ATPromise(promises):all()
     end)
 end
 

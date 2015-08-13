@@ -2,7 +2,7 @@ if CLIENT then
     gace.AddHook("PreCommandCall", "InterceptIPCCommands", function(cmd, opts, caller, r)
         if not opts.ipc then return end
 
-        return Promise(function(resolver)
+        return ATPromise(function(resolver)
             gace.Debug("SEND IPC ", table.ToString(r))
             local netmsg = gace.NetMessageOut(opts.ipc, {args = r})
         	netmsg:ListenToResponse(function(_, _, pl)

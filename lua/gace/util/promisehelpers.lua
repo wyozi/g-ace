@@ -1,5 +1,5 @@
-function gace.RejectedPromise(reason)
-    return Promise(function(resolver)
+function gace.RejectedATPromise(reason)
+    return ATPromise(function(resolver)
         resolver:reject(reason)
     end)
 end

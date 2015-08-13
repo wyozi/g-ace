@@ -14,7 +14,7 @@ gace.RegisterCommand("write", {
             origPath = normpath,
             path = normpath
         }
-        eventobj.promise = Promise()
+        eventobj.promise = ATPromise()
 
         gace.CallHook("PreSaveMeta", eventobj)
 

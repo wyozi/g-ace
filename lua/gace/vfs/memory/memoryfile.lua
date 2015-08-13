@@ -13,13 +13,13 @@ function MemoryFile:capabilities()
 end
 
 function MemoryFile:read(options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self._contents or "")
     end)
 end
 
 function MemoryFile:write(data, options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         self._contents = data
         self.lastModified = os.time()
         resolver:resolve()
@@ -27,13 +27,13 @@ function MemoryFile:write(data, options)
 end
 
 function MemoryFile:size()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(string.len(self._contents or ""))
     end)
 end
 
 function MemoryFile:lastModified()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self.lastModified)
     end)
 end

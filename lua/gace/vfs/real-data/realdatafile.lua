@@ -11,14 +11,14 @@ function RealDataFile:capabilities()
 end
 
 function RealDataFile:read(options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:parent():fsLocalChildPath(self:getName())
         resolver:resolve(file.Read(localPath, "DATA"))
     end)
 end
 
 function RealDataFile:write(data, options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:parent():fsLocalChildPath(self:getName())
 
         file.Write(localPath, data)
@@ -27,13 +27,13 @@ function RealDataFile:write(data, options)
 end
 
 function RealDataFile:size()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(file.Size(self:parent():fsLocalChildPath(self:getName()), "DATA"))
     end)
 end
 
 function RealDataFile:lastModified()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(file.Time(self:parent():fsLocalChildPath(self:getName()), "DATA"))
     end)
 end

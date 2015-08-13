@@ -55,7 +55,7 @@ function gace.ext.ShowTextInputPrompt(query, callback, default)
 	if callback then
 		inputpanel.InputCallback = callback
 	else
-		return Promise(function(resolver)
+		return ATPromise(function(resolver)
 			inputpanel.InputCallback = function(text)
 				resolver:resolve(text)
 			end

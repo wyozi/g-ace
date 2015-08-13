@@ -72,7 +72,7 @@ function Node:hasPermission(target, perm_bit)
     return bit.band(perm, perm_bit) == perm_bit
 end
 function Node:checkPermission(target, perm_bit)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if self:hasPermission(target, perm_bit) then
             resolver:resolve()
         else
@@ -131,7 +131,7 @@ end
 --- If node has CAPABILITY_REALFILE, returns absolute path to the real node
 -- Can be relative to "GarrysMod" or absolute
 function Node:realPath()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if not self:hasCapability(gace.VFS.Capability.REALFILE) then
             resolver:reject(gace.VFS.ErrorCode.INSUFFICIENT_CAPS)
             return
@@ -143,7 +143,7 @@ end
 function Node:delete()
     local par = self:parent()
     if not par then
-        return Promise(function(resolver)
+        return ATPromise(function(resolver)
             resolver:reject("Unable to delete a node with no parent")
         end)
     end

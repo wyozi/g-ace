@@ -16,7 +16,7 @@ function RealGIOFile:capabilities()
 end
 
 function RealGIOFile:read(options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:parent():fsLocalChildPath(self:getName())
         local ret, err = gaceio.Read(localPath)
         if ret == false then
@@ -28,7 +28,7 @@ function RealGIOFile:read(options)
 end
 
 function RealGIOFile:write(data, options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:parent():fsLocalChildPath(self:getName())
 
         local ret, err = gaceio.Write(localPath, data)
@@ -41,7 +41,7 @@ function RealGIOFile:write(data, options)
 end
 
 function RealGIOFile:size()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local ret, err = gaceio.Size(self:parent():fsLocalChildPath(self:getName()))
         if ret == false then
             resolver:reject(err)
@@ -52,7 +52,7 @@ function RealGIOFile:size()
 end
 
 function RealGIOFile:lastModified()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local ret, err = gaceio.Time(self:parent():fsLocalChildPath(self:getName()))
         if ret == false then
             resolver:reject(err)
@@ -63,7 +63,7 @@ function RealGIOFile:lastModified()
 end
 
 function RealGIOFile:realPath()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self:parent():fsLocalChildPath(self:getName()))
     end)
 end

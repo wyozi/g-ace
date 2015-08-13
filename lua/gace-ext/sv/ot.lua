@@ -448,10 +448,10 @@ end
 
 local function CreateSession(id, ply)
     if SessionExists(id) then
-        return gace.RejectedPromise(id .. " otsess already exists")
+        return gace.RejectedATPromise(id .. " otsess already exists")
     end
 
-    local promise = Promise()
+    local promise = ATPromise()
 
     if id:EndsWith(".ot") then
         promise = promise:then_(function()
@@ -494,7 +494,7 @@ gace.AddHook("HandleNetMessage", "HandleOT", function(netmsg)
     local payload = netmsg:GetPayload()
 
     local function CheckPath(normpath)
-        if not gace.path.validate(normpath) then return gace.RejectedPromise(gace.VFS.ErrorCode.INVALID_NAME) end
+        if not gace.path.validate(normpath) then return gace.RejectedATPromise(gace.VFS.ErrorCode.INVALID_NAME) end
 
         local _, normpath_folder = gace.path.tail(normpath)
         return gace.fs.resolve(normpath_folder):then_(function(node)

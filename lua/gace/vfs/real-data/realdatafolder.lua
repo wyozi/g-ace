@@ -19,7 +19,7 @@ function RealDataFolder:fsLocalChildPath(child)
 end
 
 function RealDataFolder:refresh()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local searchPath = self:fsLocalChildPath("*")
         local files, directories = file.Find(searchPath, "DATA")
 
@@ -65,7 +65,7 @@ function RealDataFolder:refresh()
 end
 
 function RealDataFolder:child(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         self:refresh():then_(function()
             local node = self._entries[name]
             if node then
@@ -78,7 +78,7 @@ function RealDataFolder:child(name, opts)
 end
 
 function RealDataFolder:listEntries(opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         self:refresh():then_(function()
             resolver:resolve(self._entries)
         end)
@@ -86,7 +86,7 @@ function RealDataFolder:listEntries(opts)
 end
 
 function RealDataFolder:createChildNode(name, type, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if not self:validateChildName(name) then
             resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
             return
@@ -117,7 +117,7 @@ function RealDataFolder:createChildNode(name, type, opts)
 end
 
 function RealDataFolder:deleteChildNode(node, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:fsLocalChildPath(node:getName())
 
         if not file.Exists(localPath, "DATA") then

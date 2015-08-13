@@ -13,13 +13,13 @@ function VirtualFile:capabilities()
 end
 
 function VirtualFile:read(options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self._contents or "")
     end)
 end
 
 function VirtualFile:write(data, options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         self._contents = data
         self.lastModified = os.time()
         resolver:resolve()
@@ -27,13 +27,13 @@ function VirtualFile:write(data, options)
 end
 
 function VirtualFile:size()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(string.len(self._contents or ""))
     end)
 end
 
 function VirtualFile:lastModified()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self.lastModified)
     end)
 end

@@ -22,7 +22,7 @@ end
 function VirtualFolder:refresh() end
 
 function VirtualFolder:child(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local node = self._entries[name]
         if node then
             resolver:resolve(node)
@@ -33,11 +33,11 @@ function VirtualFolder:child(name, opts)
 end
 
 function VirtualFolder:listEntries(opts)
-    return Promise(self._entries)
+    return ATPromise(self._entries)
 end
 
 function VirtualFolder:createChildNode(name, type, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if not self:validateChildName(name) then
             resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
             return
@@ -65,7 +65,7 @@ function VirtualFolder:createChildNode(name, type, opts)
 end
 
 function VirtualFolder:addVirtualFolder(vfolder)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local name = vfolder:getName()
 
         if not self:validateChildName(name) then
@@ -80,7 +80,7 @@ function VirtualFolder:addVirtualFolder(vfolder)
 end
 
 function VirtualFolder:deleteChildNode(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if self._entries[name] then
             local node = self._entries[name]
             self._entries[name] = nil

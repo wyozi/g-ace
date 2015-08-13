@@ -13,21 +13,21 @@ function NetFile:capabilities()
 end
 
 function NetFile:read(options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end
 
 function NetFile:write(data, options)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end
 
 function NetFile:size()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end
 
 function NetFile:lastModified()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end

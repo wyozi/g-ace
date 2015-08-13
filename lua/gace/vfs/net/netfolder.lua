@@ -17,7 +17,7 @@ function NetFolder:capabilities()
 end
 
 function NetFolder:refresh()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         gace.cmd.ls(LocalPlayer(), self:path()):then_(function(pl)
             local entries = pl.entries
 
@@ -64,7 +64,7 @@ function NetFolder:refresh()
 end
 
 function NetFolder:child(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local node = self._entries[name]
         if node then
             resolver:resolve(node)
@@ -75,15 +75,15 @@ function NetFolder:child(name, opts)
 end
 
 function NetFolder:listEntries(opts)
-    return Promise(self._entries)
+    return ATPromise(self._entries)
 end
 
 function NetFolder:createChildNode(name, type, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end
 
 function NetFolder:deleteChildNode(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
     end)
 end

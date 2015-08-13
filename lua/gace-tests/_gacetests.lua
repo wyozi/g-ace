@@ -148,7 +148,7 @@ function gace.RunTests()
         -- Reset status
         testing_async = false
 
-        local group = {name = k, tests = {}, promise = Promise(function() end)}
+        local group = {name = k, tests = {}, promise = ATPromise(function() end)}
         local group_id = testgroup_id(v)
 
         testgroups[group_id] = group
@@ -166,7 +166,7 @@ function gace.RunTests()
 
     local test_promises = _u.map(test_results, function(r) return r.promise end)
 
-    Promise(test_promises):all():then_(function()
+    ATPromise(test_promises):all():then_(function()
         table.SortByMember(test_results, "name", true)
 
         local compl = 0

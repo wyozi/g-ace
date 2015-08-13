@@ -103,12 +103,12 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
         CheckPermission():then_(function()
             local tr, te = gace.luarun.transform(payload.code or "")
             if tr == false then
-                return gace.RejectedPromise("Transform error: " .. tostring(te))
+                return gace.RejectedATPromise("Transform error: " .. tostring(te))
             end
 
             local r, e = callback(tr, code_id)
             if not r then
-                return gace.RejectedPromise(e)
+                return gace.RejectedATPromise(e)
             end
 
             netmsg:CreateResponsePacket(op, {out = {e}}):Send()

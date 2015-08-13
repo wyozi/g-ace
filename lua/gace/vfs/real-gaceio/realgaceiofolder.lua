@@ -29,7 +29,7 @@ function RealGIOFolder:fsLocalChildPath(child)
 end
 
 function RealGIOFolder:refresh()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local searchPath = self:fsLocalChildPath("")
         local files, folders = gaceio.List(searchPath)
 
@@ -79,7 +79,7 @@ function RealGIOFolder:refresh()
 end
 
 function RealGIOFolder:child(name, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         self:refresh():then_(function()
             local node = self._entries[name]
             if node then
@@ -98,7 +98,7 @@ function RealGIOFolder:listEntries(opts)
 end
 
 function RealGIOFolder:createChildNode(name, type, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         if not self:validateChildName(name) then
             resolver:reject(gace.VFS.ErrorCode.INVALID_NAME)
             return
@@ -137,7 +137,7 @@ function RealGIOFolder:createChildNode(name, type, opts)
 end
 
 function RealGIOFolder:deleteChildNode(node, opts)
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         local localPath = self:fsLocalChildPath(node:getName())
 
         if not gaceio.Exists(localPath) then
@@ -158,7 +158,7 @@ function RealGIOFolder:deleteChildNode(node, opts)
 end
 
 function RealGIOFolder:realPath()
-    return Promise(function(resolver)
+    return ATPromise(function(resolver)
         resolver:resolve(self._fsPath)
     end)
 end

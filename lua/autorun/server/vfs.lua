@@ -11,7 +11,7 @@ gace.fs = {}
 function gace.fs.resolve(path, parent)
 	parent = parent or gace.Root
 
-	if path == "" then return Promise(parent) end
+	if path == "" then return ATPromise(parent) end
 
 	local firstChildName, rest = gace.path.head(path)
 
