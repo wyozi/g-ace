@@ -530,15 +530,15 @@ var CstyleBehaviour = function() {
                 var line = session.doc.getLine(cursor.row);
                 var leftChar = line.substring(cursor.column-1, cursor.column);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
-                
+
                 var token = session.getTokenAt(cursor.row, cursor.column);
                 var rightToken = session.getTokenAt(cursor.row, cursor.column + 1);
                 if (leftChar == "\\" && token && /escape/.test(token.type))
                     return null;
-                
+
                 var stringBefore = token && /string/.test(token.type);
                 var stringAfter = !rightToken || /string/.test(rightToken.type);
-                
+
                 var pair;
                 if (rightChar == quote) {
                     pair = stringBefore !== stringAfter;
@@ -581,7 +581,7 @@ var CstyleBehaviour = function() {
 
 };
 
-    
+
 CstyleBehaviour.isSaneInsertion = function(editor, session) {
     var cursor = editor.getCursorPosition();
     var iterator = new TokenIterator(session, cursor.row, cursor.column);
@@ -670,6 +670,16 @@ var LuaBehaviour = function() {
         if (text != "\n") return;
 
         var position = editor.getCursorPosition();
+
+        var line = session.getLine(position.row);
+        var lineIndent = this.$getIndent(line);
+
+        var nextLine = (session.getLength() <= position.row-1) ? "" : session.getLine(position.row+1);
+        var nextLineIndent = this.$getIndent(nextLine);
+
+        // If next line already has a bigger indentation than curLine, abort
+        if (nextLineIndent > lineIndent) return;
+
         var iterator = new TokenIterator(session, position.row, position.column);
         var token = iterator.getCurrentToken();
 
@@ -685,13 +695,10 @@ var LuaBehaviour = function() {
                 return;
             }
 
-            var line = session.getLine(position.row);
-
-            var next_indent = this.$getIndent(line);
-            var indent = next_indent + session.getTabString();
+            var indent = lineIndent + session.getTabString();
 
             return {
-                text: '\n' + indent + '\n' + next_indent + 'end',
+                text: '\n' + indent + '\n' + lineIndent + 'end',
                 selection: [1, indent.length, 1, indent.length]
             };
         }
@@ -700,6 +707,16 @@ var LuaBehaviour = function() {
         if (text != "\n") return;
 
         var position = editor.getCursorPosition();
+
+        var line = session.getLine(position.row);
+        var lineIndent = this.$getIndent(line);
+
+        var nextLine = (session.getLength() <= position.row-1) ? "" : session.getLine(position.row+1);
+        var nextLineIndent = this.$getIndent(nextLine);
+
+        // If next line already has a bigger indentation than curLine, abort
+        if (nextLineIndent > lineIndent) return;
+
         var iterator = new TokenIterator(session, position.row, position.column);
         var token = iterator.getCurrentToken();
 
@@ -707,18 +724,19 @@ var LuaBehaviour = function() {
 
         while (token.type != "paren.lparen") {
             token = iterator.stepBackward();
+
+            // if we bump into a keyword (which can not exist inside parameter list)
+            // this is probs not function definition, in which case we abort
+            if (token.type == "keyword") return;
         }
         token = iterator.stepBackward(); // one more
 
         if (!token || token.type != "keyword" || token.value != "function") return;
 
-        var line = session.getLine(position.row);
-
-        var next_indent = this.$getIndent(line);
-        var indent = next_indent + session.getTabString();
+        var indent = lineIndent + session.getTabString();
 
         return {
-            text: '\n' + indent + '\n' + next_indent + 'end',
+            text: '\n' + indent + '\n' + lineIndent + 'end',
             selection: [1, indent.length, 1, indent.length]
         };
     });
