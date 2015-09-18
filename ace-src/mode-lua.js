@@ -725,11 +725,21 @@ var LuaBehaviour = function() {
         while (token.type != "paren.lparen") {
             token = iterator.stepBackward();
 
+            if (!token) return;
+
             // if we bump into a keyword (which can not exist inside parameter list)
             // this is probs not function definition, in which case we abort
             if (token.type == "keyword") return;
         }
+
         token = iterator.stepBackward(); // one more
+        if (!token) return;
+
+        // if this is a named function, there can be keyword.operator for colon, identifier, text (for space)
+        while ((token.type == "text" && (token.value == " " || token.value == ".")) || token.type == "keyword.operator" || token.type == "identifier") {
+            token = iterator.stepBackward();
+            if (!token) return;
+        }
 
         if (!token || token.type != "keyword" || token.value != "function") return;
 
