@@ -90,6 +90,8 @@ function PANEL:DrawText(textcolor)
 			local caretx = x + carettokenx - 1
 			surface.SetDrawColor(255, 127, 0)
 			surface.DrawLine(caretx, 4, caretx, self:GetTall()-4)
+
+			drawCaret = false
 		end
 		char = nchar
 
@@ -124,6 +126,12 @@ function PANEL:GetAutoComplete(text)
 
 		return c
 	end)
+end
+
+function PANEL:Think()
+	if IsValid(self.Menu) and not self:IsVisible() then
+		self.Menu:Remove()
+	end
 end
 
 --[[
