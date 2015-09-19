@@ -45,7 +45,7 @@ local VGUI_GACEINPUT = {
 		-- Override OnKeyCodeTyped
 		-- Requires some bloat code from dtextentry.lua
 		self.OnKeyCodeTyped = function(self, code)
-			self:OnKeyCode(code)
+			if self:OnKeyCode(code) then return end
 
 			if code == KEY_ENTER and not self:IsMultiline() and self:GetEnterAllowed() then
 				if IsValid(self.Menu) then
