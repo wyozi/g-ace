@@ -1,14 +1,19 @@
 local PANEL = {}
 
-PANEL.Keywords = {"local"}
+PANEL.Keywords = {
+	"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat",
+	"return", "then", "true", "until", "while"
+}
 PANEL.LibFunctions = {}
 
 -- globals
-for _,fn in pairs{"print", "MsgN"} do
+PANEL.GlobalNames = {"print", "MsgN", "Vector", "Angle"}
+for _,fn in pairs(PANEL.GlobalNames) do
 	table.insert(PANEL.LibFunctions, fn)
 end
 -- libs
-for _,libnm in pairs{"math", "net", "string"} do
+PANEL.LibNames = {"math", "net", "string", "table", "os", "sql", "vgui", "http", "input", "draw", "concommand", "hook", "ents"}
+for _,libnm in pairs(PANEL.LibNames) do
 	local lib = _G[libnm]
 	for fn,_ in pairs(lib) do
 		table.insert(PANEL.LibFunctions, libnm .. "." .. fn)
@@ -112,22 +117,97 @@ function PANEL:DrawText(textcolor)
 	self:DrawTextEntryText(invis, self.m_colHighlight, invis)
 end
 
-function PANEL:GetTextSize()
+function PANEL:GetTextSize(beforeCaret)
 	surface.SetFont("GAce_CodeFont")
 	self:SetFontInternal("GAce_CodeFont")
 	local x = 3
 	local y = 3
-	local w, h = surface.GetTextSize(self:GetText())
+	local t = self:GetText()
+	if beforeCaret then t = string.sub(t, 1, self:GetCaretPos()) end
+	local w, h = surface.GetTextSize(t)
 	return x + w, y + h
+end
+
+
+local function Autocompleter(text)
+	local function isLibrary(o)
+		for _,nm in pairs(PANEL.LibNames) do
+			if _G[nm] == o then return true end
+		end
+		return false
+	end
+	local function otype(obj)
+		if isLibrary(obj) then return "library" end
+		if type(obj) == "function" then return "function" end
+	end
+	local function resolveEnv(path)
+		local ret = {}
+
+		local el = _G
+
+		local s
+		while true do
+			local oldPath = path
+			s, path = string.match(path, "([^%.]+)%.(.*)")
+			if not path then
+				s = string.lower(s or oldPath)
+				if type(el) == "table" then
+					for name,val in pairs(el) do
+						if name:lower():StartWith(s) then
+							table.insert(ret, {value = name, obj = val, type = otype(val)})
+						end
+					end
+				end
+				break
+			else
+				el = el[s]
+			end
+		end
+
+		return ret
+	end
+	local function resolveKeywords(path)
+		path = path:lower()
+		return _u.map(_u.select(PANEL.Keywords, function(x) return x:StartWith(path) end), function(x)
+			return {value = x, type = "keyword"}
+		end)
+	end
+
+	local cursorIdentifier = text:match("[%w%.]+$") or ""
+	if cursorIdentifier == "" then return {} end
+
+	local ret = {}
+	table.Add(ret, resolveEnv(cursorIdentifier))
+	table.Add(ret, resolveKeywords(cursorIdentifier))
+
+	local function priority(otype)
+		if otype == "keyword" then return 15 end
+		if otype == "library" then return 10 end
+		if otype == "function" then return 5 end
+		return 0
+	end
+	table.sort(ret, function(a, b)
+		local aprio = priority(a.type)
+		local bprio = priority(b.type)
+		if aprio == bprio then
+			return a.value > b.value
+		end
+		return aprio > bprio
+	end)
+
+	return ret
 end
 
 function PANEL:GetAutoComplete(text)
 	local btext = text:sub(1, self:GetCaretPos())
 	if #btext == 0 then return {} end
 
+	--[[
 	local cursorIdentifier = btext:match("[%w%.]+$") or ""
 
 	local completions = gace.autocompletion.Complete(cursorIdentifier)
+	]]
+	local completions = Autocompleter(btext)
 	if #completions > 20 then
 		local _comp = {}
 		for i=1, 20 do
@@ -136,16 +216,7 @@ function PANEL:GetAutoComplete(text)
 		completions = _comp
 	end
 
-	return _u.map(completions, function(x)
-		local c = btext
-		if cursorIdentifier == "" or c:sub(-1) == "." then
-			c = c .. x.value
-		else
-			c = string.gsub(c, "%w+$", x.value)
-		end
-
-		return c
-	end)
+	return completions
 end
 
 function PANEL:OpenAutoComplete(tab, openIfClosed)
@@ -161,7 +232,7 @@ end
 
 function PANEL:Think()
 	if IsValid(self.AC) then
-		local tw = self:GetTextSize()
+		local tw = self:GetTextSize(true)
 		self.AC:SetWide(tw + 200)
 		self.AC:SetPos(self:LocalToScreen(tw, self:GetTall() - 2))
 	end
@@ -178,6 +249,11 @@ function PANEL_AC:Init()
 	self:SetDrawOnTop(true)
 	self.Values = {}
 end
+surface.CreateFont("GAce_AC_TypeFont", {
+	font = "Courier New",
+	size = 16,
+	weight = 1000
+})
 function PANEL_AC:Paint(w, h)
 	surface.SetDrawColor(34, 36, 37)
 	surface.DrawRect(0, 0, w, h)
@@ -190,13 +266,39 @@ function PANEL_AC:Paint(w, h)
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawOutlinedRect(0, (k-1) * 20, w, 20)
 
+
+		if v.type == "function" or v.type == "library" then
+			surface.SetDrawColor(PANEL.TokenColors.lib_func)
+			surface.DrawRect(3, (k-1) * 20 + 3, 14, 14)
+
+			if v.type == "function" then
+				draw.SimpleText("f", "GAce_AC_TypeFont", 10, (k-1) * 20 + 10, Color(210, 77, 87), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			else
+				draw.SimpleText("L", "GAce_AC_TypeFont", 10, (k-1) * 20 + 10, Color(108, 122, 137), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
+		end
+
 		surface.SetFont("GAce_CodeFont")
-		self.CodeInput:DrawHighlightedText(v, 5, (k-1) * 20 + 2, Color(255, 255, 255), false)
+		self.CodeInput:DrawHighlightedText(v.value, 20, (k-1) * 20 + 2, Color(255, 255, 255), false)
 	end
 end
+
+local function findMatchLength(preText, match)
+	for n=#match,1,-1 do
+		if string.lower(string.sub(preText, -n)) == string.lower(string.sub(match, 1, n)) then
+			return n
+		end
+	end
+	return 0
+end
+--[[assert(findMatchLength("ayy lm", "aoni") == 0)
+assert(findMatchLength("ayy lma", "aoni") == 1)
+assert(findMatchLength("ayy lmao", "aoni") == 2)
+assert(findMatchLength("ayy lmaoni", "aoni") == 4)]]
+
 function PANEL_AC:CheckKeycode(keycode)
 	if #self.Values == 0 then return end
-	
+
 	if keycode == KEY_DOWN then
 		self.Choice = ((self.Choice or 0) + 1) % (#self.Values + 1)
 		return true
@@ -208,8 +310,18 @@ function PANEL_AC:CheckKeycode(keycode)
 	if keycode == KEY_ENTER then
 		local choice = self.Values[self.Choice or 0]
 		if choice then
-			self.CodeInput:SetText(choice)
-			self.CodeInput:SetCaretPos(choice:len())
+			local choiceValue = choice.value
+
+			local text = self.CodeInput:GetText()
+			local preText = string.sub(text, 1, self.CodeInput:GetCaretPos())
+			local postText = string.sub(text, self.CodeInput:GetCaretPos() + 1)
+
+			local matchLen = findMatchLength(preText, choiceValue)
+			preText = string.sub(preText, 1, -matchLen-1)
+
+			local newText = table.concat({preText, choiceValue, postText}, "")
+			self.CodeInput:SetText(newText)
+			self.CodeInput:SetCaretPos(#preText+#choiceValue)
 			self.CodeInput:RequestFocus()
 			self:Remove()
 
