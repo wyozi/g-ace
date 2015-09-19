@@ -123,6 +123,8 @@ end
 
 function PANEL:GetAutoComplete(text)
 	local btext = text:sub(1, self:GetCaretPos())
+	if #btext == 0 then return {} end
+
 	local cursorIdentifier = btext:match("[%w%.]+$") or ""
 
 	local completions = gace.autocompletion.Complete(cursorIdentifier)
@@ -148,7 +150,6 @@ end
 
 function PANEL:OpenAutoComplete(tab, openIfClosed)
 	if not tab then return end
-	if #tab == 0 then return end
 
 	if not IsValid(self.AC) then
 		self.AC = vgui.Create("GAceCodeInput_AutoComplete")
@@ -168,6 +169,11 @@ end
 
 function PANEL:OnKeyCode(keycode)
 	if IsValid(self.AC) and self.AC:CheckKeycode(keycode) then return true end
+	if keycode == KEY_ENTER then
+		self:OnEnter()
+		self:OnTextChanged()
+		return true
+	end
 end
 
 derma.DefineControl("GAceCodeInput", "Code input for GAce", PANEL, "GAceInput")
