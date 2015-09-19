@@ -169,11 +169,6 @@ end
 
 function PANEL:OnKeyCode(keycode)
 	if IsValid(self.AC) and self.AC:CheckKeycode(keycode) then return true end
-	if keycode == KEY_ENTER then
-		self:OnEnter()
-		self:OnTextChanged()
-		return true
-	end
 end
 
 derma.DefineControl("GAceCodeInput", "Code input for GAce", PANEL, "GAceInput")
@@ -200,6 +195,8 @@ function PANEL_AC:Paint(w, h)
 	end
 end
 function PANEL_AC:CheckKeycode(keycode)
+	if #self.Values == 0 then return end
+	
 	if keycode == KEY_DOWN then
 		self.Choice = ((self.Choice or 0) + 1) % (#self.Values + 1)
 		return true
