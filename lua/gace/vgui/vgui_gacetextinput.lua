@@ -23,7 +23,8 @@ local VGUI_GACEINPUT = {
 		if self:GetDisabled() then
 			surface.SetDrawColor(127, 110, 110)
 		else
-			surface.SetDrawColor(self:QueryColor("tab_bg"))
+			surface.SetDrawColor(34, 36, 37)
+			--surface.SetDrawColor(self:QueryColor("tab_bg"))
 		end
 		surface.DrawRect(1, 1, w-2, h-2)
 

@@ -62,22 +62,28 @@ function PANEL:TokenizeLine(str)
 end
 
 PANEL.TokenColors = {
-	str_literal = Color(108, 122, 137),
-	num_literal = Color(38, 166, 91),
-	keyword = Color(248, 148, 6),
-	operator = Color(68,108,179),
-	lib_func = Color(154, 18, 179)
+	str_literal = Color(230, 219, 116),
+	num_literal = Color(174, 129, 255),
+	keyword = Color(249, 38, 114),
+	operator = Color(249, 38, 114),
+	lib_func = Color(102, 217, 239)
 }
 
+surface.CreateFont("GAce_CodeFont", {
+	font = "Courier New",
+	size = 15
+})
+
 function PANEL:DrawText(textcolor)
-	surface.SetFont("DermaDefault")
+	surface.SetFont("GAce_CodeFont")
+	self:SetFontInternal("GAce_CodeFont")
 
 	local caretPos = self:GetCaretPos()
 	local drawCaret = self:HasFocus() --math.floor(CurTime() * 2) % 2 == 0
 
 	local char = 0
 	local x = 3
-	local y = 4
+	local y = 3
 	local tokenized = self:TokenizeLine(self:GetText())
 	for _,token in pairs(tokenized) do
 		surface.SetTextPos(x, y)
