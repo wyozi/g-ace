@@ -675,6 +675,13 @@ var LuaBehaviour = function() {
         var token = iterator.getCurrentToken();
 
         if (token && token.type == "keyword" && (token.value == "then" || token.value == "do")) {
+            // check for case where you have "if x then\nend", which should not closekeyword
+            var nextToken = iterator.stepForward();
+            if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+                return;
+            }
+            iterator.stepBackward();
+
             // Find the keyword ('if', 'elseif' etc)
             do {
                 token = iterator.stepBackward();
