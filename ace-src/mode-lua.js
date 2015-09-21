@@ -677,7 +677,7 @@ var LuaBehaviour = function() {
         if (token && token.type == "keyword" && (token.value == "then" || token.value == "do")) {
             // check for case where you have "if x then\nend", which should not closekeyword
             var nextToken = iterator.stepForward();
-            if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+            if (nextToken && (nextToken.value == "end" || nextToken.value == "else" || nextToken.value == "elseif") && nextLineIndent == lineIndent) {
                 return;
             }
             iterator.stepBackward();
@@ -736,7 +736,7 @@ var LuaBehaviour = function() {
 
         // check for case where you have "function()\nend", which should not closekeyword
         var nextToken = iterator.stepForward();
-        if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+        if (nextToken && (nextToken.value == "end" || nextToken.value == "else" || nextToken.value == "elseif") && nextLineIndent == lineIndent) {
             return;
         }
         iterator.stepBackward();
