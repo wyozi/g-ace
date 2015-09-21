@@ -570,7 +570,6 @@ var CstyleBehaviour = function() {
             }
         }
     });
-
 };
 
 
@@ -742,6 +741,20 @@ var LuaBehaviour = function() {
             selection: [1, indent.length, 1, indent.length]
         };
     });
+
+    this.add("smartbackspace", "deletion", function(state, action, editor, session, range) {
+        var selected = session.doc.getTextRange(range);
+        if (!range.isMultiLine() && /\s/.test(selected)) {
+            var line = session.doc.getLine(range.start.row);
+            var lineStart = line.substring(0, range.start.column + 1);
+            if (/^\s+$/.test(lineStart) && range.start.row > 0) {
+                range.start.row--;
+                range.start.column = session.doc.getLine(range.start.row).length;
+                return range;
+            }
+        }
+    });
+
 };
 oop.inherits(LuaBehaviour, Behaviour);
 
