@@ -716,6 +716,14 @@ var LuaBehaviour = function() {
         if (nextLineIndent > lineIndent) return;
 
         var iterator = new TokenIterator(session, position.row, position.column);
+
+        // check for case where you have "function()\nend", which should not closekeyword
+        var nextToken = iterator.stepForward();
+        if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+            return;
+        }
+        iterator.stepBackward();
+
         var token = iterator.getCurrentToken();
 
         if (!token || token.type != "paren.rparen") return;
