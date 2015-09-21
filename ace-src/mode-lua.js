@@ -701,6 +701,23 @@ var LuaBehaviour = function() {
             };
         }
     });
+    this.add("closekeyword", "deletion", function (state, action, editor, session, range) {
+        var position = editor.getCursorPosition();
+
+        var iterator = new TokenIterator(session, position.row, position.column);
+        var token = iterator.getCurrentToken();
+        if (token.type == "keyword" && (token.value == "then" || token.value == "do")) {
+            range.start.column = iterator.getCurrentTokenColumn();
+            do {
+                token = iterator.stepForward();
+            } while (token && token.type == "text");
+            if (token && token.value == "end") {
+                range.end.row = iterator.getCurrentTokenRow();
+                range.end.column = iterator.getCurrentTokenColumn()+3;
+                return range;
+            }
+        }
+    });
     this.add("closefunction", "insertion", function (state, action, editor, session, text) {
         if (text != "\n") return;
 
