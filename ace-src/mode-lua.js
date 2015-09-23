@@ -682,15 +682,17 @@ var LuaBehaviour = function() {
             }
             iterator.stepBackward();
 
-            // Find the keyword ('if', 'elseif' etc)
-            do {
-                token = iterator.stepBackward();
-            }
-            while (token.type != "keyword");
+            // Check for keyword ('if', 'elseif' etc) if this is a 'if' stmt
+            if (token.value == "then") {
+                do {
+                    token = iterator.stepBackward();
+                }
+                while (token && token.type != "keyword");
 
-            // Shouldn't add 'end' to these
-            if (token.value == "elseif" || token.value == "else") {
-                return;
+                // Shouldn't add 'end' to these
+                if (!token || token.value == "elseif" || token.value == "else") {
+                    return;
+                }
             }
 
             var indent = lineIndent + session.getTabString();
