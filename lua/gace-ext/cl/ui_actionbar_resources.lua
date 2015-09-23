@@ -99,6 +99,16 @@ local sleekColors = {
 {name = "Cararra", clr = Color(242, 241, 239)},
 }
 
+local links = {
+	{name = "Half Life 2 Sounds", link = "https://maurits.tv/data/garrysmod/wiki/wiki.garrysmod.com/index8f77.html"},
+	{name = "GMod Wiki", link = "http://wiki.garrysmod.com/page/Main_Page"},
+	{name = "GMod Source", link = "https://github.com/garrynewman/garrysmod/"},
+	{name = "DarkRP Wiki", link = "http://wiki.darkrp.com/index.php/Main_Page"},
+	{name = "TTT Hooks", link = "http://ttt.badking.net/guides/hooks"},
+	{name = "BASS Error Codes", link = "http://www.un4seen.com/doc/#bass/BASS_ErrorGetCode.html"},
+	{name = "Lua 5.1 Reference", link = "http://www.lua.org/manual/5.1/"}
+}
+
 local buzzwords = {
 	"Modern", "Sleek", "Flat", "Custom", "Customizable", "Unique", "Premium",
 	"Advanced", "Enhanced", "Blur", "Ultimate", "Simple"
@@ -198,6 +208,12 @@ gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comp
 
 				fr:MakePopup()
 			end):SetIcon("icon16/flag_blue.png")
+
+			local csubmenu, csmpnl = menu:AddSubMenu("Links", function() end)
+			csmpnl:SetIcon("icon16/link.png")
+			for _,t in pairs(links) do
+				local opt = csubmenu:AddOption(t.name, function() gui.OpenURL(t.link) end)
+			end
 
 			menu:AddOption("Buzzword Generator", BuzzwordGen):SetIcon("icon16/coins.png")
 
