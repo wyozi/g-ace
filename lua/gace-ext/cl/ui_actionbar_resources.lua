@@ -99,6 +99,55 @@ local sleekColors = {
 {name = "Cararra", clr = Color(242, 241, 239)},
 }
 
+local buzzwords = {
+	"Modern", "Sleek", "Flat", "Custom", "Customizable", "Unique", "Premium",
+	"Advanced", "Enhanced", "Blur", "Ultimate", "Simple"
+}
+
+local function BuzzwordGen()
+	local fr = vgui.Create("DFrame")
+	fr:SetSize(300, 100)
+	fr:Center()
+	fr:SetTitle("Buzzword Generator")
+
+	local comps = {}
+	for _,bw in pairs(buzzwords) do
+		local comp = vgui.Create("DTextEntry", fr)
+		comp:SetDrawBackground(false)
+		comp:SetText(bw)
+		comp:SetFont("DermaLarge")
+		comp:SetWide(175)
+		comp:SetDisabled(true)
+		comp:SetAllowNonAsciiCharacters(false)
+		comps[#comps+1] = comp
+	end
+
+	local function easeOut(t, b, c, d)
+		return c * ( -math.pow( 2, -10 * t/d ) + 1 ) + b;
+	end
+
+	local start = CurTime()
+	local time = 3 + math.random()
+	local e = 0
+	fr.Think = function()
+		local speed = 1 - easeOut(CurTime()-start, 0, 1, time)
+		if speed < 0.001 then
+			surface.PlaySound("items/suitchargeok1.wav")
+			fr.Think = nil
+			return
+		end
+		e = e + speed * 500
+		local w = 175
+		for i,c in pairs(comps) do
+			local x = -w + ((e + i*w) % (fr:GetWide()+(#comps*w)))
+			c:SetPos(x, 50)
+		end
+	end
+
+	fr:MakePopup()
+end
+concommand.Add("gace-buzzwordgen", BuzzwordGen)
+
 gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comps)
 	comps:AddCategory("Resources", Color(51, 110, 123), 75)
 	comps:AddComponent {
@@ -149,6 +198,8 @@ gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comp
 
 				fr:MakePopup()
 			end):SetIcon("icon16/flag_blue.png")
+
+			menu:AddOption("Buzzword Generator", BuzzwordGen):SetIcon("icon16/coins.png")
 
 			menu:Open()
 		end
