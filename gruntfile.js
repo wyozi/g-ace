@@ -8,6 +8,9 @@ module.exports = function (grunt) {
             dest: 'ace/',    // destination folder
             expand: true,    // allow dynamic building
             flatten: true   // remove all unnecessary nesting
+        },
+        options: {
+            sourceMap: true
         }
     },
     watch: {

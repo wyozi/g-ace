@@ -706,6 +706,8 @@ var LuaBehaviour = function() {
 
         var iterator = new TokenIterator(session, position.row, position.column);
         var token = iterator.getCurrentToken();
+        if (!token) return;
+        
         if (token.type == "keyword" && (token.value == "then" || token.value == "do")) {
             range.start.column = iterator.getCurrentTokenColumn();
             do {

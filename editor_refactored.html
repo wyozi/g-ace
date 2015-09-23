@@ -743,6 +743,9 @@ Press Ctrl-N to create a new file and open it in a new tab.
     document.addEventListener('DOMContentLoaded', function() {
         if ("gace" in window) {
             gace.EditorReady();
+        } else {
+            // we're debugging
+            gaceSessions.setSession("debug.lua", {});
         }
     });
 </script>
