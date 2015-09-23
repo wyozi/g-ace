@@ -110,7 +110,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comp
 			local csubmenu, csmpnl = menu:AddSubMenu("Sleek Colors", function() end)
 			csmpnl:SetIcon("icon16/color_wheel.png")
 			for _,t in pairs(sleekColors) do
-				local opt = csubmenu:AddOption(t.name, function() SetClipboardText(string.format("%d, %d, %d", t.clr.r, t.clr.g, t.clr.b)) end)
+				local opt = csubmenu:AddOption(t.name, function() SetClipboardText(string.format("Color(%d, %d, %d)", t.clr.r, t.clr.g, t.clr.b)) end)
 				opt.PaintOver = function(_, w, h)
 					surface.SetDrawColor(t.clr)
 					surface.DrawRect(2, 2, h-4, h-4)
