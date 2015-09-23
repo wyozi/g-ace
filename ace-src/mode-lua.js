@@ -785,6 +785,18 @@ var LuaBehaviour = function() {
         var selected = session.doc.getTextRange(range);
         if (!range.isMultiLine() && /\s/.test(selected)) {
             var line = session.doc.getLine(range.start.row);
+
+            // check if we have more indentation than we should
+            if (range.start.row > 0) {
+                var targIndent = this.getNextLineIndent("start", session.doc.getLine(range.start.row-1), "\t");
+                var curIndent = this.$getIndent(line);
+                if (targIndent.length < curIndent.length) {
+                    range.start.column = targIndent.length;
+                    return range;
+                }
+            }
+
+            // otherwise we straight hop to previous line
             var lineStart = line.substring(0, range.start.column + 1);
             if (/^\s+$/.test(lineStart) && range.start.row > 0) {
                 range.start.row--;
