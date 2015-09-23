@@ -702,12 +702,15 @@ var LuaBehaviour = function() {
         }
     });
     this.add("closekeyword", "deletion", function (state, action, editor, session, range) {
+        var selected = session.doc.getTextRange(range);
+        if (range.isMultiLine() || Math.abs(range.end.column-range.start.column) > 1) return;
+
         var position = editor.getCursorPosition();
 
         var iterator = new TokenIterator(session, position.row, position.column);
         var token = iterator.getCurrentToken();
         if (!token) return;
-        
+
         if (token.type == "keyword" && (token.value == "then" || token.value == "do")) {
             range.start.column = iterator.getCurrentTokenColumn();
             do {
