@@ -1,3 +1,5 @@
+if true then return end
+
 local base_url = "https://obscure-waters-1458.herokuapp.com/"
 
 gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comps)
