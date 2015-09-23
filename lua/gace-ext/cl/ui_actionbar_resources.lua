@@ -106,7 +106,8 @@ local links = {
 	{name = "DarkRP Wiki", link = "http://wiki.darkrp.com/index.php/Main_Page"},
 	{name = "TTT Hooks", link = "http://ttt.badking.net/guides/hooks"},
 	{name = "BASS Error Codes", link = "http://www.un4seen.com/doc/#bass/BASS_ErrorGetCode.html"},
-	{name = "Lua 5.1 Reference", link = "http://www.lua.org/manual/5.1/"}
+	{name = "Lua 5.1 Reference", link = "http://www.lua.org/manual/5.1/"},
+	{name = "Easing Equations", link = "https://github.com/EmmanuelOga/easing/blob/master/examples/simple/easing.lua"}
 }
 
 local buzzwords = {
