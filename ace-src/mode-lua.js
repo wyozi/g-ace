@@ -657,6 +657,14 @@ var LuaBehaviour = function() {
     // As it happens, C style behaviour for Lua table constructors is correct
     this.inherit(CstyleBehaviour, ["braces", "parens", "string_dquotes"]);
 
+    function stepUntilRealToken(iterator) {
+        var token;
+        do {
+            token = iterator.stepForward();
+        } while (token && token.type == "text");
+        return token;
+    }
+
     this.add("closekeyword", "insertion", function (state, action, editor, session, text) {
         if (text != "\n") return;
 
@@ -676,7 +684,7 @@ var LuaBehaviour = function() {
 
         if (token && token.type == "keyword" && (token.value == "then" || token.value == "do")) {
             // check for case where you have "if x then\nend", which should not closekeyword
-            var nextToken = iterator.stepForward();
+            var nextToken = stepUntilRealToken(iterator);
             if (nextToken && (nextToken.value == "end" || nextToken.value == "else" || nextToken.value == "elseif") && nextLineIndent == lineIndent) {
                 return;
             }
@@ -742,8 +750,8 @@ var LuaBehaviour = function() {
         var iterator = new TokenIterator(session, position.row, position.column);
 
         // check for case where you have "function()\nend", which should not closekeyword
-        var nextToken = iterator.stepForward();
-        if (nextToken && (nextToken.value == "end" || nextToken.value == "else" || nextToken.value == "elseif") && nextLineIndent == lineIndent) {
+        var nextToken = stepUntilRealToken(iterator);
+        if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
             return;
         }
         iterator.stepBackward();
