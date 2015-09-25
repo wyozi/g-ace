@@ -692,10 +692,13 @@ var LuaBehaviour = function() {
 
             // Check for keyword ('if', 'elseif' etc) if this is a 'if' stmt
             if (token.value == "then") {
+                function isThenStarter(token) {
+                    return token.type == "keyword" && (token.value == "if" || token.value == "elseif" || token.value == "else");
+                }
                 do {
                     token = iterator.stepBackward();
                 }
-                while (token && token.type != "keyword");
+                while (token && !isThenStarter(token));
 
                 // Shouldn't add 'end' to these
                 if (!token || token.value == "elseif" || token.value == "else") {
