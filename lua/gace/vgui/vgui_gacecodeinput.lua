@@ -205,12 +205,23 @@ local function MathEval(str)
 			assoc = "left",
 			func = function(x, y) return x*y end
 		},
+		["/"] = {
+			prec = 10,
+			assoc = "left",
+			func = function(x, y) return x/y end
+		},
 		["+"] = {
 			prec = 5,
 			assoc = "left",
 			func = function(x, y) return x+y end
-		}
+		},
+		["-"] = {
+			prec = 5,
+			assoc = "left",
+			func = function(x, y) return x-y end
+		},
 	}
+	local opPattern = "%" .. table.concat(table.GetKeys(ops), "%")
 	local funcs = {
 		["sin"] = { func = math.sin, paramCount = 1 },
 		["cos"] = { func = math.cos, paramCount = 1 },
@@ -238,7 +249,7 @@ local function MathEval(str)
 		local num_lit = str:match("^[%d%.]+", i)
 		if num_lit then return maketoken("number", num_lit) end
 
-		local op = str:match("^[%+%*]", i)
+		local op = str:match("^[" .. opPattern .. "]", i)
 		if op then return maketoken("operator", op) end
 
 		local str_lit = str:match("^%w+", i)
@@ -278,6 +289,8 @@ local function MathEval(str)
 			if funcs[peek(op_stack)] then
 				push(out_q, pop(op_stack))
 			end
+		elseif t.type ~= "whitespace" then
+			error("invalid token: " .. table.ToString(t))
 		end
 
 		--print("Token " .. t.text .. "; out_q:" .. table.ToString(out_q) .. "; op_stack:" .. table.ToString(op_stack))
@@ -292,7 +305,7 @@ local function MathEval(str)
 		if type(v) == "number" then
 			push(eval_stack, v)
 		elseif ops[v] then
-			local s1, s2 = pop(eval_stack), pop(eval_stack)
+			local s2, s1 = pop(eval_stack), pop(eval_stack)
 			push(eval_stack, ops[v].func(s1, s2))
 		elseif funcs[v] then
 			local x = {}
@@ -325,8 +338,9 @@ function PANEL:GetAutoComplete(text)
 	end
 
 	local status, res = pcall(MathEval, text)
-	if status and res then
-		table.insert(completions, 1, {value = "eval: " .. tostring(res), type = "eval"})
+	if res then
+		local txt = status and ("eval: " .. tostring(res)) or ("evalerror: " .. tostring(res:match("[^:]+:[^:]+:(.+)")))
+		table.insert(completions, 1, {value = txt, type = "eval"})
 	end
 
 	return completions
@@ -346,7 +360,7 @@ end
 function PANEL:Think()
 	if IsValid(self.AC) then
 		local tw = self:GetTextSize(true)
-		self.AC:SetWide(tw + 200)
+		self.AC:SetWide(400)
 		self.AC:SetPos(self:LocalToScreen(tw, self:GetTall() - 2))
 	end
 end
