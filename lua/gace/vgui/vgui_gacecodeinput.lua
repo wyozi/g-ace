@@ -198,9 +198,117 @@ local function Autocompleter(text)
 	return ret
 end
 
+local function MathEval(str)
+	local ops = {
+		["*"] = {
+			prec = 10,
+			assoc = "left",
+			func = function(x, y) return x*y end
+		},
+		["+"] = {
+			prec = 5,
+			assoc = "left",
+			func = function(x, y) return x+y end
+		}
+	}
+	local funcs = {
+		["sin"] = { func = math.sin, paramCount = 1 },
+		["cos"] = { func = math.cos, paramCount = 1 },
+		["tan"] = { func = math.tan, paramCount = 1 },
+
+		["rad"] = { func = math.rad, paramCount = 1 },
+		["deg"] = { func = math.deg, paramCount = 1 },
+
+		["mod"] = { func = function(x, y) return x%y end, paramCount = 2 },
+	}
+
+	local function push(t, x) table.insert(t, x) end
+	local function pop(t) return table.remove(t, #t) end
+	local function peek(t) return t[#t] end
+
+	local i = 1
+	local function maketoken(type, text)
+		i = i + #text
+		return {type=type, text=text}
+	end
+	local function readtoken()
+		local ws = str:match("^%s+", i)
+		if ws then return maketoken("whitespace", ws) end
+
+		local num_lit = str:match("^[%d%.]+", i)
+		if num_lit then return maketoken("number", num_lit) end
+
+		local op = str:match("^[%+%*]", i)
+		if op then return maketoken("operator", op) end
+
+		local str_lit = str:match("^%w+", i)
+		if str_lit then return maketoken("identifier", str_lit) end
+
+		local symbol = str:match("^.", i)
+		if symbol then return maketoken("symbol", symbol) end
+	end
+
+	local out_q = {}
+	local op_stack = {}
+
+	while true do
+		local t = readtoken()
+		if not t then break end
+
+		if t.type == "number" then
+			push(out_q, tonumber(t.text))
+		elseif t.type == "operator" then
+			local curop = ops[t.text]
+			while #op_stack > 0 and
+				((curop.assoc == "left" and curop.prec <= ops[peek(op_stack)].prec) or
+				 (curop.assoc == "right" and curop.prec < ops[peek(op_stack)].prec)) do
+
+				push(out_q, pop(op_stack))
+			end
+			push(op_stack, t.text)
+		elseif t.type == "identifier" and funcs[t.text] then
+			push(op_stack, t.text)
+		elseif t.type == "symbol" and t.text == "(" then
+			push(op_stack, "(")
+		elseif t.type == "symbol" and t.text == ")" then
+			while peek(op_stack) ~= "(" do
+				push(out_q, pop(op_stack))
+			end
+			pop(op_stack) -- pop left parenthesis
+			if funcs[peek(op_stack)] then
+				push(out_q, pop(op_stack))
+			end
+		end
+
+		--print("Token " .. t.text .. "; out_q:" .. table.ToString(out_q) .. "; op_stack:" .. table.ToString(op_stack))
+	end
+
+	while #op_stack > 0 do
+		push(out_q, pop(op_stack))
+	end
+
+	local eval_stack = {}
+	for k,v in ipairs(out_q) do
+		if type(v) == "number" then
+			push(eval_stack, v)
+		elseif ops[v] then
+			local s1, s2 = pop(eval_stack), pop(eval_stack)
+			push(eval_stack, ops[v].func(s1, s2))
+		elseif funcs[v] then
+			local x = {}
+			for i=1,funcs[v].paramCount do x[i] = pop(eval_stack) end
+			x = table.Reverse(x)
+			push(eval_stack, funcs[v].func(unpack(x)))
+		end
+	end
+
+	return pop(eval_stack)
+end
+
 function PANEL:GetAutoComplete(text)
 	local btext = text:sub(1, self:GetCaretPos())
 	if #btext == 0 then return {} end
+
 
 	--[[
 	local cursorIdentifier = btext:match("[%w%.]+$") or ""
@@ -214,6 +322,11 @@ function PANEL:GetAutoComplete(text)
 			_comp[i] = completions[i]
 		end
 		completions = _comp
+	end
+
+	local status, res = pcall(MathEval, text)
+	if status and res then
+		table.insert(completions, 1, {value = "eval: " .. tostring(res), type = "eval"})
 	end
 
 	return completions
