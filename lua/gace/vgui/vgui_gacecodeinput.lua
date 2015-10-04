@@ -200,6 +200,12 @@ end
 
 local function MathEval(str)
 	local ops = {
+		["^"] = {
+			prec = 15,
+			assoc = "right",
+			func = function(x, y) return math.pow(x, y) end
+		},
+
 		["*"] = {
 			prec = 10,
 			assoc = "left",
