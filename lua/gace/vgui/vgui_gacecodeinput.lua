@@ -289,6 +289,8 @@ local function MathEval(str)
 			if funcs[peek(op_stack)] then
 				push(out_q, pop(op_stack))
 			end
+		elseif t.type == "symbol" and t.text == "," then
+			-- skip
 		elseif t.type ~= "whitespace" then
 			error("invalid token: " .. table.ToString(t))
 		end
