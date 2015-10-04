@@ -270,7 +270,7 @@ local function MathEval(str)
 			push(out_q, tonumber(t.text))
 		elseif t.type == "operator" then
 			local curop = ops[t.text]
-			while #op_stack > 0 and
+			while #op_stack > 0 and ops[peek(op_stack)] and
 				((curop.assoc == "left" and curop.prec <= ops[peek(op_stack)].prec) or
 				 (curop.assoc == "right" and curop.prec < ops[peek(op_stack)].prec)) do
 
@@ -286,7 +286,7 @@ local function MathEval(str)
 				push(out_q, pop(op_stack))
 			end
 			pop(op_stack) -- pop left parenthesis
-			if funcs[peek(op_stack)] then
+			if #op_stack > 0 and funcs[peek(op_stack)] then
 				push(out_q, pop(op_stack))
 			end
 		elseif t.type == "symbol" and t.text == "," then
