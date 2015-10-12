@@ -9,7 +9,7 @@ function gace.CallHook(name, ...)
 
 	for i=1,#hks do
 		local a, b, c, d, e, f, g = hks[i].fn(...)
-		if a then return a, b, c, d, e, f, g end
+		if a ~= nil then return a, b, c, d, e, f, g end
 	end
 end
 function gace.AddHook(name, id, fn)
