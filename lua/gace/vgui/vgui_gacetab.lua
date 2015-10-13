@@ -51,8 +51,6 @@ local VGUI_EDITOR_TAB = {
 		end
 	end,
 	CloseTab = function(self, force, callback)
-		print("attempting to close ", self.SessionId)
-
 		local sess = gace.GetSession(self.SessionId)
 		if not force and not sess:IsSaved() then
 			print("dank")
