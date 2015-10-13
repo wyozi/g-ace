@@ -78,22 +78,56 @@ gace.AddHook("FileTreeContextMenu", "FileTree_AddFolderOptions", function(path, 
 		ft.RefreshPath(path)
 	end):SetIcon("icon16/arrow_refresh.png")
 
+	-- Helper to create folders
+	local function CreateFolder(fpath)
+		return ATPromise(function(res)
+			gace.SendRequest("mkdir", {path = fpath}, function(_, _, pl)
+				if pl.err then
+					res:reject(pl.err)
+					return
+				end
+				res:resolve(fpath)
+			end)
+		end)
+	end
+	local function CreateNestedFolders(basePath, folders)
+		local prom = ATPromise(basePath)
+		for _,c in pairs(folders:Split("/")) do
+			prom = prom:then_(function(curpath)
+				local fpath = curpath .. "/" .. c
+				return CreateFolder(fpath)
+			end)
+		end
+		return prom
+	end
+
 	menu:AddOption("Create File", function()
 		gace.ext.ShowTextInputPrompt("Filename", function(nm)
-			local filname = path .. "/" .. nm
-			gace.OpenSession(filname, {content=""})
+			local function OpenFileSession()
+				local filname = path .. "/" .. nm
+				gace.OpenSession(filname, {content=""})
+			end
+
+			local folders = nm:match("(.*)/[^/]*$")
+			if folders then
+				CreateNestedFolders(path, folders):done(function()
+					ft.RefreshPath(path)
+					
+					OpenFileSession()
+				end)
+			else
+				OpenFileSession()
+			end
+
 		end)
 	end):SetIcon("icon16/page_add.png")
 
 	menu:AddOption("Create Folder", function()
 		gace.ext.ShowTextInputPrompt("Folder name", function(nm)
-			local filname = path .. "/" .. nm
-			gace.SendRequest("mkdir", {path = filname}, function(_, _, pl)
-				if pl.err then
-					gace.Log(gace.LOG_ERROR, "Failed to create folder: ", pl.err)
-					return
-				end
+			CreateNestedFolders(path, nm):then_(function(curpath)
 				ft.RefreshPath(path)
+			end):catch(function(e)
+				gace.Log(gace.LOG_ERROR, "Failed to create folder: ", e)
 			end)
 		end)
 	end):SetIcon("icon16/folder_add.png")
