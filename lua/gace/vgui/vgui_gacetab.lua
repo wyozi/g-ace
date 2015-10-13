@@ -7,21 +7,21 @@ surface.CreateFont("EditorTabFont", {
 local max = 12
 local thickness = 2
 local cross_poly1 = {
-    { x = 0, y = 0 },
-    { x = thickness, y = 0 },
-    { x = max, y = max-thickness },
-    { x = max, y = max },
-    { x = max-thickness, y = max },
-    { x = 0, y = thickness }
+	{ x = 0, y = 0 },
+	{ x = thickness, y = 0 },
+	{ x = max, y = max-thickness },
+	{ x = max, y = max },
+	{ x = max-thickness, y = max },
+	{ x = 0, y = thickness }
 }
 
 local cross_poly2 = {
-    { x = max, y = 0 },
-    { x = max, y = thickness },
-    { x = thickness, y = max },
-    { x = 0, y = max },
-    { x = 0, y = max-thickness },
-    { x = max-thickness, y = 0 },
+	{ x = max, y = 0 },
+	{ x = max, y = thickness },
+	{ x = thickness, y = max },
+	{ x = 0, y = max },
+	{ x = 0, y = max-thickness },
+	{ x = max-thickness, y = 0 },
 }
 
 local cross_matrix = Matrix()
@@ -51,17 +51,17 @@ local VGUI_EDITOR_TAB = {
 		end
 	end,
 	CloseTab = function(self, force, callback)
+		print("attempting to close ", self.SessionId)
+
 		local sess = gace.GetSession(self.SessionId)
 		if not force and not sess:IsSaved() then
+			print("dank")
 			local menu = DermaMenu()
-			menu:AddOption("Unsaved changes. Are you sure you want to close the tab?", function()
+			menu:AddOption("Unsaved changes! Click here to close the tab anyway.", function()
 				self:CloseTab(true, callback)
 			end):SetIcon("icon16/stop.png")
 
-			local x, y = self:GetPos()
-			local x2, y2 = gace.Frame:GetPos()
-			local w, h = self:GetSize()
-			x, y = x2 + x + w, y2 + y + h
+			local x, y = self:LocalToScreen(0, self:GetTall())
 
 			menu:Open()
 			menu:SetPos(x, y)
@@ -120,7 +120,7 @@ local VGUI_EDITOR_TAB = {
 				lx, ly = x, y
 			end
 		end
-		
+
 		surface.SetDrawColor(gace.UIColors.tab_border)
 		surface.DrawOutlinedRect(0, 0, w, h)
 

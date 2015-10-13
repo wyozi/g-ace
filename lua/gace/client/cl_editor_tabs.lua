@@ -82,6 +82,8 @@ function gace.tab.Remove(id)
 		if set_session then
 			gace.OpenSession(set_session)
 		end
+	else
+		MsgN("[G-Ace] Warning: failed to remove nonexistent tab ", id)
 	end
 end
 
