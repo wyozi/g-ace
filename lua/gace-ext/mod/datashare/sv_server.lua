@@ -1,0 +1,12 @@
+util.AddNetworkString("GAce_DataShare")
+net.Receive("GAce_DataShare", function(len, cl)
+	local targ = net.ReadEntity()
+	local type = net.ReadString()
+	local data = net.ReadTable()
+
+	net.Start("GAce_DataShare")
+	net.WriteEntity(cl)
+	net.WriteString(type)
+	net.WriteTable(data)
+	net.Send(targ)
+end)
