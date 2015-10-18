@@ -157,6 +157,11 @@ local VGUI_EDITOR_TAB = {
 
 			timer.Simple(0, CloseAnother)
 		end)
+
+		menu:AddSpacer()
+
+		gace.CallHook("FileTreeContextMenu", self.SessionId, menu, "file")
+
 		menu:Open()
 	end,
 }
