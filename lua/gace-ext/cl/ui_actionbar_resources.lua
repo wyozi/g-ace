@@ -112,7 +112,7 @@ local links = {
 
 local buzzwords = {
 	"Modern", "Sleek", "Flat", "Custom", "Customizable", "Unique", "Premium",
-	"Advanced", "Enhanced", "Blur", "Ultimate", "Simple"
+	"Advanced", "Enhanced", "Blur", "Ultimate", "Simple", "Polished"
 }
 
 local function BuzzwordGen()
