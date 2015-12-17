@@ -110,7 +110,6 @@ gace.NetMessageIn = function(op, reqid, payload, protocol)
     return msg
 end
 gace.NetMessageOut = function(op, payload, protocol)
-    reqid = reqid or ""
     payload = payload or {}
     if not op then
         return error("opcode required!")
