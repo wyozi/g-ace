@@ -11,7 +11,15 @@ end)
 
 local function Do(r)
 	if r.type == "path" then
-		gace.OpenSession(r.data.path)
+		local rownum = r.data.row
+		gace.OpenSession(r.data.path, {
+			callback = function()
+				if rownum then
+					gace.JSBridge().editor.moveCursorTo(rownum, 0)
+					gace.JSBridge().HighlightRow(rownum)
+				end
+			end
+		})
 	elseif r.type == "snippet" then
 		gace.OpenSession("snippet_" .. os.time() .. "_" .. r.from:SteamID64(), {content = r.data.code, mark_unsaved = true})
 	end

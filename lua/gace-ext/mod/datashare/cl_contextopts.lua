@@ -22,6 +22,16 @@ gace.AddHook("FileTreeContextMenu", "DataShare", function(path, menu, nodetype)
 end)
 
 gace.AddHook("EditorContextMenu", "DataShare", function(menu, data)
+	PrintTable(data)
+
+	AddMenu(menu, "Share path to this row with", function(v)
+		net.Start("GAce_DataShare")
+		net.WriteEntity(v)
+		net.WriteString("path")
+		net.WriteTable { path = gace.GetSessionId(), row = data.cursorpos.row }
+		net.SendToServer()
+	end)
+
 	AddMenu(menu, "Share selected text with", function(v)
 		net.Start("GAce_DataShare")
 		net.WriteEntity(v)
