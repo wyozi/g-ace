@@ -41,7 +41,6 @@ local VGUI_GACEINPUT = {
 	-- Enabling history requires some hacks, so we'll have a method for that
 	EnableHistory = function(self)
 		self:SetHistoryEnabled(true)
-		print(self.m_bHistory)
 
 		-- Override OnKeyCodeTyped
 		-- Requires some bloat code from dtextentry.lua
