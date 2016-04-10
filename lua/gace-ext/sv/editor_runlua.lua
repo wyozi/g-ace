@@ -20,7 +20,7 @@ end
 
 function gace.luarun.server(code, code_id)
     RunString(code, code_id)
-    
+
     return true
 end
 
@@ -56,7 +56,7 @@ function gace.luarun.serverrepl(ply, code, code_id)
     if ret[1] == false then
         return false, "Run error: " .. tostring(ret[2])
     end
-    
+
     return true, unpack(ret, 2)
 end
 function gace.luarun.client(cl, code, code_id)
@@ -111,7 +111,8 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
                 return gace.RejectedATPromise(e)
             end
 
-            netmsg:CreateResponsePacket(op, {out = {e}}):Send()
+            local estr = istable(e) and table.ToString(e, "REPL Output", true) or tostring(e)
+            netmsg:CreateResponsePacket(op, {out = {estr}}):Send()
         end):catch(function(e)
             netmsg:CreateResponsePacket(op, {err = e}):Send()
         end)
