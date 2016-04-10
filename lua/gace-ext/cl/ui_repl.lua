@@ -166,6 +166,10 @@ local function AddREPLComps(par)
 
 	local consoleinput = vgui.Create("GAceCodeInput")
 	consoleinput:EnableHistory()
+
+	local history = util.JSONToTable(cookie.GetString("gace-repl-history") or "[]")
+	consoleinput.History = history
+
 	consoleinput.OnEnter = function()
 		local code = consoleinput:GetText()
 		local runOnServer = input.IsShiftDown()
@@ -187,6 +191,15 @@ local function AddREPLComps(par)
 
 		consoleinput:SetText("")
 		consoleinput:RequestFocus()
+
+		-- Get last 10 history entries and stuff them into cookie
+		local lastEntries = {}
+		for i=0, 10 do
+			local le = consoleinput.History[#consoleinput.History - i]
+			if not le then break end
+			table.insert(lastEntries, 1, le)
+		end
+		cookie.Set("gace-repl-history", util.TableToJSON(lastEntries))
 	end
 	par:AddDocked("REPLInput", consoleinput, BOTTOM)
 
