@@ -345,12 +345,6 @@ function PANEL:GetAutoComplete(text)
 		completions = _comp
 	end
 
-	local status, res = pcall(MathEval, text)
-	if res then
-		local txt = status and ("eval: " .. tostring(res)) or ("evalerror: " .. tostring(res:match("[^:]+:[^:]+:(.+)")))
-		table.insert(completions, 1, {value = txt, type = "eval"})
-	end
-
 	return completions
 end
 
