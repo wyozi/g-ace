@@ -349,7 +349,10 @@ function PANEL:GetAutoComplete(text)
 end
 
 function PANEL:OpenAutoComplete(tab, openIfClosed)
-	if not tab then return end
+	if not tab then
+		if IsValid(self.AC) then self.AC:Remove() end
+		return
+	end
 
 	if not IsValid(self.AC) then
 		self.AC = vgui.Create("GAceCodeInput_AutoComplete")
@@ -378,12 +381,25 @@ function PANEL_AC:Init()
 	self:SetDrawOnTop(true)
 	self.Values = {}
 end
+
+function PANEL_AC:IsBrowsingHistory()
+	-- Make sure we're not screwing up browsing history
+	local ci = self.CodeInput
+	if ci.HistoryPos and ci.History and ci.HistoryPos ~= 0 then
+		return true
+	end
+
+	return false
+end
+
 surface.CreateFont("GAce_AC_TypeFont", {
 	font = "Courier New",
 	size = 16,
 	weight = 1000
 })
 function PANEL_AC:Paint(w, h)
+	if self:IsBrowsingHistory() then return end
+
 	surface.SetDrawColor(34, 36, 37)
 	surface.DrawRect(0, 0, w, h)
 
@@ -427,6 +443,8 @@ assert(findMatchLength("ayy lmaoni", "aoni") == 4)]]
 
 function PANEL_AC:CheckKeycode(keycode)
 	if #self.Values == 0 then return end
+	
+	if self:IsBrowsingHistory() then return end
 
 	if keycode == KEY_DOWN then
 		self.Choice = ((self.Choice or 0) + 1) % (#self.Values + 1)
