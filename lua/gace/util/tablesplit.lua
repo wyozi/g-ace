@@ -7,7 +7,7 @@ gace.tablesplit = {}
 --- Computes estimated size of given object in bytes.
 -- Tries to be somewhat equal to what net.WriteTable would send.
 -- If object is a table, typeHeaderSize amount of bytes is added to each key & value
-function gace.tablesplit.ComputeSize(obj, typeHeaderSize)
+function gace.tablesplit.ComputeSize(obj, typeHeaderSize, checkedTables)
     if obj == nil then return 1 end
 
     local t = type(obj)
@@ -21,17 +21,22 @@ function gace.tablesplit.ComputeSize(obj, typeHeaderSize)
     if t == "table" then
         local size = 0
 
+        checkedTables = checkedTables or {}
+        checkedTables[obj] = true
+
         typeHeaderSize = typeHeaderSize or 0
         for k,v in pairs(obj) do
             size = size + typeHeaderSize
-            size = size + gace.tablesplit.ComputeSize(k, typeHeaderSize)
+            size = size + (checkedTables[k] and 0 or gace.tablesplit.ComputeSize(k, typeHeaderSize, checkedTables))
 
             size = size + typeHeaderSize
-            size = size + gace.tablesplit.ComputeSize(v, typeHeaderSize)
+            size = size + (checkedTables[v] and 0 or gace.tablesplit.ComputeSize(v, typeHeaderSize, checkedTables))
         end
 
         return size
     end
+
+    if t == "function" then return 0 end -- functions are skipped
 
     MsgN("Trying to compute size of unknown object (type:".. t .. "): " .. tostring(obj))
     return 4 -- whatever
