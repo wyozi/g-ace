@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<!-- Create a simple CodeMirror instance -->
+		<link rel="stylesheet" href="https://codemirror.net/lib/codemirror.css">
+		<script src="https://codemirror.net/lib/codemirror.js"></script>
+		<script src="https://codemirror.net/mode/lua/lua.js"></script>
+		<script src="cm/smartbackspace.js"></script>
+		<textarea id="editorText">lel</textarea>
+
+		<script>
+		  var editor = CodeMirror.fromTextArea(document.getElementById("editorText"), {
+			lineNumbers: true,
+			smartBackspace: true,
+			mode: "lua"
+		  });
+		</script>
+	</body>
+</html>
