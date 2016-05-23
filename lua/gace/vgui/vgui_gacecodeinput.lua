@@ -114,7 +114,7 @@ function PANEL:DrawText(textcolor)
 	self:DrawHighlightedText(self:GetText(), 3, 3, textcolor, drawCaret)
 
 	local invis = Color(0, 0, 0, 0)
-	self:DrawTextEntryText(invis, self.m_colHighlight, invis)
+	self:DrawTextEntryText(invis, Color(255, 127, 0), invis)
 end
 
 function PANEL:GetTextSize(beforeCaret)
