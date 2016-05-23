@@ -35,7 +35,7 @@ local VGUI_GACEINPUT = {
 	end,
 
 	DrawText = function(self, textcolor)
-		self:DrawTextEntryText(textcolor, self.m_colHighlight, textcolor)
+		self:DrawTextEntryText(textcolor, Color(255, 127, 0), textcolor)
 	end,
 
 	-- Enabling history requires some hacks, so we'll have a method for that
