@@ -98,7 +98,7 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
     end
 
     local function HandleOp(callback)
-        local code_id = string.format("%s by %s (%s)", op, ply:Nick(), ply:SteamID())
+        local code_id = payload.codeId or string.format("%s by %s (%s)", op, ply:Nick(), ply:SteamID())
 
         CheckPermission():then_(function()
             local tr, te = gace.luarun.transform(payload.code or "")
