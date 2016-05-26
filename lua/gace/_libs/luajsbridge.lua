@@ -14,7 +14,6 @@ end
 
 -- If you want arrays to be handled properly, you need https://github.com/craigmj/json4lua
 function luajsbridge.JSONify(tbl)
-	if type(json) == "table" and json.encode then return json.encode(tbl) end
 	return util.TableToJSON(tbl)
 end
 
