@@ -47,25 +47,11 @@ local function onRepo(repoOrPath, fn)
 	end
 end
 
--- Source: somewhere on internet
-local function GetServerIP()
-	local hostip = GetConVarString( "hostip" )
-	hostip = tonumber( hostip )
-
-	local ip = {}
-	ip[ 1 ] = bit.rshift( bit.band( hostip, 0xFF000000 ), 24 )
-	ip[ 2 ] = bit.rshift( bit.band( hostip, 0x00FF0000 ), 16 )
-	ip[ 3 ] = bit.rshift( bit.band( hostip, 0x0000FF00 ), 8 )
-	ip[ 4 ] = bit.band( hostip, 0x000000FF )
-
-	return table.concat( ip, "." )
-end
-
 function gace.git.identity(ply)
 	local cname, cemail = "", ""
 	if ply:IsValid() then
 		cname = ply:Nick()
-		cemail = ply:SteamID():Replace(":", "-") .. "@" .. GetServerIP()
+		cemail = ply:SteamID():Replace(":", "-") .. "@" .. game.GetIPAddress()
 	end
 	return {
 		name = cname,
@@ -135,6 +121,16 @@ function gace.git.is_repo(path)
 	return git.IsRepository(path)
 end
 
+function gace.git.fileStatus(repoOrPath, path)
+	return onRepo(repoOrPath, function(repo)
+		local status, err = repo:FileStatus(path)
+		if not status then
+			return false, err
+		end
+
+		return status
+	end)
+end
 function gace.git.status(repoOrPath)
 	return onRepo(repoOrPath, function(repo)
 		local status, err = repo:Status()
