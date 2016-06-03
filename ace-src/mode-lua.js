@@ -828,6 +828,13 @@ var LuaBehaviour = function() {
         // check if we have more indentation than we should
         if (range.start.row > 0) {
             var targIndent = this.getNextLineIndent("start", session.doc.getLine(range.start.row-1), "\t");
+            
+            // If line only contains end, its target indent should be one lower
+            // TODO XXX this is hacky, 'end' should not be hardcoded
+            if (line.substring(range.start.column + 1) == "end") {
+                targIndent = targIndent.slice(0, -1); // remove last indent
+            }
+            
             var curIndent = this.$getIndent(line);
             if (targIndent.length < curIndent.length) {
                 range.start.column = targIndent.length;
