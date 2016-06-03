@@ -673,7 +673,7 @@ var LuaBehaviour = function() {
         var line = session.getLine(position.row);
         
         // If the line contains something after our cursor, don't bother checking for closekeyword. This is a hacky fix for #109
-        if (line.substring(position.column) != "") {
+        if (line.substring(position.column+1) != "") {
             return;
         }
         
@@ -733,7 +733,7 @@ var LuaBehaviour = function() {
         if (!(token.type == "keyword" && (token.value == "then" || token.value == "do"))) return;
         
         // If the line contains something after our cursor, don't bother checking for closekeyword. This is a hacky fix for #109
-        if (session.getLine(position.row).substring(position.column) != "") {
+        if (session.getLine(position.row).substring(position.column+1) != "") {
             return;
         }
         
