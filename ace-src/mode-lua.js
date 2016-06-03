@@ -671,6 +671,12 @@ var LuaBehaviour = function() {
         var position = editor.getCursorPosition();
 
         var line = session.getLine(position.row);
+        
+        // If the line contains something after our cursor, don't bother checking for closekeyword. This is a hacky fix for #109
+        if (line.substring(position.column) != "") {
+            return;
+        }
+        
         var lineIndent = this.$getIndent(line);
 
         var nextLine = (session.getLength() <= position.row-1) ? "" : session.getLine(position.row+1);
@@ -719,21 +725,26 @@ var LuaBehaviour = function() {
         if (range.isMultiLine() || Math.abs(range.end.column-range.start.column) > 1) return;
 
         var position = editor.getCursorPosition();
-
+        
         var iterator = new TokenIterator(session, position.row, position.column);
         var token = iterator.getCurrentToken();
         if (!token) return;
-
-        if (token.type == "keyword" && (token.value == "then" || token.value == "do")) {
-            range.start.column = iterator.getCurrentTokenColumn();
-            do {
-                token = iterator.stepForward();
-            } while (token && token.type == "text");
-            if (token && token.value == "end") {
-                range.end.row = iterator.getCurrentTokenRow();
-                range.end.column = iterator.getCurrentTokenColumn()+3;
-                return range;
-            }
+        
+        if (!(token.type == "keyword" && (token.value == "then" || token.value == "do"))) return;
+        
+        // If the line contains something after our cursor, don't bother checking for closekeyword. This is a hacky fix for #109
+        if (session.getLine(position.row).substring(position.column) != "") {
+            return;
+        }
+        
+        range.start.column = iterator.getCurrentTokenColumn();
+        do {
+            token = iterator.stepForward();
+        } while (token && token.type == "text");
+        if (token && token.value == "end") {
+            range.end.row = iterator.getCurrentTokenRow();
+            range.end.column = iterator.getCurrentTokenColumn()+3;
+            return range;
         }
     });
     this.add("closefunction", "insertion", function (state, action, editor, session, text) {
