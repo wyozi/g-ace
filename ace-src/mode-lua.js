@@ -748,32 +748,34 @@ var LuaBehaviour = function() {
         var nextLineIndent = this.$getIndent(nextLine);
 
         // If next line already has a bigger indentation than curLine, abort
-        if (nextLineIndent > lineIndent) return;
-
-        var iterator = new TokenIterator(session, position.row, position.column);
-
-        // check for case where you have "function()\nend", which should not closekeyword
-        var nextToken = stepUntilRealToken(iterator);
-        if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+        if (nextLineIndent > lineIndent) {
             return;
         }
-        iterator.stepBackward();
 
+        var iterator = new TokenIterator(session, position.row, position.column);
+        
+        // Make sure this is actually a function definition
         var token = iterator.getCurrentToken();
-
-        if (!token || token.type != "paren.rparen") return;
+        if (!token || token.type != "paren.rparen") {
+            return;
+        }
 
         while (token.type != "paren.lparen") {
             token = iterator.stepBackward();
 
-            if (!token) return;
+            // Could not find lparen that starts arg list, abort
+            if (!token) {
+                return;
+            }
 
             // if we bump into a keyword (which can not exist inside parameter list)
             // this is probs not function definition, in which case we abort
-            if (token.type == "keyword") return;
+            if (token.type == "keyword") {
+                return;
+            }
         }
 
-        token = iterator.stepBackward(); // one more
+        token = iterator.stepBackward(); // one more to get to the actual keyword
         if (!token) return;
 
         // if this is a named function, there can be keyword.operator for colon, identifier, text (for space)
@@ -782,7 +784,14 @@ var LuaBehaviour = function() {
             if (!token) return;
         }
 
+        // This was not a function..
         if (!token || token.type != "keyword" || token.value != "function") return;
+        
+        // check for case where you have "function()\nend", which should not closekeyword
+        var nextToken = stepUntilRealToken(new TokenIterator(session, position.row, position.column));
+        if (nextToken && nextToken.value == "end" && nextLineIndent == lineIndent) {
+            return;
+        }
 
         var indent = lineIndent + session.getTabString();
 
