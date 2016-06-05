@@ -249,9 +249,10 @@ Press Ctrl-N to create a new file and open it in a new tab.
         readOnly: true
     });
 
+    editor.commands.removeCommand("removeline"); // Remove existing Ctrl-D binding
     editor.commands.addCommand({
         name: 'Add next instance of word to selection',
-        bindKey: {win: 'Ctrl-Alt-D',  mac: 'Command-Alt-D'},
+        bindKey: {win: 'Ctrl-D',  mac: 'Command-D'},
         exec: function(editor) {
             var selectedText = editor.getSession().getTextRange(editor.getSelectionRange());
             var range = editor.find({
