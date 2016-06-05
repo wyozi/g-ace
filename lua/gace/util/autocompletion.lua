@@ -115,10 +115,10 @@ function gace.autocompletion.Complete(text, opts)
 	end
 	
 	local lastNode = relevantText:sub(i)
+	local lastNodel = lastNode:lower()
 	
 	-- table-based autocompletion
 	if typ.t == "table" or typ.t == "meta" then
-		local lastNodel = lastNode:lower()
 		local tbl = getTableTypeTable(typ)
 		for name,val in pairs(tbl) do
 			if type(name) == "string" and name:lower():StartWith(lastNodel) then
@@ -130,8 +130,10 @@ function gace.autocompletion.Complete(text, opts)
 	
 	-- if we're still in global scope, add global extras
 	if initTyp == typ and opts and opts.globalExtras then
-		for nm,_ in pairs(opts.globalExtras) do
-			table.insert(ret, {value = nm})
+		for name,_ in pairs(opts.globalExtras) do
+			if name:lower():StartWith(lastNodel) then
+				table.insert(ret, {value = name})
+			end
 		end
 	end
 	
