@@ -1,9 +1,16 @@
 gace.autocompletion = {}
 
-local funcSignatures = {
-	["LocalPlayer"] = { ret = { t = "meta", name = "LocalPlayer" } },
-	["getUser"] = { parent_test = { t = "table", tbl = ULib }, ret = { t = "meta", name = "Player" }}
-}
+local funcSignatures = {}
+gace.autocompletion.funcSignatures = funcSignatures
+
+local function inheritsMeta(name, meta)
+	if name == "LocalPlayer" then
+		return meta == "Player" or inheritsMeta("Player", meta)
+	elseif (name == "Player" or name == "Vehicle" or name == "Weapon") and meta == "Entity" then
+		return true
+	end
+	return name == meta
+end
 
 local function getTableTypeTable(typ)
 	if typ.t == "meta" then
@@ -13,7 +20,7 @@ local function getTableTypeTable(typ)
 			for k,v in pairs(FindMetaTable("Player")) do items[k] = v end
 			for k,v in pairs(LocalPlayer():GetTable()) do items[k] = v end
 			return items
-		elseif typ.name == "Player" or typ.name == "Weapon" or typ.name == "Vehicle" then
+		elseif inheritsMeta(typ.name, "Entity") then
 			local items = {}
 			for k,v in pairs(FindMetaTable("Entity")) do items[k] = v end
 			for k,v in pairs(FindMetaTable(typ.name)) do items[k] = v end
@@ -26,6 +33,37 @@ local function getTableTypeTable(typ)
 		return tbl
 	else
 		return tbl()
+	end
+end
+
+local function identifyCallName(fnName, prevType)
+	local sig = funcSignatures[fnName]
+	if sig then
+		local passTest = true
+		
+		-- signature might require specific kind of parent (or prev node)
+		if sig.parent_test then
+			if not prevType then -- prevnode must exist
+				passTest = false
+			else
+				-- make sure parent test values equal to prev node values
+				for k,v in pairs(sig.parent_test) do
+					-- the second part of if tests for meta inheritance
+					if prevType[k] ~= v and (prevType.t ~= "meta" or k ~= "name" or not inheritsMeta(prevType.name, v)) then
+						passTest = false
+						break
+					end
+				end
+			end
+		end
+		
+		if passTest then
+			if sig.ret.t == "_copyPrev" then
+				return prevType
+			else
+				return sig.ret
+			end
+		end
 	end
 end
 
@@ -48,28 +86,9 @@ local function identifyType(node, prevType)
 	
 	local fnName = node:match("([%a_][%w_]*)%b()")
 	if fnName then
-		local sig = funcSignatures[fnName]
-		if sig then
-			local passTest = true
-			
-			-- signature might require specific kind of parent (or prev node)
-			if sig.parent_test then
-				if not prevType then -- prevnode must exist
-					passTest = false
-				else
-					-- make sure parent test values equal to prev node values
-					for k,v in pairs(sig.parent_test) do
-						if prevType[k] ~= v then
-							passTest = false
-							break
-						end
-					end
-				end
-			end
-			
-			if passTest then
-				return sig.ret
-			end
+		local callt = identifyCallName(fnName, prevType)
+		if callt then
+			return callt
 		end
 	end
 
@@ -122,7 +141,20 @@ function gace.autocompletion.Complete(text, opts)
 		local tbl = getTableTypeTable(typ)
 		for name,val in pairs(tbl) do
 			if type(name) == "string" and name:lower():StartWith(lastNodel) then
-				local rtype, cinfo = otype(val)
+				local rtype = otype(val)
+				
+				local cinfo
+				if rtype == "function" then
+					local fntype = identifyCallName(name, typ)
+					if fntype then
+						if fntype.t == "object" then
+							cinfo = { returnType = fntype.luatype }
+						elseif fntype.t == "meta" then
+							cinfo = { returnType = fntype.name }
+						end
+					end
+				end
+				
 				table.insert(ret, {value = name, obj = val, type = rtype, contextInfo = cinfo})
 			end
 		end

@@ -357,8 +357,14 @@ function PANEL_AC:Paint(w, h)
 		surface.SetFont("GAce_CodeFont")
 		self.CodeInput:DrawHighlightedText(v.value, 20, y + 2, Color(255, 255, 255), false)
 		
-		if v.type then
-			draw.SimpleText(v.type, "GAce_AC_TypeFont", w - 5, y + 10, Color(200, 200, 200, 127), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+		local typeString = v.type
+		if typeString == "function" and v.contextInfo and v.contextInfo.returnType then
+			typeString = "function -> " .. v.contextInfo.returnType
+		end
+		
+		
+		if typeString then
+			draw.SimpleText(typeString, "GAce_AC_TypeFont", w - 5, y + 10, Color(200, 200, 200, 127), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 		end
 	end
 end

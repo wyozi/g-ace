@@ -36,6 +36,7 @@ load("gace/util/miscutils.lua")
 load("gace/util/hooks.lua")
 load("gace/util/entitypath.lua")
 load("gace/util/autocompletion.lua")
+load("gace/util/autocompletion_funcsigs.lua")
 
 load("gace/cache/cache.lua")
 load("gace/cache/cache_simple.lua")
