@@ -38,7 +38,7 @@ end
 local FGCLR = {}
 function gace.repl.Out(...)
 	local replout
-	if IsValid(gace.repl.FloatingREPLFrame) then
+	if IsValid(gace.repl.FloatingREPLFrame) and gace.repl.FloatingREPLFrame:IsVisible() then
 		replout = gace.repl.FloatingREPLFrame.REPLBase:GetById("REPLOutput")
 	else
 		replout = gace.GetPanel("REPLOutput")
