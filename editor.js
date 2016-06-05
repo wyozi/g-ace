@@ -73,13 +73,13 @@ var gmodApiCallbacks = {};
 var requestId = 0;
 var gmodApiCompleter = {
 	getCompletions: function(editor, session, pos, prefix, callback) {
-		var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF\.]/;
-		var line = editor.session.getLine(pos.row);
-		var codeprefix = acutil.retrievePrecedingIdentifier(line, pos.column, ID_REGEX);
-
-		if (codeprefix.length === 0) { callback(null, []); return }
-
 		if ("gace" in window) {
+			var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF\.:\(\)]/;
+			var line = editor.session.getLine(pos.row);
+			var codeprefix = acutil.retrievePrecedingIdentifier(line, pos.column, ID_REGEX);
+
+			if (codeprefix.length === 0) { callback(null, []); return }
+
 			var creqid = "request" + (requestId++);
 			gmodApiCallbacks[creqid] = callback;
 			gace.QueryGModApi(creqid, codeprefix);
