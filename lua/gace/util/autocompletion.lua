@@ -135,5 +135,9 @@ function gace.autocompletion.Complete(text, opts)
 		end
 	end
 	
+	table.sort(ret, function(a, b)
+		return #a.value < #b.value
+	end)
+	
 	return ret
 end
