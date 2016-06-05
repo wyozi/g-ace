@@ -128,11 +128,6 @@ function PANEL:GetTextSize(beforeCaret)
 	return x + w, y + h
 end
 
-
-local function Autocompleter(text)
-	return gace.autocompletion.Complete(text)
-end
-
 local function MathEval(str)
 	local ops = {
 		["^"] = {
@@ -265,13 +260,7 @@ function PANEL:GetAutoComplete(text)
 	local btext = text:sub(1, self:GetCaretPos())
 	if #btext == 0 then return {} end
 
-
-	--[[
-	local cursorIdentifier = btext:match("[%w%.]+$") or ""
-
-	local completions = gace.autocompletion.Complete(cursorIdentifier)
-	]]
-	local completions = Autocompleter(btext)
+	local completions = gace.autocompletion.Complete(btext, self.ACOptions)
 	if #completions > 20 then
 		local _comp = {}
 		for i=1, 20 do
@@ -367,6 +356,10 @@ function PANEL_AC:Paint(w, h)
 
 		surface.SetFont("GAce_CodeFont")
 		self.CodeInput:DrawHighlightedText(v.value, 20, y + 2, Color(255, 255, 255), false)
+		
+		if v.type then
+			draw.SimpleText(v.type, "GAce_AC_TypeFont", w - 5, y + 10, Color(200, 200, 200, 127), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+		end
 	end
 end
 

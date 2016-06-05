@@ -159,6 +159,14 @@ function gace.repl.RunCommand(cmd)
 	gace.repl.PrintReplOut(false, unpack(ret))
 end
 
+local acGlobalExtras = {
+	me    = { t = "meta", name = "LocalPlayer" },
+	wep   = { t = "meta", name = "Weapon" },
+	that  = { t = "meta", name = "Entity" },
+	here  = { t = "meta", name = "Vector" },
+	there = { t = "meta", name = "Vector" },
+}
+
 local function AddREPLComps(par)
 	local console = vgui.Create("RichText")
 	console:SetTall(150)
@@ -166,6 +174,9 @@ local function AddREPLComps(par)
 
 	local consoleinput = vgui.Create("GAceCodeInput")
 	consoleinput:EnableHistory()
+	consoleinput.ACOptions = {
+		globalExtras = acGlobalExtras
+	}
 
 	local history = util.JSONToTable(cookie.GetString("gace-repl-history") or "[]")
 	consoleinput.History = history

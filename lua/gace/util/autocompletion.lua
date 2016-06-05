@@ -1,16 +1,26 @@
 gace.autocompletion = {}
 
 local funcSignatures = {
-	["LocalPlayer"] = { ret = { t = "table", tbl = function()
-		local items = {}
-		for k,v in pairs(FindMetaTable("Player")) do items[k] = v end
-		for k,v in pairs(LocalPlayer():GetTable()) do items[k] = v end
-		return items
-	end } },
-	["getUser"] = { parent_test = { t = "table", tbl = ULib }, ret = { t = "table", tbl = FindMetaTable("Player") }}
+	["LocalPlayer"] = { ret = { t = "meta", name = "LocalPlayer" } },
+	["getUser"] = { parent_test = { t = "table", tbl = ULib }, ret = { t = "meta", name = "Player" }}
 }
 
 local function getTableTypeTable(typ)
+	if typ.t == "meta" then
+		if typ.name == "LocalPlayer" then
+			local items = {}
+			for k,v in pairs(FindMetaTable("Entity")) do items[k] = v end
+			for k,v in pairs(FindMetaTable("Player")) do items[k] = v end
+			for k,v in pairs(LocalPlayer():GetTable()) do items[k] = v end
+			return items
+		elseif typ.name == "Player" or typ.name == "Weapon" or typ.name == "Vehicle" then
+			local items = {}
+			for k,v in pairs(FindMetaTable("Entity")) do items[k] = v end
+			for k,v in pairs(FindMetaTable(typ.name)) do items[k] = v end
+			return items
+		end
+		return FindMetaTable(typ.name)
+	end
 	local tbl = typ.tbl
 	if type(tbl) == "table" then
 		return tbl
@@ -20,7 +30,7 @@ local function getTableTypeTable(typ)
 end
 
 local function identifyType(node, prevType)
-	if prevType and prevType.t == "table" then
+	if prevType and (prevType.t == "table" or prevType.t == "meta") then
 		local tbl = getTableTypeTable(prevType)
 		local indexed = tbl[node]
 		
@@ -67,23 +77,35 @@ local function identifyType(node, prevType)
 end
 
 local function otype(obj)
-	if type(obj) == "function" then
-		return "function"
+	-- Middleclass support
+	if type(obj) == "table" and type(obj.class) == "table" and type(obj.class.name) == "string" then
+		return string.format("class %s", obj.class.name)
 	end
+	
+	return type(obj)
 end
 	
 function gace.autocompletion.Complete(text, opts)
 	local relevantText = text:match("(%S*)$")
 	local ret = {}
 	
-	local typ = {t = "table", tbl = (opts and opts.context) or _G}
+	local initTyp = {t = "table", tbl = (opts and opts.context) or _G} 
+	local typ = initTyp
 	
 	local i = 1
 	local nendChar
 	for node, endChar in string.gmatch(relevantText, "(.-)([:%.])") do
 		typ = identifyType(node, typ)
 		
-		if nendChar == ":" then
+		-- if in first node, no proper typ was found check for global extras
+		if i == 1 and not typ.t and opts and opts.globalExtras then
+			local extra = opts.globalExtras[node]
+			if extra then
+				typ = extra
+			end
+		end
+		
+		if typ.t == "table" and nendChar == ":" then
 			typ.requireMethod = true
 		end
 		--print("node: ", node, " has type: ", table.ToString(typ))
@@ -95,7 +117,7 @@ function gace.autocompletion.Complete(text, opts)
 	local lastNode = relevantText:sub(i)
 	
 	-- table-based autocompletion
-	if typ.t == "table" then
+	if typ.t == "table" or typ.t == "meta" then
 		local lastNodel = lastNode:lower()
 		local tbl = getTableTypeTable(typ)
 		for name,val in pairs(tbl) do
@@ -103,6 +125,13 @@ function gace.autocompletion.Complete(text, opts)
 				local rtype, cinfo = otype(val)
 				table.insert(ret, {value = name, obj = val, type = rtype, contextInfo = cinfo})
 			end
+		end
+	end
+	
+	-- if we're still in global scope, add global extras
+	if initTyp == typ and opts and opts.globalExtras then
+		for nm,_ in pairs(opts.globalExtras) do
+			table.insert(ret, {value = nm})
 		end
 	end
 	
