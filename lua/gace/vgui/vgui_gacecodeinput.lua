@@ -130,72 +130,7 @@ end
 
 
 local function Autocompleter(text)
-	local function isLibrary(o)
-		for _,nm in pairs(PANEL.LibNames) do
-			if _G[nm] == o then return true end
-		end
-		return false
-	end
-	local function otype(obj)
-		if isLibrary(obj) then return "library" end
-		if type(obj) == "function" then return "function" end
-	end
-	local function resolveEnv(path)
-		local ret = {}
-
-		local el = _G
-
-		local s
-		while true do
-			local oldPath = path
-			s, path = string.match(path, "([^%.]+)%.(.*)")
-			if not path then
-				s = string.lower(s or oldPath)
-				if type(el) == "table" then
-					for name,val in pairs(el) do
-						if name:lower():StartWith(s) then
-							table.insert(ret, {value = name, obj = val, type = otype(val)})
-						end
-					end
-				end
-				break
-			else
-				el = el[s]
-			end
-		end
-
-		return ret
-	end
-	local function resolveKeywords(path)
-		path = path:lower()
-		return _u.map(_u.select(PANEL.Keywords, function(x) return x:StartWith(path) end), function(x)
-			return {value = x, type = "keyword"}
-		end)
-	end
-
-	local cursorIdentifier = text:match("[%w%.]+$") or ""
-	if cursorIdentifier == "" then return {} end
-
-	local ret = {}
-	table.Add(ret, resolveEnv(cursorIdentifier))
-	table.Add(ret, resolveKeywords(cursorIdentifier))
-
-	local function priority(otype)
-		if otype == "keyword" then return 15 end
-		if otype == "library" then return 10 end
-		if otype == "function" then return 5 end
-		return 0
-	end
-	table.sort(ret, function(a, b)
-		local aprio = priority(a.type)
-		local bprio = priority(b.type)
-		if aprio == bprio then
-			return a.value > b.value
-		end
-		return aprio > bprio
-	end)
-
-	return ret
+	return gace.autocompletion.Complete(text)
 end
 
 local function MathEval(str)
@@ -366,7 +301,7 @@ function PANEL:Think()
 	if IsValid(self.AC) then
 		local tw = self:GetTextSize(true)
 		self.AC:SetWide(400)
-		self.AC:SetPos(self:LocalToScreen(tw, self:GetTall() - 2))
+		self.AC:SetPos(self:LocalToScreen(tw, -self.AC:GetTall()))
 	end
 end
 
@@ -380,6 +315,7 @@ local PANEL_AC = {}
 function PANEL_AC:Init()
 	self:SetDrawOnTop(true)
 	self.Values = {}
+	self.Choice = 1
 end
 
 function PANEL_AC:IsBrowsingHistory()
@@ -403,28 +339,34 @@ function PANEL_AC:Paint(w, h)
 	surface.SetDrawColor(34, 36, 37)
 	surface.DrawRect(0, 0, w, h)
 
-	for k,v in pairs(self.Values) do
+	local values = self.Values
+	for i=#values, 1, -1 do
+		-- i is the visual index while k is the table index
+		local k = #values - i + 1
+		local v = values[k]
+		
+		local y = (i - 1) * 20
+		
 		if self.Choice == k then
 			surface.SetDrawColor(255, 255, 255, 50)
-			surface.DrawRect(0, (k-1) * 20, w, 20)
+			surface.DrawRect(0, y, w, 20)
 		end
 		surface.SetDrawColor(255, 255, 255)
-		surface.DrawOutlinedRect(0, (k-1) * 20, w, 20)
-
+		surface.DrawOutlinedRect(0, y, w, 20)
 
 		if v.type == "function" or v.type == "library" then
 			surface.SetDrawColor(PANEL.TokenColors.lib_func)
-			surface.DrawRect(3, (k-1) * 20 + 3, 14, 14)
+			surface.DrawRect(3, y + 3, 14, 14)
 
 			if v.type == "function" then
-				draw.SimpleText("f", "GAce_AC_TypeFont", 10, (k-1) * 20 + 10, Color(210, 77, 87), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText("f", "GAce_AC_TypeFont", 10, y + 10, Color(210, 77, 87), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			else
-				draw.SimpleText("L", "GAce_AC_TypeFont", 10, (k-1) * 20 + 10, Color(108, 122, 137), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText("L", "GAce_AC_TypeFont", 10, y + 10, Color(108, 122, 137), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
 
 		surface.SetFont("GAce_CodeFont")
-		self.CodeInput:DrawHighlightedText(v.value, 20, (k-1) * 20 + 2, Color(255, 255, 255), false)
+		self.CodeInput:DrawHighlightedText(v.value, 20, y + 2, Color(255, 255, 255), false)
 	end
 end
 
@@ -447,17 +389,43 @@ function PANEL_AC:CheckKeycode(keycode)
 	if self:IsBrowsingHistory() then return end
 
 	if keycode == KEY_DOWN then
-		self.Choice = ((self.Choice or 0) + 1) % (#self.Values + 1)
+		self.Choice = math.max((self.Choice or 0) - 1, 1)
 		return true
 	end
-	if keycode == KEY_UP and self.Choice and self.Choice > 0 then
-		self.Choice = math.max((self.Choice or 0) - 1, 0)
+	if keycode == KEY_UP then
+		self.Choice = math.min((self.Choice or 0) + 1, #self.Values)
 		return true
 	end
-	if keycode == KEY_ENTER then
+	if keycode == KEY_TAB then
 		local choice = self.Values[self.Choice or 0]
 		if choice then
 			local choiceValue = choice.value
+			
+			local cursorDelta = 0
+			
+			if choice.type == "function" then
+				local parenthesis = "()"
+				
+				if choice.obj then
+					local dinfo = debug.getinfo(choice.obj, "u")
+					local paramCount = dinfo.nparams
+					
+					local paramNames = {}
+					for i=1,paramCount do
+						paramNames[i] = debug.getlocal(choice.obj, i)
+					end
+					if paramNames[1] == "self" then table.remove(paramNames, 1) end
+					
+					if #paramNames > 0 then
+						parenthesis = "(" .. table.concat(paramNames, ", ") .. ")"
+						cursorDelta = - (#parenthesis-1)
+						
+						-- TODO set selection to arglist when garrysmod-requests/#754 is implemented
+					end
+				end
+				
+				choiceValue = choiceValue .. parenthesis
+			end
 
 			local text = self.CodeInput:GetText()
 			local preText = string.sub(text, 1, self.CodeInput:GetCaretPos())
@@ -468,9 +436,14 @@ function PANEL_AC:CheckKeycode(keycode)
 
 			local newText = table.concat({preText, choiceValue, postText}, "")
 			self.CodeInput:SetText(newText)
-			self.CodeInput:SetCaretPos(#preText+#choiceValue)
-			self.CodeInput:RequestFocus()
+			self.CodeInput:SetCaretPos(#preText + #choiceValue + cursorDelta)
+			
+			local ci = self.CodeInput
 			self:Remove()
+
+			-- tab focuses next element and we don't want that so we immediately refocus textentry
+			-- TODO there is probably a better way to do this
+			timer.Simple(0, function() ci:RequestFocus() end)
 
 			return true
 		end
