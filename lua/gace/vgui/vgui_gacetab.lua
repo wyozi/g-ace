@@ -53,7 +53,6 @@ local VGUI_EDITOR_TAB = {
 	CloseTab = function(self, force, callback)
 		local sess = gace.GetSession(self.SessionId)
 		if not force and not sess:IsSaved() then
-			print("dank")
 			local menu = DermaMenu()
 			menu:AddOption("Unsaved changes! Click here to close the tab anyway.", function()
 				self:CloseTab(true, callback)
