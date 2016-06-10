@@ -159,6 +159,142 @@ local function BuzzwordGen()
 end
 concommand.Add("gace-buzzwordgen", BuzzwordGen)
 
+local function SoundTester()
+	local fr = vgui.Create("DFrame")
+	fr:SetSize(400, 350)
+	fr:Center()
+	fr:SetTitle("Sound Tester")
+
+	local listc = fr:Add("Panel")
+	listc:Dock(FILL)
+	local list = listc:Add("Panel")
+	list:Dock(FILL)
+	local listscr = listc:Add("DVScrollBar")
+	listscr:Dock(RIGHT)
+
+	local itemHeight = 25
+
+	function list:AddLine(path)
+		self.Lines = self.Lines or {}
+		self.Lines[#self.Lines + 1] = path
+	end
+	function list:PerformLayout()
+		local lineCount = (self.VisibleLines and #self.VisibleLines) or 0
+		local tallness = lineCount * itemHeight
+
+		listscr:SetUp(listc:GetTall(), tallness)
+		listscr:SetScroll(0) -- reset scroll
+	end
+	function list:GetPosItemIndex(x, y)
+		if x < 0 or x > self:GetWide() then return end
+
+		local firstItemIndex = 1 + math.floor(-listscr:GetOffset() / itemHeight)
+		local firstItemOffset = -(listscr:GetOffset() % itemHeight)
+		
+		local yOffset = y - firstItemOffset
+		return firstItemIndex + math.floor(yOffset / itemHeight)
+	end
+	function list:Paint(w, h)
+		local firstItemIndex = 1 + math.floor(-listscr:GetOffset() / itemHeight)
+		local firstItemOffset = -(listscr:GetOffset() % itemHeight)
+
+		local hoveredItem = self:GetPosItemIndex(self:CursorPos())
+
+		for i = firstItemIndex, firstItemIndex + math.ceil(self:GetTall() / itemHeight) do
+			local item = self.VisibleLines[i]
+			if not item then break end
+
+			local y = firstItemOffset + (i - firstItemIndex) * itemHeight
+			
+			if hoveredItem == i then
+				surface.SetDrawColor(200, 200, 200)
+			else
+				surface.SetDrawColor(127, 127, 127)
+			end
+			surface.DrawRect(0, y, w, itemHeight)
+
+			surface.SetDrawColor(0, 0, 0)
+			surface.DrawOutlinedRect(0, y, w, itemHeight)
+
+			draw.SimpleText(item, "DermaDefault", 10, y + 5)
+		end
+
+		--draw.SimpleText(tostring(listscr:GetOffset()), "DermaDefault", 10, 10)
+	end
+	function list:OnMouseWheeled( dlta )
+		return listscr:OnMouseWheeled( dlta )
+	end
+	function list:SetFilterAndUpdate(filter)
+		self.VisibleLines = {}
+		for _,line in pairs(self.Lines) do
+			if not filter or filter(line) then
+				self.VisibleLines[#self.VisibleLines + 1] = line
+			end
+		end
+		self:InvalidateLayout()
+	end
+	function list:OnMouseReleased()
+		local hoveredItemIndex = self:GetPosItemIndex(self:CursorPos())
+		local hoveredItem = self.VisibleLines[hoveredItemIndex]
+		if hoveredItem then
+			self:OnRowSelected(hoveredItem)
+		end
+	end
+	function list:OnRowSelected(path)
+		RunConsoleCommand("stopsound")
+
+		timer.Simple(0.2, function()
+			surface.PlaySound(path)
+		end)
+	end
+
+	local function AddSoundFolder(f, path, depth)
+		local fils, fols = file.Find("sound/" .. f .. "*", path)
+
+		for _,fil in pairs(fils) do
+			local path = f .. fil
+			list:AddLine(path)
+		end
+
+		for _,fol in pairs(fols) do
+			AddSoundFolder(f .. fol .. "/", path, (depth or 0) + 1)
+		end
+	end
+
+	AddSoundFolder("", "GAME")
+	--AddSoundFolder("", "cstrike")
+
+	print("sound file count: ", #list.Lines)
+
+	list:SetFilterAndUpdate()
+
+	local buttons = fr:Add("DPanel")
+	buttons:Dock(TOP)
+
+	local searchbar = buttons:Add("DTextEntry")
+	searchbar:Dock(FILL)
+	local op = searchbar.Paint
+	local icon_mag = Material("icon16/magnifier.png")
+	searchbar.Paint = function(pself, w, h)
+		op(pself, w, h)
+
+		surface.SetDrawColor(255, 255, 255, 255)
+		surface.SetMaterial(icon_mag)
+		surface.DrawTexturedRect(w-18, 2, 16, 16)
+	end
+	searchbar.OnTextChanged = function()
+		local sblow = searchbar:GetText():lower()
+		timer.Create("GAceSoundTesterSearch", 0.2, 1, function()
+			if not IsValid(searchbar) then return end
+			list:SetFilterAndUpdate(function(v) return v:lower():find(sblow, _, true) end)
+		end)
+	end
+	searchbar:RequestFocus()
+
+	fr:MakePopup()
+end
+concommand.Add("gace-soundtester", SoundTester)
+
 gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comps)
 	comps:AddCategory("Resources", Color(51, 110, 123), 75)
 	comps:AddComponent {
@@ -217,6 +353,8 @@ gace.AddHook("AddActionBarComponents", "ActionBar_SnippetCommand", function(comp
 			end
 
 			menu:AddOption("Buzzword Generator", BuzzwordGen):SetIcon("icon16/coins.png")
+
+			menu:AddOption("Sound Tester", SoundTester):SetIcon("icon16/sound.png")
 
 			menu:Open()
 		end
