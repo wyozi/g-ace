@@ -3,8 +3,8 @@
 
 gace.luarun = {}
 
-function gace.luarun.transform(code)
-    local transformed, err = gace.CallHook("GAceTransformLua", code)
+function gace.luarun.transform(code, codeId)
+    local transformed, err = gace.CallHook("GAceTransformLua", code, codeId)
     if transformed == true then return err, true end
     if transformed == false then return false, err end
     return code
@@ -101,7 +101,7 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
         local code_id = payload.codeId or string.format("%s by %s (%s)", op, ply:Nick(), ply:SteamID())
 
         CheckPermission():then_(function()
-            local tr, te = gace.luarun.transform(payload.code or "")
+            local tr, te = gace.luarun.transform(payload.code or "", payload.codeId)
             if tr == false then
                 return gace.RejectedATPromise("Transform error: " .. tostring(te))
             end
