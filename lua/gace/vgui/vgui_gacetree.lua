@@ -43,14 +43,11 @@ local function TreeCompSorter(a, b)
 end
 gace.GAceTreeSorter = TreeCompSorter
 
-local function last_comp(str)
-    return str:match("/?([^/]*)$")
-end
-local function par_comp(str)
-    return str:match("(.*)/[^/]*$")
-end
+local last_comp, par_comp = gace.path.last, gace.path.parent
 
 local VGUI_GACETREE = {
+    GetParentComponent = function(_, path) return par_comp(path) end,
+
 	QueryColor = function(self, clrid)
 		local colors = self.Colors
 		local clr = colors and colors[clrid]
@@ -66,6 +63,8 @@ local VGUI_GACETREE = {
 
         self.Items = {}
         self.ItemComponents = {}
+
+        self.VisFilteredItems = {}
 
         self.IsDirty = true
     end,
@@ -143,22 +142,33 @@ local VGUI_GACETREE = {
         return ret
     end,
 
+    QueryItem = function(self, path)
+        return self.Items[path]
+    end,
     QueryItemComponent = function(self, id)
         return self.ItemComponents[id]
     end,
 
     RelayoutItems = function(self)
+        self.VisFilteredItems = {}
+
         -- Figure out what items were removed and remove their components
         for nm,comp in pairs(self.ItemComponents) do
-            if IsValid(comp) and not self.Items[nm] then
+            -- remove components that do not exist or are filtered out
+            if IsValid(comp) and (not self.Items[nm] or not self:CheckPathFilterVisibility(nm)) then
                 comp:Remove()
+                self.ItemComponents[nm] = nil
             end
         end
 
         -- Add items to numerically indexed list
         local items = {}
         for nm,item in pairs(self.Items) do
-            table.insert(items, {name = nm, item = item})
+            if self:CheckPathFilterVisibility(nm) then
+                table.insert(items, {name = nm, item = item})
+            else
+                self.VisFilteredItems[nm] = true
+            end
         end
 
         -- Sort items in order we want them to be in the treeview
@@ -258,6 +268,25 @@ local VGUI_GACETREE = {
 
         return dump
     end,
+
+
+    -- check if path should be visible according to node visibility filter
+    CheckPathFilterVisibility = function(self, path)
+        local filter = self._nodeVisFilter
+        local b = not filter or filter(path, self)
+        return b
+    end,
+
+    -- Whether given path is not visible due to path filter
+    WasPathVisFiltered = function(self, path)
+        return self.VisFilteredItems[path]
+    end,
+
+    -- Sets node visibility filter. Filter is called with (path, filetree) args
+    SetNodeVisibilityFilter = function(self, filter)
+        self._nodeVisFilter = filter
+        self:RelayoutItems()
+    end
 }
 
 derma.DefineControl( "GAceTree", "File/Item tree for G-Ace", VGUI_GACETREE, "DPanel" )

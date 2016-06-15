@@ -27,7 +27,7 @@ end
 
 -- Sends a request to server to send back a tree of the given path
 function ft.RefreshPath(path)
-	gace.cmd.ls(LocalPlayer(), path):then_(function(t)
+	gace.cmd.ls(LocalPlayer(), path):done(function(t)
 		local filetree = gace.GetPanel("FileTree")
 
 		local existing_names = {}
@@ -51,17 +51,19 @@ function ft.RefreshPath(path)
 				gace.Debug("[RefreshPath] Readding ", fpath)
 
 				local node = filetree:AddItem(fpath, e.type, e)
-				
-				function node:OnClick()
-					ft.OnNodeClick(self.NodeId, self.UserObject.type)
-				end
-				function node:OnRightClick()
-					ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
-				end
 
-				node:Droppable("gace" .. e.type)
+				if node then
+					function node:OnClick()
+						ft.OnNodeClick(self.NodeId, self.UserObject.type)
+					end
+					function node:OnRightClick()
+						ft.OnNodeRightClick(self.NodeId, self.UserObject.type)
+					end
 
-				gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
+					node:Droppable("gace" .. e.type)
+
+					gace.CallHook("FileTreePostNodeCreation", fpath, node, e.type)
+				end
 			end
 		end
 

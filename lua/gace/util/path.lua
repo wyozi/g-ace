@@ -35,6 +35,16 @@ function gace.path.tail(path)
     return (tail or path), (rest or "")
 end
 
+-- Returns [last path component]
+function gace.path.last(path)
+    return path:match("/?([^/]*)$")
+end
+
+-- Returns [parent path]
+function gace.path.parent(path)
+    return path:match("(.*)/[^/]*$")
+end
+
 local validator_pattern = "[^%a%d%_%- %./]"
 function gace.path.validate(path)
     if string.find(path, validator_pattern) then

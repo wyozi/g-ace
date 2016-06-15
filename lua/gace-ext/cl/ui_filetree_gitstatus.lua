@@ -45,3 +45,9 @@ gace.AddHook("HandleNetMessage", "HandleGitStatusUpdates", function(netmsg)
         end
     end
 end)
+
+gace.AddHook("FileTreeFilterPath", "FilterGitPaths", function(path)
+	if path:match("/%.git/?") then
+		return false
+	end
+end)
