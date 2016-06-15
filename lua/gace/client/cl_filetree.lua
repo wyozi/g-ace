@@ -27,7 +27,7 @@ end
 
 -- Sends a request to server to send back a tree of the given path
 function ft.RefreshPath(path)
-	gace.cmd.ls(LocalPlayer(), path):done(function(t)
+	gace.cmd.ls(LocalPlayer(), path):then_(function(t)
 		local filetree = gace.GetPanel("FileTree")
 
 		local existing_names = {}
@@ -78,7 +78,7 @@ function ft.RefreshPath(path)
 		]]
 
 		ft.FetchedFolders[path] = CurTime()
-	end, function(err)
+	end):then_(nil, function(err)
 		gace.Log(gace.LOG_WARN, "Refreshing path '" .. tostring(path) .. "' failed: ", err)
 	end)
 end
