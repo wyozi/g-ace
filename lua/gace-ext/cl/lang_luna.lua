@@ -8,12 +8,32 @@ gace.AddHook("FileTreeFilterPath", "FilterCompiledLuna", function(path, ft)
 	end
 end)
 
-local mat_compiled = Material("icon16/page_code.png")
-gace.AddHook("FileTreeFileNodePrePaint", "Luna_CompiledIcon", function(node, vars)
-	if node.NodeId:match("%.luna$") then
-		local luaPath = string.format("%s.lua", node.NodeId:sub(1, -6))
-		if node:GetParent():WasPathVisFiltered(luaPath) then
-			vars.mat_file = mat_compiled
+local function isCompiledLunaNode(id, ft)
+	if id:match("%.luna$") then
+		local luaPath = string.format("%s.lua", id:sub(1, -6))
+		if ft:WasPathVisFiltered(luaPath) then
+			return true, luaPath
 		end
+	end
+end
+
+local mat_compiled = Material("icon16/page_code.png")
+
+gace.AddHook("FileTreeFileNodePrePaint", "Luna_CompiledIcon", function(node, vars)
+	if isCompiledLunaNode(node.NodeId, node:GetParent()) then
+		vars.mat_file = mat_compiled
+	end
+end)
+
+gace.AddHook("FileTreeContextMenu", "AddGoToLunaOption", function(path, menu, nodetype)
+	if nodetype ~= "file" then return end
+
+	local ft = gace.GetPanel("FileTree")
+
+	local b, luaPath = isCompiledLunaNode(path, ft)
+	if b then
+		menu:AddOption("View compiled code", function()
+			gace.OpenSession(luaPath)
+		end):SetIcon("icon16/page_code.png")
 	end
 end)
