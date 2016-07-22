@@ -240,20 +240,29 @@ local function SoundTester()
 			self:OnRowSelected(hoveredItem)
 		end
 	end
-	function list:OnRowSelected(path)
+	function list:OnRowSelected(row)
 		RunConsoleCommand("stopsound")
 
 		timer.Simple(0.2, function()
+			local path = row:match("%[[^%]]*%] (.*)") or row
 			surface.PlaySound(path)
 		end)
 	end
+
+	local pathPrefixes = {}
 
 	local function AddSoundFolder(f, path, depth)
 		local fils, fols = file.Find("sound/" .. f .. "*", path)
 
 		for _,fil in pairs(fils) do
-			local path = f .. fil
-			list:AddLine(path)
+			local fpath = f .. fil
+
+			local prefix = pathPrefixes[path]
+			if prefix then
+				fpath = string.format("[%s] %s", prefix, fpath)
+			end
+
+			list:AddLine(fpath)
 		end
 
 		for _,fol in pairs(fols) do
@@ -261,7 +270,16 @@ local function SoundTester()
 		end
 	end
 
-	AddSoundFolder("", "GAME")
+	AddSoundFolder("", "WORKSHOP")
+	AddSoundFolder("", "THIRDPARTY")
+	AddSoundFolder("", "MOD")
+
+	for _,game in pairs(engine.GetGames()) do
+		if game.mounted then
+			pathPrefixes[game.folder] = game.folder
+			AddSoundFolder("", game.folder)
+		end
+	end
 	--AddSoundFolder("", "cstrike")
 
 	print("sound file count: ", #list.Lines)
