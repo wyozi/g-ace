@@ -11,6 +11,28 @@ function gace.ext.PushESCListener(listener)
 	table.insert(esc_listener_stack, listener)
 end
 
+-- List of ESC listeners that ALWAYS exist. "Pre" here means that these are evaluated _before_ normal esc_listener_stack.
+local static_pre_esc_listener_stack = {}
+function gace.ext.AddStaticPreESCListener(listener)
+	table.insert(static_pre_esc_listener_stack, listener)
+end
+
+-- Add DMenu listener to post stack
+-- This listener closes open DMenus.
+-- Because list of active DMenus is only available as an upvalue, we have to use debug table magic
+
+gace.ext.AddStaticPreESCListener(function()
+	-- This must be done every time; the upvalue gets re-set after every CloseDermaMenus()
+	local name, value = debug.getupvalue(RegisterDermaMenuForClose, 1)
+
+	-- TODO what if the name changes?
+	if name == "tblOpenMenus" and type(value) == "table" and #value > 0 then
+		CloseDermaMenus()
+		return true
+	end
+	return false
+end)
+
 local was_esc_down
 gace.AddHook("FrameThink", "Hotkey_ESCToHide", function(frame)
 	local is_esc_down = input.IsKeyDown(KEY_ESCAPE)
@@ -29,6 +51,19 @@ gace.AddHook("FrameThink", "Hotkey_ESCToHide", function(frame)
 		local esc_overridden = false
 
 		-- Keep popping esc_listeners until we get something that returns ~=false
+
+		-- First check pre-stack
+		for i=#static_pre_esc_listener_stack, 1, -1 do
+			local popped = static_pre_esc_listener_stack[i]
+
+			local ret = popped()
+			if ret ~= false then
+				esc_overridden = true
+				break
+			end
+		end
+
+		-- then check real stack
 		while true do
 			local popped = table.remove(esc_listener_stack, #esc_listener_stack)
 			if not popped then break end
