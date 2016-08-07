@@ -280,7 +280,6 @@ local function SoundTester()
 			AddSoundFolder("", game.folder)
 		end
 	end
-	--AddSoundFolder("", "cstrike")
 
 	print("sound file count: ", #list.Lines)
 
