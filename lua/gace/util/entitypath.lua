@@ -7,10 +7,25 @@ local folder_ent_names = {
 }
 
 function gace.entitypath.Analyze(path)
+	-- first try to find a folder entity in entities folder
+	-- in this case we can even skip the folder_ent_names and guess the realm
+	local folder, file = string.match(path, ".-/entities/([^/]+)/([^/]+)%.lua$")
+	if folder and file then
+		local realm = "sh"
+		if string.match(file, "^cl_") then
+			realm = "cl"
+		elseif string.match(file, "^sv_") then
+			realm = "sv"
+		end
+		return folder, realm
+	end
+	
+	-- if it's a folder ent in other folder with specified name, use that
 	local folder, file = string.match(path, ".-([^/]+)/([^/]+)%.lua$")
 	if folder and file and folder_ent_names[file] then
 		return folder, folder_ent_names[file]
 	end
+	
 	return string.match(path, ".-([^/]+)%.lua$"), "sh"
 end
 
