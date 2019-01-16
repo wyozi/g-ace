@@ -6,11 +6,17 @@ local folder_ent_names = {
 	["shared"] = "sh",
 }
 
+local gm_subentityfolders = {
+	["entities"] = true,
+	["weapons"] = true,
+	["effects"] = true,
+}
+
 function gace.entitypath.Analyze(path)
 	-- first try to find a folder entity in entities folder
 	-- in this case we can even skip the folder_ent_names and guess the realm
 	local folder, file = string.match(path, ".-/entities/([^/]+)/([^/]+)%.lua$")
-	if folder and file then
+	if folder and file and not gm_subentityfolders[folder] then
 		local realm = "sh"
 		if string.match(file, "^cl_") then
 			realm = "cl"
