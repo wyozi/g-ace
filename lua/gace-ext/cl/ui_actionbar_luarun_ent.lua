@@ -7,10 +7,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 	end
 
 	local function FormatCode(template, code, id)
-		local includes = gace.entitypath.FindIncludes(template)
-
-		-- TODO include 'includes' files to code
-
+		code = gace.entitypath.RebaseIncludes(id, code)
 		return ATPromise(function(res)
 			local entname, realm = gace.entitypath.Analyze(id)
 			local formatted = interp(template, {code = code, entname = entname})

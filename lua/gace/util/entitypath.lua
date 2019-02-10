@@ -35,6 +35,35 @@ function gace.entitypath.Analyze(path)
 	return string.match(path, ".-([^/]+)%.lua$"), "sh"
 end
 
+
+-- Attempt to find the base path (that could be passed to file.Read using LUA)
+-- This does some magical guessing using eg. GAMEMODE.FolderName and so on
+function gace.entitypath.FindLuaBasePath(path)
+	-- is this a FOLDER-SCRIPTEDENTITY in a GAMEMODE
+	local folder, entFolder, file = string.match(path, ".-/entities/([^/]+)/([^/]+)/([^/]+)%.lua$")
+	if folder and entFolder and file and gm_subentityfolders[folder] then
+		return string.format("%s/entities/%s/%s/", GAMEMODE.FolderName, folder, entFolder)
+	end
+	
+	-- is this a FOLDER-SCRIPTEDENTITY in an ADDON
+	local folder, entFolder, file = string.match(path, ".-/([^/]+)/([^/]+)/([^/]+)%.lua$")
+	if folder and entFolder and file and gm_subentityfolders[folder] then
+		return string.format("%s/%s/", folder, entFolder)
+	end
+	
+	-- is this a NORMAL .lua in a GAMEMODE
+	local folder = string.match(path, ".-/gamemode/(.-)/[^/]+%.lua$")
+	if folder then
+		return string.format("%s/gamemode/%s/", GAMEMODE.FolderName, folder)
+	end
+	
+	-- is this a NORMAL .lua in an ADDON
+	local folder = string.match(path, ".-lua/(.-)/[^/]+%.lua$")
+	if folder then
+		return string.format("%s/", folder)
+	end
+end
+
 -- Finds includes in code
 -- List of what kind of includes are found:
 --    include("shared.lua")
@@ -49,4 +78,17 @@ function gace.entitypath.FindIncludes(code)
 	end
 
 	return t
+end
+
+-- Modifies include expressions with relative paths in given code to be relative
+-- to the lua/ folder rather than the file itself
+-- If we can't figure out the base path for given path returns unmodified code
+function gace.entitypath.RebaseIncludes(path, code)
+	local basePath = gace.entitypath.FindLuaBasePath(path)
+	if basePath then
+		return string.gsub(code, "include%s?%(?%s?\"([%a%.%d-_]+)\"%s?%)?", function(include)
+			return string.format("include(%q)", basePath .. include)
+		end)
+	end
+	return code
 end
