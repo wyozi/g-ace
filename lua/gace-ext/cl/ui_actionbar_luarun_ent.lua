@@ -20,6 +20,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 		if testSwep then
 			return [[
 local SWEP = weapons.Get("${entname}") or {}
+SWEP.BaseClass = nil
 SWEP.Primary = SWEP.Primary or {}
 SWEP.Secondary = SWEP.Secondary or {}
 ${code}
@@ -31,6 +32,7 @@ weapons.Register(SWEP, "${entname}", true)
 		if testSent then
 			return [[
 local ENT = scripted_ents.Get("${entname}") or {}
+ENT.BaseClass = nil
 ${code}
 scripted_ents.Register(ENT, "${entname}")
 			]]
@@ -40,6 +42,7 @@ scripted_ents.Register(ENT, "${entname}")
 		if testEff then
 			return [[
 local EFFECT = effects.Create("${entname}") or {}
+EFFECT.BaseClass = nil
 ${code}
 effects.Register(EFFECT, "${entname}")
 			]], "cl"
