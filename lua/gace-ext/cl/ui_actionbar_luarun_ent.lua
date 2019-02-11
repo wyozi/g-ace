@@ -19,7 +19,7 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 		local testSwep = slua:find("SWEP[%.:]")
 		if testSwep then
 			return [[
-local SWEP = weapons.GetStored("${entname}") or {}
+local SWEP = weapons.GetStored("${entname}") or { t = {} }; SWEP = SWEP.t;
 SWEP.Primary = SWEP.Primary or {}
 SWEP.Secondary = SWEP.Secondary or {}
 ${code}
@@ -29,7 +29,7 @@ weapons.Register(SWEP, "${entname}", true)
 		
 		local testSent = slua:find("ENT[%.:]")
 		if testSent then
-			return [[ _OLDENT = ENT; ENT = scripted_ents.GetStored("${entname}") or {};
+			return [[ _OLDENT = ENT; ENT = scripted_ents.GetStored("${entname}") or { t = {} }; ENT = ENT.t;
 ${code}
 scripted_ents.Register(ENT, "${entname}")
 ENT = _OLDENT;
