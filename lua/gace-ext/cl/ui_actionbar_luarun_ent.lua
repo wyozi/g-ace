@@ -14,13 +14,12 @@ gace.AddHook("AddActionBarComponents", "ActionBar_LuaRun_Ents", function(comps)
 			res:resolve(formatted)
 		end)
 	end
-	
+
 	local function GetSLuaFormat(slua)
 		local testSwep = slua:find("SWEP[%.:]")
 		if testSwep then
 			return [[
-local SWEP = weapons.Get("${entname}") or {}
-SWEP.BaseClass = nil
+local SWEP = weapons.GetStored("${entname}") or {}
 SWEP.Primary = SWEP.Primary or {}
 SWEP.Secondary = SWEP.Secondary or {}
 ${code}
@@ -30,11 +29,11 @@ weapons.Register(SWEP, "${entname}", true)
 		
 		local testSent = slua:find("ENT[%.:]")
 		if testSent then
-			return [[
-local ENT = scripted_ents.Get("${entname}") or {}
-ENT.BaseClass = nil
+			return [[ _OLDENT = ENT; ENT = scripted_ents.GetStored("${entname}") or {};
 ${code}
 scripted_ents.Register(ENT, "${entname}")
+ENT = _OLDENT;
+_OLDENT = nil;
 			]]
 		end
 		
@@ -42,7 +41,6 @@ scripted_ents.Register(ENT, "${entname}")
 		if testEff then
 			return [[
 local EFFECT = effects.Create("${entname}") or {}
-EFFECT.BaseClass = nil
 ${code}
 effects.Register(EFFECT, "${entname}")
 			]], "cl"
