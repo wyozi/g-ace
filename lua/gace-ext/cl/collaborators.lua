@@ -21,12 +21,14 @@ gace.AddHook("FileTreeFileNodePostPaint", "FileTree_DrawCollaboratorAvatars", fu
 			_avatarPanels[ply] = avatar
 		end
 		
+		local x = vars.draw_x - (idx-1)*18
+		
 		avatar:SetParent(self)
-		avatar:SetPos(vars.draw_x, 2)
+		avatar:SetPos(x, 2)
 		avatar:SetSize(16, 16)
 		avatar:PaintManual()
 		
-		draw.SimpleTextOutlined(ply:Nick():sub(1,1), "DermaDefaultBold", vars.draw_x+8, 9, Color(197, 239, 247), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0))
+		draw.SimpleTextOutlined(ply:Nick():sub(1,1), "DermaDefaultBold", x + 8, 9, Color(197, 239, 247), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0))
 	end
 end)
 
