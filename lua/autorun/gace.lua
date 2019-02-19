@@ -86,7 +86,6 @@ load("gace/vfs-cmds/write.lua")
 load("gace/ext/extloader.lua")
 
 -- Load all client crap
-load("gace/client/cl_collabedit.lua", "client")
 load("gace/client/cl_editor_base.lua", "client")
 load("gace/client/cl_editor_sessions.lua", "client")
 load("gace/client/cl_editor_tabs.lua", "client")
