@@ -47,7 +47,7 @@ effects.Register(EFFECT, "${entname}")
 		end
 	end
 
-	local function runSLua(forceRealm)
+	local function runSLua(forceRealm, target)
 		local code = gace.GetOpenSession().Content
 		local id = gace.GetSessionId()
 		
@@ -67,7 +67,7 @@ effects.Register(EFFECT, "${entname}")
 			local sess = gace.GetOpenSession()
 			local codeId = ("gace://%s"):format(sess.Id)
 			
-			gace.SendRequest(op, {codeId = codeId, code = formattedCode}, function(_, _, pl)
+			gace.SendRequest(op, {codeId = codeId, code = formattedCode, target = target}, function(_, _, pl)
 				if pl.err then
 					gace.Log(gace.LOG_ERROR, op .. " failed: ", pl.err)
 				else
@@ -83,8 +83,12 @@ effects.Register(EFFECT, "${entname}")
 			runSLua()
 		end,
 		splitFn = function(menu)
-			menu:AddOption("Force localplayer only", function() runSLua("cl") end)
-			menu:AddOption("Force server only", function() runSLua("sv") end)
+			menu:AddOption("Run on self", function() runSLua("cl") end)
+			menu:AddOption("Run on server", function() runSLua("sv") end)
+			menu:AddSpacer()
+			for _,p in pairs(player.GetAll()) do
+				menu:AddOption("Run on " .. p:Nick(), function() runSLua("target", p) end)
+			end
 		end,
 		enabled = function() return gace.IsSessionOpen() end,
 		tt = "Runs the code as either SWEP/SENT/STool. Which one to run and ClassName are guessed from the filename and contents"
