@@ -47,37 +47,44 @@ effects.Register(EFFECT, "${entname}")
 		end
 	end
 
+	local function runSLua(forceRealm)
+		local code = gace.GetOpenSession().Content
+		local id = gace.GetSessionId()
+		
+		local base, frealm = GetSLuaFormat(code)
+		
+		if not base then
+			gace.Log(gace.LOG_ERROR, "File contents not recognized as SWEP/SENT/STool")
+			return
+		end
+
+		FormatCode(base, code, id):done(function(formattedCode)
+			local entname, arealm = gace.entitypath.Analyze(id)
+			
+			local realm = forceRealm or frealm or arealm
+			local op = "lua-run" .. realm
+			
+			local sess = gace.GetOpenSession()
+			local codeId = ("gace://%s"):format(sess.Id)
+			
+			gace.SendRequest(op, {codeId = codeId, code = formattedCode}, function(_, _, pl)
+				if pl.err then
+					gace.Log(gace.LOG_ERROR, op .. " failed: ", pl.err)
+				else
+					gace.Log(op .. " done!")
+				end
+			end)
+		end)
+	end
+
 	comps:AddComponent {
 		text = "SLua",
 		fn = function(state)
-			local code = gace.GetOpenSession().Content
-			local id = gace.GetSessionId()
-			
-			local base, frealm = GetSLuaFormat(code)
-			
-			if not base then
-            	gace.Log(gace.LOG_ERROR, "File contents not recognized as SWEP/SENT/STool")
-				return
-			end
-
-			FormatCode(base, code, id):done(function(formattedCode)
-				local entname, arealm = gace.entitypath.Analyze(id)
-				
-				local realm = frealm or arealm
-				
-				local op = "lua-run" .. realm
-				
-				local sess = gace.GetOpenSession()
-				local codeId = ("gace://%s"):format(sess.Id)
-				
-				gace.SendRequest(op, {codeId = codeId, code = formattedCode}, function(_, _, pl)
-					if pl.err then
-						gace.Log(gace.LOG_ERROR, op .. " failed: ", pl.err)
-					else
-						gace.Log(op .. " done!")
-					end
-				end)
-			end)
+			runSLua()
+		end,
+		splitFn = function(menu)
+			menu:AddOption("Force localplayer only", function() runSLua("cl") end)
+			menu:AddOption("Force server only", function() runSLua("sv") end)
 		end,
 		enabled = function() return gace.IsSessionOpen() end,
 		tt = "Runs the code as either SWEP/SENT/STool. Which one to run and ClassName are guessed from the filename and contents"

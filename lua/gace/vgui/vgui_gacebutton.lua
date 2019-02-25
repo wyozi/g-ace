@@ -53,3 +53,39 @@ local VGUI_BUTTON = {
 }
 
 derma.DefineControl( "GAceButton", "Button for GAce", VGUI_BUTTON, "DButton" )
+
+local VGUI_SPLITBUTTON = {}
+function VGUI_SPLITBUTTON:Init()
+	self.MainButton = vgui.Create("GAceButton")
+	self.MainButton:SetParent(self)
+	self.MainButton.DoClick = function() self:DoClick() end
+	self.MainButton.DoRightClick = function() self:DoRightClick() end
+	self.ArrowButton = vgui.Create("GAceButton")
+	self.ArrowButton:SetParent(self)
+	self.ArrowButton:SetText("˅")
+	self.ArrowButton.DoClick = function() self:DoRightClick() end
+end
+function VGUI_SPLITBUTTON:PerformLayout()
+	local w, h = self:GetWide(), self:GetTall()
+	local splitSize = self.SplitSize or 14
+
+	self.MainButton:SetPos(0, 0)
+	self.MainButton:SetSize(w - splitSize, h)
+
+	self.ArrowButton:SetPos(w - splitSize + 1, 0)
+	self.ArrowButton:SetSize(splitSize - 1, h)
+end
+function VGUI_SPLITBUTTON:SetText(text)
+	self.MainButton:SetText(text)
+end
+function VGUI_SPLITBUTTON:SetDisabled(b)
+	self.MainButton:SetDisabled(b)
+	self.ArrowButton:SetDisabled(b)
+	self.BaseClass.SetDisabled(self, b)
+end
+function VGUI_SPLITBUTTON:SetColorOverride(clrid, clr)
+	self.MainButton:SetColorOverride(clrid, clr)
+	self.ArrowButton:SetColorOverride(clrid, clr)
+end
+
+derma.DefineControl("GAceSplitButton", "Split Button for GAce", VGUI_SPLITBUTTON, "DPanel")

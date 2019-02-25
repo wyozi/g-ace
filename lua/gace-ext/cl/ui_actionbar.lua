@@ -67,7 +67,9 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 			return
 		end
 
-		local comp = vgui.Create("GAceButton", actbar_wrapper)
+		local isSplitButton = not not v.splitFn
+
+		local comp = vgui.Create(isSplitButton and "GAceSplitButton" or "GAceButton", actbar_wrapper)
 		comp:SetSize(v.width or 60, 24)
 		comp:SetColorOverride("tab_bg", v.color or (cur_cat and cur_cat.color))
 		comp:SetColorOverride("tab_fg", Color(255, 255, 255))
@@ -87,6 +89,14 @@ gace.AddHook("AddPanels", "Editor_AddActionBarButtons", function(frame, basepnl)
 				if not self:GetDisabled() then
 					v.fn(self, self.Toggled)
 				end
+			end
+		end
+		if v.splitFn then
+			comp.DoRightClick = function(self)
+				local menu = DermaMenu()
+				v.splitFn(menu)
+				menu:Open()
+				menu:SetPos(comp:LocalToScreen(0, comp:GetTall()))
 			end
 		end
 
