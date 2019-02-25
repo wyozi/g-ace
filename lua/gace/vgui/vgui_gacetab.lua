@@ -1,8 +1,15 @@
 
-surface.CreateFont("EditorTabFont", {
-	font = "Roboto",
-	size = 14
-})
+if system.IsWindows() then
+	surface.CreateFont("EditorTabFont", {
+		font = "Segoe UI",
+		size = 16
+	})
+else
+	surface.CreateFont("EditorTabFont", {
+		font = "Roboto",
+		size = 14
+	})
+end
 
 local max = 12
 local thickness = 2
