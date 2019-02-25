@@ -139,5 +139,12 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
         HandleOp(function(code, code_id)
             return gace.luarun.client(ply, code, code_id)
         end)
+    elseif op == "lua-runtarget" then
+        local target = payload.target
+        if not IsValid(target) or not target:IsPlayer() then return end
+
+        HandleOp(function(code, code_id)
+            return gace.luarun.client(target, code, code_id)
+        end)
     end
 end)
