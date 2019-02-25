@@ -83,7 +83,15 @@ gace.AddHook("SetupHTMLPanel", "Editor_SetupHTMLFunctions", function(html)
 		SaveTo(initial_osi)
 	end)
 	html:AddFunction("gace", "NewSession", function(id, line, column)
-		gace.OpenSession("newfile" .. os.time() .. ".txt", {content="", mark_unsaved = true})
+		local freeIndex
+		for i=1,999 do
+			local filename = string.format("scratch %d", i)
+			if not gace.Sessions[filename] then
+				freeIndex = i
+				break
+			end
+		end
+		gace.OpenSession(string.format("scratch %d", freeIndex), {content="", mark_unsaved = true})
 	end)
 	html:AddFunction("gace", "OpenSession", function(id, line, column)
 		gace.Log("Opening session '", id, "' at line ", line, " column ", column)

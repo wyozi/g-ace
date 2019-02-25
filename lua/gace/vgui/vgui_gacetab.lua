@@ -59,7 +59,7 @@ local VGUI_EDITOR_TAB = {
 	end,
 	CloseTab = function(self, force, callback)
 		local sess = gace.GetSession(self.SessionId)
-		if not force and not sess:IsSaved() then
+		if not force and not sess:IsSaved() and not gace.CallHook("SkipUnsavedClosePrompt", self.SessionId) then
 			local menu = DermaMenu()
 			menu:AddOption("Unsaved changes! Click here to close the tab anyway.", function()
 				self:CloseTab(true, callback)
@@ -136,9 +136,6 @@ local VGUI_EDITOR_TAB = {
 		self:SetToolTip(id)
 
 		self.FileName, self.FilePath = gace.path.tail(self.SessionId)
-
-		surface.SetFont("EditorTabFont")
-		local w = surface.GetTextSize(self.SessionId)
 	end,
 	DoClick = function(self)
 		gace.OpenSession(self.SessionId)
