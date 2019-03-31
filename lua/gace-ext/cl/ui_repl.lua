@@ -218,6 +218,7 @@ local function AddREPLComps(par)
 	replout(helpclr, "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
 	replout(helpclr, "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
 	replout(helpclr, "[REPL Help] Lua environment has some implicit values to use: " .. table.concat(table.GetKeys(gace.repl.implicitGlobals), ", "))
+	replout(helpclr, "[REPL Help] Additionally you can call ents('className') to findByClass, ents(vector) to findCloseBy(vector)")
 end
 
 concommand.Add("gace-repl", function()
