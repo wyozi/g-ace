@@ -54,3 +54,31 @@ upvals[#upvals+1] = "end"
 upvals = table.concat(upvals, " ")
 
 gace.repl.contextSrc = upvals
+
+local replacers = {}
+for i=0,8 do
+    local args = {}
+    for c=1,i do args[c] = "(%w+)" end
+    local pattern = "%(%s*"..table.concat(args,"%s*,%s*") .. "%)%s*=>%s*(%b())"
+    local processor = function(...)
+        local args = {...}
+        local expr = args[#args]
+        args[#args] = nil
+
+        return string.format("(function(%s) return %s end)", table.concat(args, ","), expr)
+    end
+    table.insert(replacers, { pattern = pattern, processor = processor })
+end
+
+function gace.repl.TransformReplCode(code)
+    -- TODO we should probably care if these appear inside strings..
+
+    for _,r in pairs(replacers) do
+        code = string.gsub(code, r.pattern, r.processor)
+    end
+
+    return code
+end
+--[[assert(gace.repl.TransformReplCode("() => ('lol')") == "(function() return ('lol') end)")
+assert(gace.repl.TransformReplCode("(a) => (a)") == "(function(a) return (a) end)")
+assert(gace.repl.TransformReplCode("(a, b) => (a .. b)") == "(function(a,b) return (a .. b) end)")]]

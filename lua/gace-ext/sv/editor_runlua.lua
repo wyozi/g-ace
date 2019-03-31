@@ -27,6 +27,8 @@ end
 function gace.luarun.serverrepl(ply, code, code_id)
     local upvals2 = gace.repl.contextSrc:Replace("$UNIQID", ply:UniqueID())
 
+    code = gace.repl.TransformReplCode(code)
+
     -- First try as expression
     local f = CompileString(upvals2 .. "\n return " .. code, code_id, false)
 

@@ -132,6 +132,8 @@ function gace.repl.RunCommand(cmd)
 
 	local fullContext = gace.repl.contextSrc:Replace("$UNIQID", LocalPlayer():UniqueID()) .. clientCtx
 
+	cmd = gace.repl.TransformReplCode(cmd)
+
 	-- First try as expression
 	local f = CompileString(fullContext .. "\n return " .. cmd, "gacerepl" .. os.time(), false)
 
