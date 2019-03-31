@@ -24,20 +24,8 @@ function gace.luarun.server(code, code_id)
     return true
 end
 
-local upvals = {}
-upvals[#upvals+1] = "local me,wep,tr,that,here,there"
-upvals[#upvals+1] = "do"
-upvals[#upvals+1] = ("me = player.GetByUniqueID('$UNIQID')")
-upvals[#upvals+1] = "wep = me:GetActiveWeapon()"
-upvals[#upvals+1] = "tr = me:GetEyeTrace()"
-upvals[#upvals+1] = "that = tr.Entity"
-upvals[#upvals+1] = "here = me:EyePos()"
-upvals[#upvals+1] = "there = tr.HitPos"
-upvals[#upvals+1] = "end"
-upvals = table.concat(upvals, "\n")
-
 function gace.luarun.serverrepl(ply, code, code_id)
-    local upvals2 = upvals:Replace("$UNIQID", ply:UniqueID())
+    local upvals2 = gace.repl.contextSrc:Replace("$UNIQID", ply:UniqueID())
 
     -- First try as expression
     local f = CompileString(upvals2 .. "\n return " .. code, code_id, false)

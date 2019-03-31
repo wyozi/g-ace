@@ -1,4 +1,4 @@
-gace.repl = {}
+gace.repl = gace.repl or {}
 
 -- A tostring that works better with REPL
 function gace.repl.ToString(o, noTableRecursion)
@@ -106,24 +106,13 @@ function gace.repl.PrintReplOut(isServer, ...)
 	gace.repl.Out(unpack(fout))
 end
 
-local upvals = {}
-upvals[#upvals+1] = "local me,wep,tr,that,here,there"
-upvals[#upvals+1] = "do"
-upvals[#upvals+1] = "me = LocalPlayer()"
-upvals[#upvals+1] = "wep = me:GetActiveWeapon()"
-upvals[#upvals+1] = "tr = me:GetEyeTrace()"
-upvals[#upvals+1] = "that = tr.Entity"
-upvals[#upvals+1] = "here = me:EyePos()"
-upvals[#upvals+1] = "there = tr.HitPos"
-upvals[#upvals+1] = "end"
-
+local clientCtx = {}
 -- Override print functions
-upvals[#upvals+1] = "local print, MsgN"
-upvals[#upvals+1] = "do"
-upvals[#upvals+1] = "print, MsgN = gace.repl.Out, gace.repl.Out"
-upvals[#upvals+1] = "end"
-
-upvals = table.concat(upvals, "\n")
+clientCtx[#clientCtx+1] = " local print, MsgN"
+clientCtx[#clientCtx+1] = "do"
+clientCtx[#clientCtx+1] = "print, MsgN = gace.repl.Out, gace.repl.Out"
+clientCtx[#clientCtx+1] = "end"
+clientCtx = table.concat(clientCtx, "\n")
 
 function gace.repl.RunCommand(cmd)
 	local allowed = LocalPlayer():IsSuperAdmin() -- we're achieving higher level of using dirty hacks
@@ -133,12 +122,14 @@ function gace.repl.RunCommand(cmd)
 		return
 	end
 
+	local fullContext = gace.repl.contextSrc:Replace("$UNIQID", LocalPlayer():UniqueID()) .. clientCtx
+
 	-- First try as expression
-	local f = CompileString(upvals .. "\n return " .. cmd, "gacerepl" .. os.time(), false)
+	local f = CompileString(fullContext .. "\n return " .. cmd, "gacerepl" .. os.time(), false)
 
 	-- If expression failed, try as is
 	if type(f) == "string" then
-		f = CompileString(upvals .. "\n" .. cmd, "gacerepl" .. os.time(), false)
+		f = CompileString(fullContext .. "\n" .. cmd, "gacerepl" .. os.time(), false)
 	end
 
 	-- Nope, we're all dead
@@ -218,7 +209,7 @@ local function AddREPLComps(par)
 	local helpclr = Color(127, 127, 127)
 	replout(helpclr, "[REPL Help] REPL commands are prefixed by a period. Otherwise input is executed as Lua.")
 	replout(helpclr, "[REPL Help] Press 'enter' to run code locally. Press 'shift+enter' to run code on server.")
-	replout(helpclr, "[REPL Help] Lua environment has some implicit upvalues: 'me', 'that', 'here', 'there'")
+	replout(helpclr, "[REPL Help] Lua environment has some implicit values to use: " .. table.concat(table.GetKeys(gace.repl.implicitGlobals), ", "))
 end
 
 concommand.Add("gace-repl", function()
