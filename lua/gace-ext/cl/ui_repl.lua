@@ -22,7 +22,11 @@ function gace.repl.ToString(o, noTableRecursion)
 		local ret = {}
 		table.insert(ret, {clr = Color(145, 61, 136), str = string.format("%s\n", tostring(o))})
 
-		for k,v in pairs(o) do
+		local keys = table.GetKeys(o)
+		table.sort(keys)
+		for _,k in pairs(keys) do
+			local v = o[k]
+
 			local kstr, kclr = gace.repl.ToString(k, true)
 			table.insert(ret, {str = string.format("%-25s", kstr), clr = kclr})
 
