@@ -159,11 +159,14 @@ function gace.repl.RunCommand(cmd)
 end
 
 local acGlobalExtras = {
-	me    = { t = "meta", name = "LocalPlayer" },
-	wep   = { t = "meta", name = "Weapon" },
-	that  = { t = "meta", name = "Entity" },
-	here  = { t = "meta", name = "Vector" },
-	there = { t = "meta", name = "Vector" },
+	me     = { t = "meta", name = "LocalPlayer" },
+	wep    = { t = "meta", name = "Weapon" },
+	that   = { t = "meta", name = "Entity" },
+	here   = { t = "meta", name = "Vector" },
+	there  = { t = "meta", name = "Vector" },
+	each   = { t = "meta", name = "function" },
+	filter = { t = "meta", name = "function" },
+	map    = { t = "meta", name = "function" },
 }
 
 local function AddREPLComps(par)
