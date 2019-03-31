@@ -14,6 +14,10 @@ function gace.repl.ToString(o, noTableRecursion)
 		end
 		return string.format("Color(%d, %d, %d)", o.r, o.g, o.b), o
 	end
+	if type(o) == "function" then
+		local meta = debug.getinfo(o)
+		return string.format("%s (%s at %d)", tostring(o), meta.short_src, meta.linedefined or -1)
+	end
 	if not noTableRecursion and type(o) == "table" and (not getmetatable(o) or not getmetatable(o).__tostring) then
 		local ret = {}
 		table.insert(ret, {clr = Color(145, 61, 136), str = string.format("%s\n", tostring(o))})
