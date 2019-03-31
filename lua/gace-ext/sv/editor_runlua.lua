@@ -99,8 +99,7 @@ gace.AddHook("HandleNetMessage", "HandleLuaRun", function(netmsg)
                 return gace.RejectedATPromise(e)
             end
 
-            local estr = istable(e) and table.ToString(e, "REPL Output", true) or tostring(e)
-            netmsg:CreateResponsePacket(op, {out = {estr}}):Send()
+            netmsg:CreateResponsePacket(op, {out = e}):Send()
         end):catch(function(e)
             netmsg:CreateResponsePacket(op, {err = e}):Send()
         end)

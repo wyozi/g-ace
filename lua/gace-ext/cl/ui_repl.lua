@@ -184,7 +184,7 @@ local function AddREPLComps(par)
 				if pl.err then
 					gace.repl.Out("Running code on server failed: ", pl.err)
 				else
-					gace.repl.PrintReplOut(true, unpack(pl.out or {}))
+					gace.repl.PrintReplOut(true, pl.out or {})
 				end
 			end)
 		else
